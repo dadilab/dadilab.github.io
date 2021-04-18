@@ -1,0 +1,509 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>StatusBarUtil 状态栏工具类（实现沉浸式状态栏/变色状态栏） | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>StatusBarUtil 状态栏工具类（实现沉浸式状态栏/变色状态栏）</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><p>这是一个为Android App 设置状态栏的工具类， 可以在4.4及其以上系统中实现 沉浸式状态栏/状态栏变色，支持设置状态栏透明度，满足你司设计师的各种要求(雾)。</p>
+<p>在此之前我写过一篇<a href="http://laobie.github.io/android/2016/02/15/status-bar-demo.html">Android App 沉浸式状态栏解决方案</a>，后来我司设计师说默认的透明度太深了，让我改浅一点，然后在想了一些办法之后给解决了。本着不重复造轮子的原则，索性整理成一个工具类，方便需要的开发者。</p>
+<!-- more -->
+<p><a href="https://github.com/laobie/StatusBarUtil">项目 GitHub 地址</a></p>
+<h3 id="sample-下载">Sample 下载</h3>
+<p><a href="http://fir.im/5mnp">下载 StatusBarUtil-Demo</a></p>
+<h3 id="特性">特性</h3>
+<ol>
+<li>
+<p>设置状态栏颜色</p>
+<pre><code class="language-java">StatusBarUtil.setColor(Activity activity, int color)
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://raw.githubusercontent.com/laobie/StatusBarUtil/master/img/set_color.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>设置状态栏半透明</p>
+<pre><code class="language-java">StatusBarUtil.setTranslucent(Activity activity, int statusBarAlpha)
+</code></pre>
+<p><img src="https://raw.githubusercontent.com/laobie/StatusBarUtil/master/img/set_translucnet.png" alt="" loading="lazy"><br>
+​<br>
+​</p>
+</li>
+<li>
+<p>设置状态栏全透明</p>
+<pre><code class="language-java">StatusBarUtil.setTransparent(Activity activity)
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://raw.githubusercontent.com/laobie/StatusBarUtil/master/img/set_transparent.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>为包含 <code>DrawerLayout</code> 的界面设置状态栏颜色（也可以设置半透明和全透明）</p>
+<pre><code class="language-java">StatusBarUtil.setColorForDrawerLayout(Activity activity, DrawerLayout drawerLayout, int color)
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://raw.githubusercontent.com/laobie/StatusBarUtil/master/img/set_color_for_drawer_layout.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>为使用 ImageView 作为头部的界面设置状态栏透明</p>
+<pre><code class="language-java">StatusBarUtil.setTranslucentForImageView(Activity activity, int statusBarAlpha, View needOffsetView)
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://raw.githubusercontent.com/laobie/StatusBarUtil/master/img/set_for_image_view_page.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>在 Fragment 中使用</p>
+<figure data-type="image" tabindex="5"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/f79b11ecae3b6043.gif" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>为滑动返回界面设置状态栏颜色</p>
+<p>推荐配合 <a href="https://github.com/bingoogolapple/BGASwipeBackLayout-Android">bingoogolapple/BGASwipeBackLayout-Android: Android Activity 滑动返回</a> 这个库一起使用。</p>
+<pre><code class="language-java">StatusBarUtil.setColorForSwipeBack(Activity activity, @ColorInt int color, int statusBarAlpha)
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://raw.githubusercontent.com/laobie/StatusBarUtil/master/img/set_color_for_swipe_back_page.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>通过传入 <code>statusBarAlpha</code> 参数，可以改变状态栏的透明度值，默认值是112。</p>
+</li>
+</ol>
+<h3 id="使用">使用</h3>
+<ol>
+<li>
+<p>在 build.gradle 文件中添加依赖, StatusBarUtil 已经发布在 JCenter:</p>
+<pre><code class="language-groovy">compile 'com.jaeger.statusbarutil:library:1.4.0'
+</code></pre>
+</li>
+<li>
+<p>在 <code>setContentView()</code> 之后调用你需要的方法，例如:</p>
+<pre><code class="language-java">setContentView(R.layout.main_activity);
+...
+StatusBarUtil.setColor(MainActivity.this, mColor);
+</code></pre>
+</li>
+<li>
+<p>如果你在一个包含 <code>DrawerLayout</code> 的界面中使用, 你需要在布局文件中为 <code>DrawerLayout</code> 添加 <code>android:fitsSystemWindows=&quot;true&quot;</code> 属性:</p>
+<pre><code class="language-xml">&lt;android.support.v4.widget.DrawerLayout
+    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    xmlns:app=&quot;http://schemas.android.com/apk/res-auto&quot;
+    android:id=&quot;@+id/drawer_layout&quot;
+    android:layout_width=&quot;match_parent&quot;
+    android:layout_height=&quot;match_parent&quot;
+    android:fitsSystemWindows=&quot;true&quot;&gt;
+
+    ...
+
+&lt;/android.support.v4.widget.DrawerLayout&gt;
+</code></pre>
+</li>
+<li>
+<p>滑动返回界面设置状态栏颜色：</p>
+<p>建议配合 <a href="https://github.com/bingoogolapple/BGASwipeBackLayout-Android">bingoogolapple/BGASwipeBackLayout-Android: Android Activity 滑动返回</a> 库一起使用。</p>
+<pre><code class="language-java">StatusBarUtil.setColorForSwipeBack(Activity activity, @ColorInt int color, int statusBarAlpha)
+</code></pre>
+</li>
+<li>
+<p>当你设置了 <code>statusBarAlpha</code> 值时，该值需要在 0 ~ 255 之间</p>
+</li>
+<li>
+<p>在 Fragment 中的使用可以参照 <a href="https://github.com/laobie/StatusBarUtil/blob/master/sample/src/main/java/com/jaeger/statusbarutil/UseInFragmentActivity.java">UseInFragmentActivity.java</a> 来实现</p>
+</li>
+</ol>
+<h3 id="更新日志">更新日志</h3>
+<ul>
+<li>
+<p>1.4.0</p>
+<ul>
+<li>修改拼写错误</li>
+</ul>
+</li>
+<li>
+<p>1.3.6</p>
+<ul>
+<li>bug fix</li>
+</ul>
+</li>
+<li>
+<p>1.3.5</p>
+<ul>
+<li>添加 <code>hideFakeStatusBarView</code> 方法来隐藏假的状态栏 View</li>
+</ul>
+</li>
+<li>
+<p>1.3.4</p>
+</li>
+<li>
+<p>1.3.3</p>
+<ul>
+<li>修复 <code>setColorForSwipeBack</code> 方法和 <code>CoordinatorLayout</code> 一起使用的 bug</li>
+</ul>
+</li>
+<li>
+<p>1.3.2</p>
+<ul>
+<li>修复 bug</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>
+<p>1.3.1</p>
+<ul>
+<li>bug 修复</li>
+</ul>
+</li>
+<li>
+<p>1.3.0</p>
+<ul>
+<li>完善 setColor 逻辑，避免潜在的问题</li>
+</ul>
+</li>
+<li>
+<p>1.2.8</p>
+<ul>
+<li>修复 <code>setColorDiff</code> 方法中的一个 bug</li>
+</ul>
+</li>
+<li>
+<p>1.2.7</p>
+<ul>
+<li>
+<p>新增 <code>setColorForSwipeBack</code> 方法，支持滑动返回，目前支持的滑动返回库有：</p>
+<ul>
+<li><a href="https://github.com/r0adkll/Slidr">r0adkll/Slidr</a></li>
+<li><a href="https://github.com/bingoogolapple/BGASwipeBackLayout-Android">bingoogolapple/BGASwipeBackLayout</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>1.2.6</p>
+<ul>
+<li>升级 support 包到 24.2.1 版本</li>
+</ul>
+</li>
+<li>
+<p>1.2.5</p>
+<ul>
+<li>添加 <code>@ColorInt</code> 注解，现在如果传入 <code>R.color.xx</code>，就会提示使用错误</li>
+<li>修复 DrawerLayout 内容布局设置 paddding 失效的 bug</li>
+</ul>
+</li>
+<li>
+<p>1.2.4</p>
+<ul>
+<li>修复 <code>setTranslucentForImageViewInFragment()</code> 方法的一个 bug</li>
+</ul>
+</li>
+<li>
+<p>1.2.3</p>
+<ul>
+<li>
+<p>修复 <code>setTranslucentForImageView</code> ，现在支持传 null 作为 needOffsetView 的值</p>
+</li>
+<li>
+<p>新增当 fragment 头部是 ImageView 时设置透明状态栏的方法</p>
+<pre><code class="language-java">setTranslucentForImageViewInFragment(Activity activity, View needOffsetView)
+setTransparentForImageViewInFragment(Activity activity, View needOffsetView)
+</code></pre>
+</li>
+<li>
+<p>修复根布局是 CoordinatorLayout 时设置状态栏全透明和半透明的 bug</p>
+<pre><code class="language-java">setTranslucentForCoordinatorLayout(Activity activity, int statusBarAlpha)
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>
+<p>1.2.0</p>
+<p>支持为使用 ImageView 作为头部的界面设置状态栏透明</p>
+</li>
+<li>
+<p>1.1.1</p>
+<p>修复部分 4.4 上的 bug</p>
+</li>
+<li>
+<p>1.1.0</p>
+<p>修复 bug</p>
+</li>
+</ul>
+<h3 id="最后">最后</h3>
+<p>如果你有任何建议或问题，请及时联系我。如果你对这个工具类有优化，欢迎 fork 提 pr。</p>
+<p><a href="https://github.com/laobie/StatusBarUtil">传送门 GitHub 地址</a></p>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

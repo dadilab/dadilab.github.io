@@ -1,0 +1,385 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>Vectors For All (最终篇)【译】 | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>Vectors For All (最终篇)【译】</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><blockquote>
+<ul>
+<li>原文链接 : <a href="https://blog.stylingandroid.com/vectors-for-all-finally/">Vectors For All (finally)</a></li>
+</ul>
+</blockquote>
+<ul>
+<li>原文作者 : <a href="https://blog.stylingandroid.com">stylingandroid</a></li>
+<li>译文出自 : <a href="https://github.com/xitu/gold-miner">掘金翻译计划</a></li>
+<li>译者 : <a href="https://github.com/laobie">Jaeger</a></li>
+<li>校对者: <a href="https://github.com/joddiy">zhangzhaoqi</a>, <a href="https://github.com/SatanWoo">SatanWoo</a></li>
+</ul>
+<p>这是关注 Android 的 <strong>VectorDrawable</strong> 系列博文中的第三篇，之前的文章是<a href="https://blog.stylingandroid.com/vectors-for-all-almost/">Vectors For All (almost)</a>，在此之前的另外一篇是<a href="https://blog.stylingandroid.com/vectors-for-all-slight-return/">Vectors For All (slight return)</a>。这两篇文章向我们展示了 VectorDrawable 的可用性有了很大的提升，但是对 <em>VectorDrawableCompat</em> 的热切等待一直落空。直到2016年2月24号，Google 发布了 Android Support Library 23.2 版本，其中就包含了一直期待的 <em>VectorDrawableCompat</em> 。</p>
+<!-- more -->
+<p>我不会给你长篇大论地讲解 <em>VectorDrawableCompat</em> 的使用细节，因为 <a href="https://chris.banes.me/">Chris Banes</a> 已经写了一篇很有深度的 <a href="https://medium.com/@chrisbanes/appcompat-v23-2-age-of-the-vectors-91cbafa87c88#.kf57cowuy">博文</a> ，解释了如何使用 <em>VectorDrawableCompat</em> ，因此在这就做重复性工作了。</p>
+<p>因此，让我们看一下，我们需要对之前文章中使用的项目做些什么样的改动，以便可以使用 <em>VectorDrawableCompat</em> 。首先要做的事就是修改我们的 <em>build.gradle</em> 文件，正如 Chris 在他的文章中介绍的那样。</p>
+<p>在示例代码中我使用的 Android Gradle 插件是 1.5.0 版本，而不是比较新的 2.0.0 beta 版本。因为 beta 版本插件容易失效，而我希望发布的代码在未来的几周或几个月内仍然可以成功编译——如果 2.0.0 发布了正式版，我将很乐意立即升级到 2.0.0 版本。即便如此，我们需要做以下几处修改（对于 2.0.0 版本，这些修改是不同的——可以去看 Chris 的文章了解更多细节——我也测试了 Chris 文中提到的方法，同样也是有效的）：</p>
+<pre><code class="language-groovy">
+    apply plugin: 'com.android.application'
+
+    android {
+        compileSdkVersion 23
+        buildToolsVersion &quot;23.0.2&quot;
+
+        defaultConfig {
+            applicationId &quot;com.stylingandroid.vectors4all&quot;
+            minSdkVersion 7
+            targetSdkVersion 23
+            versionCode 1
+            versionName &quot;1.0&quot;
+            generatedDensities = []
+        }
+        aaptOptions {
+            additionalParameters &quot;--no-version-vectors&quot;
+        }
+        buildTypes {
+            release {
+                minifyEnabled false
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            }
+        }
+    }
+
+    dependencies {
+        compile fileTree(dir: 'libs', include: ['*.jar'])
+        testCompile 'junit:junit:4.12'
+        compile 'com.android.support:appcompat-v7:23.2.0'
+    }
+
+    apply from: '../config/static_analysis.gradle'
+</code></pre>
+<p>这样做的实质是关闭了过去从 <em>VectorDrawable</em> 自动生成 PNG 资源的方式。</p>
+<p>接下来我们需要做的是使用 <code>app:srcCompat</code> 代替 <code>android:src</code> 为我们的布局中的 <em>ImageView</em> 设置图片资源：</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;RelativeLayout xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+  xmlns:app=&quot;http://schemas.android.com/apk/res-auto&quot;
+  xmlns:tools=&quot;http://schemas.android.com/tools&quot;
+  android:layout_width=&quot;match_parent&quot;
+  android:layout_height=&quot;match_parent&quot;
+  android:paddingBottom=&quot;@dimen/activity_vertical_margin&quot;
+  android:paddingLeft=&quot;@dimen/activity_horizontal_margin&quot;
+  android:paddingRight=&quot;@dimen/activity_horizontal_margin&quot;
+  android:paddingTop=&quot;@dimen/activity_vertical_margin&quot;
+  tools:context=&quot;.MainActivity&quot;&gt;
+
+  &lt;ImageView
+    android:layout_width=&quot;wrap_content&quot;
+    android:layout_height=&quot;wrap_content&quot;
+    android:contentDescription=&quot;@null&quot;
+    app:srcCompat=&quot;@drawable/svg_logo2&quot; /&gt;
+
+&lt;/RelativeLayout&gt;
+</code></pre>
+<p>这样就可以啦！当然确保我们的 <em>Activity</em> 已经继承自 <em>AppCompatActivity</em> ，这是使用 <em>VectorDrawableCompat</em> 的前提。</p>
+<p>唯一一点让我发牢骚的是 Android Studio （当我写这篇文章时，我正在使用 2.0 beat 6 版本）不识别 <code>app:srcCompat</code> 属性，因此报错了。但一切都可以正常编译。 我们也收到了一些错误的 Lint（译者注：静态代码检查工具）警告，但是如果你觉得有必要的话，这些警告是可以被关闭的。我希望这些错误的报错和警告问题能够尽快修复。</p>
+<p>如果我们在一台 6.0 的设备上运行，一切看起来都不错，正如我们所预期的那样：</p>
+<figure data-type="image" tabindex="1"><a href="https://blog.stylingandroid.com/?attachment_id=3696"><img src="https://i1.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/02/compat-m.png?resize=300%2C225&amp;ssl=1%20300w,%20https://i1.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/02/compat-m.png?resize=768%2C576&amp;ssl=1%20768w,%20https://i1.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/02/compat-m.png?resize=1024%2C768&amp;ssl=1%201024w,%20https://i1.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/02/compat-m.png?resize=624%2C468&amp;ssl=1%20624w" alt="compat-m" loading="lazy"></a></figure>
+<p>如果我们在一个 4.4 的模拟器上运行这个程序，看起来几乎一致。</p>
+<figure data-type="image" tabindex="2"><a href="https://blog.stylingandroid.com/?attachment_id=3697"><img src="https://i0.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/02/compat-jb.png?resize=180%2C300&amp;ssl=1%20180w,%20https://i0.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/02/compat-jb.png?w=480&amp;ssl=1%20480w" alt="compat-jb" loading="lazy"></a></figure>
+<p><em>AnimatedVectorDrawableCompat</em> 又是怎样的呢？让我们再次看看 <a href="https://blog.stylingandroid.com/vectordrawables-part-1/">Styling Android series on VectorDrawable</a> 中的例子是如何做的。</p>
+<p>我们和前面一样修改这个示例项目，唯一不同的是这次我们需要修改 Activity 继承自 AppCompatActivity 。让我们来一步步调试我们的例子：</p>
+<p>首先这是一个静态的 Android 标志：</p>
+<figure data-type="image" tabindex="3"><a href="https://blog.stylingandroid.com/?attachment_id=3699"><img src="https://i0.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/03/screenshot-2016-02-27_11.03.32.637.png?resize=300%2C180&amp;ssl=1%20300w,%20https://i0.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/03/screenshot-2016-02-27_11.03.32.637.png?resize=768%2C461&amp;ssl=1%20768w,%20https://i0.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/03/screenshot-2016-02-27_11.03.32.637.png?resize=1024%2C614&amp;ssl=1%201024w,%20https://i0.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/03/screenshot-2016-02-27_11.03.32.637.png?resize=624%2C374&amp;ssl=1%20624w,%20https://i0.wp.com/blog.stylingandroid.com/wp-content/uploads/2016/03/screenshot-2016-02-27_11.03.32.637.png?w=1280&amp;ssl=1%201280w" alt="screenshot-2016-02-27_11.03.32.637" loading="lazy"></a></figure>
+<p>正如我们所期待的那样，由于它是一个静态的_vectorDrawable，所以它的效果看起来很棒。当我们给它添加动画之后会发生什么呢？（这些例子全运行在 Android 4.4 的 GenyMotion 模拟器上）：</p>
+<figure data-type="image" tabindex="4"><img src="http://ww4.sinaimg.cn/large/a490147fgw1f3qiw99kzeg20qo0g01es.gif" alt="" loading="lazy"></figure>
+<p>要知道这可是在模拟器上而不是真机上运行。显然，低配置的机器上帧率会差一些，同样，当我们适配更早的 Android 版本时，也会遇到许多类似的情况，但不管怎么说，这个结果是令人振奋的。</p>
+<p><code>trimPath</code> 动画表现的怎么样呢？</p>
+<figure data-type="image" tabindex="5"><img src="http://ww2.sinaimg.cn/large/a490147fgw1f3qizfsrzjg20qo0g04ly.gif" alt="" loading="lazy"></figure>
+<p>再一次，<code>trimPath</code> 的效果也是令人叹服的——它达到了预期的效果，并且相当流畅。</p>
+<p>不幸的是，上一系列的最后一个例子没生效。这是因为它是直接根据 <code>pathData</code> 来执行动画的，正如 Chris 提到的，目前 <em>AnimatedVectorDrawableCompat</em> 并不支持这种方式。然而 Chris 使用了 “目前” 这个词——因此在这个库将来的某个版本中，可能会支持这种非常强大的特性。</p>
+<p>这是对该兼容库的总结：该兼容库的表现相当棒，且集成到你当前的应用中也非常容易。感谢 Chris 和其他为此工作的团队成员，为我们带来了如此实用的功能。</p>
+<p>因此，让我们关注下在我们的应用中使用矢量图需要注意的其他部分——将 SVG 资源转换成 <em>VectorDrawable</em> 。据我们了解，过去 SVG 支持是有一些疏漏的，这意味着我们无法通过 Android Studio 的导入功能或者  <a href="http://inloop.github.io/svg2android/">第三方 SVG 转 VectorDrawable 工具</a> 来导入官方的SVG Logo （这本应被认为是对基础 SVG 支持的一个基准）。现在这有好消息也有坏消息。</p>
+<p>第一个坏消息是：Android Studio 仍然不能正确导入这个官方 SVG 标志——我已经测试了 Android Studio 2.0 beat 6 版本，仍然不支持。</p>
+<p>但是也有个好消息，在我发布了该系列的上一篇文章之后不久，Juraj Novák （第三方转换工具的作者）联系了我，告知对本地 IRI 引用的支持遗漏（我早期的文章提到了这个）已经加上去了。不过有个小提示：当你转换这个 SVG 标志资源的时候，你<strong>必须</strong>勾选上提供给你的 “<code>Bake transforms into path (experimental)</code>” 选项，这个将会如实转换成一个你可以直接放到你项目中使用的 <em>VectorDrawable</em> xml 文件。</p>
+<p>第三方转换工具目前还不支持 SVG 的渐变和图样，但是这个是因为 <em>VectorDrawable</em> 本身就不支持——只有 SVG 的 path data 是确切支持的。</p>
+<p>使用 Juraj 的转换工具和最新的 <em>VectorDrawableCompat</em> 库，这一切都为使用矢量图作为主流方式作好了准备，伙计们，让我们进入矢量图时代吧！（这段原文实在不好翻译= =）</p>
+<p>这里是更新后支持兼容库的 <a href="https://github.com/StylingAndroid/Vectors4All/tree/finally">Vectors For All</a> 文章和 <a href="https://bitbucket.org/StylingAndroid/vectordrawables/src/a27f80278eac093b68161ec52a29ffd480e937c1/?at=Part3">VectorDrawable</a> 代码。</p>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

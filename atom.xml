@@ -1,0 +1,1517 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://xudadi.cn</id>
+    <title>许大大博客</title>
+    <updated>2021-04-18T04:52:12.911Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://xudadi.cn"/>
+    <link rel="self" href="https://xudadi.cn/atom.xml"/>
+    <logo>https://xudadi.cn/images/avatar.png</logo>
+    <icon>https://xudadi.cn/favicon.ico</icon>
+    <rights>All rights reserved 2021, 许大大博客</rights>
+    <entry>
+        <title type="html"><![CDATA[试卷A4转B4的方法]]></title>
+        <id>https://xudadi.cn/post/PR4FFf-e3/</id>
+        <link href="https://xudadi.cn/post/PR4FFf-e3/">
+        </link>
+        <updated>2019-11-08T03:01:18.000Z</updated>
+        <summary type="html"><![CDATA[<p>步骤：<br>
+1.将A4的试卷方向调整为“横向”；<br>
+2.将纸张的大小设置为“B4”大小；<br>
+3.将分栏设置为“两栏”</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>步骤：<br>
+1.将A4的试卷方向调整为“横向”；<br>
+2.将纸张的大小设置为“B4”大小；<br>
+3.将分栏设置为“两栏”</p>
+<!-- more -->
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[自学编程=做无用功？你只说对了一半]]></title>
+        <id>https://xudadi.cn/post/nFckjEsHk/</id>
+        <link href="https://xudadi.cn/post/nFckjEsHk/">
+        </link>
+        <updated>2019-11-07T15:13:18.000Z</updated>
+        <summary type="html"><![CDATA[<p>先给你讲个故事，看看你有没有类似的经历。</p>
+<p>有一天，你去参加同学聚会，和老友们举杯畅谈，他们告诉你，不学编程就要out 了，从全球趋势来看，编程这把火已经烧了很多年。英国早从 2014 年 9 月起，就规定5-16 岁的学生都必须学习编程，苹果CEO 库克表示全世界各地都应该开设编程课程。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>先给你讲个故事，看看你有没有类似的经历。</p>
+<p>有一天，你去参加同学聚会，和老友们举杯畅谈，他们告诉你，不学编程就要out 了，从全球趋势来看，编程这把火已经烧了很多年。英国早从 2014 年 9 月起，就规定5-16 岁的学生都必须学习编程，苹果CEO 库克表示全世界各地都应该开设编程课程。</p>
+<!-- more -->
+<p>回到家中，你辗转反侧，觉得自己跟不上时代潮流，扼腕叹息：“廉颇老矣，尚能饭否？”焦虑之余，你开始疯狂搜索编程，百度、知乎、搜狗，你方唱罢我登场。一顿操作之后，你的嘴里念念有词：“Wow，会编程的人好酷，牛逼，都是大神。”感叹之余，你觉得不能纸上谈兵，临渊羡鱼，不如退而织网。于是乎，你开始了自学编程之路。听人说，算法是编程的核心，学好算法可以一招鲜，吃遍天。别人说在嘴里，你听在心里，马上买了一本《算法导论》，打算死磕算法。你没日没夜的攻读，‘算法基础’那一小章，你鼓捣了大半个月，还是云里来雾里去的。</p>
+<p>然而，心高气傲的你是不会屈服于‘算法基础’这只拦路虎的，你开始逛各种论坛，CSDN、博客园、简书、知乎都在你的常逛 list 上。你充分利用一切碎片时间，上地铁刷一下，吃饭时刷一下，睡前刷一下，刷得不亦乐乎，刷不完的果断收藏。等到收藏超过100篇未读的时候，你终于发现收藏=永不再读，这让你沮丧。更让你沮丧的是，你买的那本《算法导论》已经在书架上躺了好久。为了弄懂‘算法基础’，你把《算法导论》打入了冷宫。比这更残酷的是，从你信誓旦旦说要学编程以来，你连一行代码都没敲过，一个程序都没跑起来。</p>
+<p>你越来越焦虑，终于有一天，你彻底崩溃了，自怨自艾道：“老子骨子里就是个文科生，赶什么时髦？学什么编程？学来学去老是做无用功有意思吗？安安静静地写文章不好吗？”</p>
+<p>写文章的人不一定学不了编程，作家王小波就是中国早期程序员，曾经自己编了一套DOS下的独立输入法。真正阻止你学编程的也不是深奥的算法，而是你错误的学习方法。自学编程不等于做无用功，盲目、焦虑地自学才是。读到这里，你肯定满脸疑惑：“我到底哪里做错了？”</p>
+<p>首先，自学的初衷不是焦虑、盲目，而是解决问题。李小龙当年刚回香港，在《欢乐今宵》上节目，节目组请来了一名拳师，想考验他能不能推到对方。拳师也摆好架子等他来推，结果李小龙一拳打在对方脸上。李小龙想表达的是：在真实的实战中，没有人会等你摆好架势，只冲着你规定的地方打过来。学习也是同样的道理。在真实生活中，环境和知识都一直在动态变化中，你不可能像学校里一样，系统的学好、学完一门知识，然后坐在教室等着不超纲的考试。大部分时间，生活会先给你一个考试，然后你根据问题，自己找出关键词，开始学习。所以，学习的起点不是某人在酒桌上蜻蜓点水的一句话，也不是某人在朋友圈晒的一本书、推荐的一篇微信文章、更不是这个行业的一个经典教材引发你的焦虑，而应该是你真实遇到的一个问题。遇到问题，动手写，犯错、改正，再犯错、再改正，这是学编程最重要的过程。</p>
+<p>其次，自学尤其是自学编程往往不是线性的。我们从小到大在学校学习，都有一本教科书，往往按着预习、听讲、练习、复习的路径学习，所有的教材也如出一辙：每个章节所涉及的知识点之间，全都是线性关联，第一章学好了，才有基础学第二章。而社会的知识结构不仅不是这样的，而且几乎全都不是这样的。工作中、生活里充满了各式各样的“提前引用”，即想要理解当前的知识点，需要依赖你未来才能理解的某个或某些知识点。如果还是按照校园时代的线性思维来学习的话，很有可能就像故事中的主人公一样，最终学不下去。拿编程来说，动不动啃《算法导论》的人，要不是有很深厚的数学基础，肯定吃不消。生活很少教我们按部就班，它给我们的测试往往是超纲的，这就要求我们不断更新和迭代。互联网的发展给我们带来的最大启发就是迭代，从门户到搜索，从搜索到移动互联，从简单的网页交互，到如今热闹的小视频社交，技术和生态一直在更新和迭代。同样，自学也是一个不断更新和迭代的过程。编程是一门活到老、学到老的手艺，有些很抽象的概念，一开始看不懂没关系，先脑子里有个大概的印象，然后依葫芦画瓢写几段代码，自己动手实践，写完之后再总结、归纳、整理、组织相关的知识点，实战经验多了，再回头来看最初的难点，你自然能够豁然开朗。比如说python 中的return，很多初学python 的人，对return 疑惑不已，字面上是返回，那它到底返回什么，又返回到哪里呢？有人可能会给你解释：“return 语句就是将结果返回到调用的地方，并把程序控制权一起返回。”对于初学者来说，这个解释也不好理解。没事，先实践起来。</p>
+<p>拿下面这四行代码来说，你可以想象你开了一家工厂，雇佣工人来干活，这个工人（worker）在你的指导下，用a、b、 c 三个材料，装配出了x 和 y 两个成品。但是程序里的装配和工厂不同，用过的材料不会消失。这样，这个工人手里就有了a、b、c、x、y五样物品。他怎么知道你要的是哪个呢？所以return 的作用就是，在这种时候告诉工人你到底想要什么东西，是一个iPhone 手机壳还是整台iPhone。毫无疑问，return x 和return y 是完全不一样的结果。return x 是当你让这个工人帮你干活时（调用函数），他最后会把产成品x交到你手上，而当你输入return y 的时候，干活的工人会把产成品y 给你。举个例子，worker（1,2,3），return x 的结果为1+2=3，return y 的结果为（1+2）*3=9。这样实践一下，你对于return是不是有了更深的理解？</p>
+<p>def worker（a,b, c）：</p>
+<p>x = a + b</p>
+<p>y = x * c</p>
+<p>return y</p>
+<p>看完我的分析，蓦然回首，你是不是觉得道路明朗了许多，你肯定很想问：怎样自学才高效呢？</p>
+<p>在自学过程中，有个方法特别管用，就是用输出倒逼输入，你逛论坛、刷文章、看视频教程都没问题，关键是要有输出，光有输入可是不行的。而最好的输出就是实践，把自己听到的、看到的、读到的，转化为你独立编写的一个个程序，岂不妙哉？</p>
+<p>文章开头故事里的主人公就陷入了盲目输入，却无输出的泥潭。他的输入表面上看上去渠道很多元化，然而这些输入并没有带来有效的输出。还有一个很多人都不知道的点，你的输入很有可能是制约你进步的紧箍咒。输入也是有讲究的，盲目输入会带来信息超载。全世界每天有 4000 本书出版，超过 4 亿个字；纽约时报一天的文字量等于牛顿同时代的人一生的阅读量；一个专业领域，每天大概有有近4000篇文章正在产生。就算你火力全开，疯狂地输入相关知识，也还是难免有漏网之鱼。而且，在茫茫的信息汪洋中，信息质量参差不齐，保不准你输入的就是一些边角料，反而让你裹足不前。这儿分享桥水（全球著名对冲基金）创始人瑞。达利欧在《原则》一书中阐述的观点：“正确的决策很多时候需要依赖可信度加权。”学习同样也需要可信度加权，不是所有的资料都全盘接收，而是有选择的相信，用老祖宗的话来说，要取其精华，弃其糟粕。信息爆炸时代，最重要的不是增加信息，而是筛选和删除信息。</p>
+<p>除此之外，要勇于跳出舒适区，刻意练习。刻意练习这个概念由美国心理学家安德烈。艾莉克森博士提出，即有目的的学习，指的是把要学习的内容分成有针对性的小块，对每个小块进行重复练习。在武术训练中，非常强调分解练习。首先你要把整套动作过一遍，看教练是怎么做的。然后把它分解为多个动作，每个动作分解为多个步骤，一个一个地练习。在这种训练中，动作一定要慢，只有慢下来才能感知动作的内部结构，注意到自己的错误。画家要采风、棋手要打谱、律师要学习案例、政客要读历史、科学家要看论文、马拉松运动员每周至少要累计150公里的跑量。大部分的学习都不是一蹴而就的，往往是练习-反馈-练习-反馈-练习-反馈-学成。刻意练习的关键是随时获得有效的反馈。拿自学编程来说，这是一个很容易获得反馈的领域，当你写的程序跑不起来时，意味着你要 debug，你得把你写的代码分成一小段一小段，逐句检查，直到找出 bug。</p>
+<p>当然，鼓吹刻苦的鸡汤想必大家都喝腻了。事实是，很多人即使整天坐在书桌前埋头苦学，时长达到甚至远超学霸，实际效果却远远达不到学霸的水平。问题的关键在于你的思维和学习方法，在于你的学习时间是否得到了高效利用，是否能通过高效学习把知识转化为你真正的实力。只是如果你注意力涣散，身在书桌前，神游天地间；如果你好不容易学完了，转眼又忘得一干二净；如果你写了很多代码却不会举一反三，同一个知识点换了个问法又被难住了；如果你对于你所学习的领域缺乏好奇心和探索精神，只是当一天和尚，敲一天钟，没有刻意练习。那么，花费再多的时间，又有什么成效呢？</p>
+<p>扪心自问一下，你上一次坐下来长时间专注于学习，是什么时候呢？似乎这件事变得越来越难以做到，因为我们的生活已经有太多的干扰：必须要点的微博、朋友圈点赞、支付宝蚂蚁森林收能量……诱惑源源不断，切割了我们在学习上的很多可能性。我们接受了太多无效输入，自然也不会产生高效的输出。读到这，你可能又要问我了：“该怎么办才好呢？”</p>
+<p>比起一味地延长学习时间，更‘刻意’地学习更重要。学习从来都不是一个阶段的事，更不是一件轻松的事，但是我们可以优化我们的学习路径，比如给自己创造一个干扰项少的学习环境。拿自学编程来说，你需要的就是一台电脑。在学习的时候，你最好离手机远一点，并关掉电脑版微信、QQ和一些乱七八糟的应用。你可能会有疑惑：“那遇到问题向谁请教？”</p>
+<p>在这里，我向大家安利Press.one 开发的学习平台——XUE.cn，这是基于 Jupyter Lab 技术深度定制的可交互学习环境，无需单独安装任何软件，打开网页就可以边学边写，即时运行代码得出结果；上手书籍《自学是门手艺》原本就是终身学习达人所著，一边教编程一边教自学，让你得到了鱼，还得到了渔；你还可以在浏览器的阅读界面与代码的作者作者的代码互动，哪里不理解问哪里自己动手试一试；每章还有配套练习以及学习攻略，习题让你及时获得学习反馈，巩固知识点，攻略提供难度、时间、自学小贴士等，让你从容安排学习计划，轻松上手学习；最后，也最能抓我的，XUE.cn上再牛的达人都是业余自学而成，形成了开放包容的学习氛围，新手小白在这里可以轻松无压力地发起讨论和求助。</p>
+<p>defTeachYourSelf（anything）：</p>
+<p>while not create（something）：</p>
+<p>learn（）</p>
+<p>practice（）</p>
+<p>return TeachYourSelf（another）</p>
+<p>TeachYourSelf（coding）</p>
+<p>上面这段代码是Xue.cn 写给大家的几行代码，基于python 的任何交互环境都可以运行。当然，如果你不想安装python 运行环境，也没问题。你只需要打开Xue.cn，不需要安装任何程序，你也可以随时随地写代码。</p>
+<p>文章来源：月光博客https://www.williamlong.info/archives/5870.html</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[关于explorer.exe报错的问题]]></title>
+        <id>https://xudadi.cn/post/K-o3xUW5j/</id>
+        <link href="https://xudadi.cn/post/K-o3xUW5j/">
+        </link>
+        <updated>2019-11-07T06:41:21.000Z</updated>
+        <summary type="html"><![CDATA[<p>HnShell.dll引起的报错，可以重启按F8进入安全模式，打开控制面板卸载程序，卸载小黑记事本</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>HnShell.dll引起的报错，可以重启按F8进入安全模式，打开控制面板卸载程序，卸载小黑记事本</p>
+<!-- more -->
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android 启动页 (Splash) 的实现]]></title>
+        <id>https://xudadi.cn/post/2015-11-18-android-splash/</id>
+        <link href="https://xudadi.cn/post/2015-11-18-android-splash/">
+        </link>
+        <updated>2019-09-19T06:12:32.000Z</updated>
+        <summary type="html"><![CDATA[<p>App 启动页 (Splash)，最经典的莫过于微信的启动页了。不过启动页是个好的设计还是不好的设计呢？本文不讨论这个问题，仅从一个开发者的角度来讲解下Android应用启动页的实现，以及一些需要注意的地方。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>App 启动页 (Splash)，最经典的莫过于微信的启动页了。不过启动页是个好的设计还是不好的设计呢？本文不讨论这个问题，仅从一个开发者的角度来讲解下Android应用启动页的实现，以及一些需要注意的地方。</p>
+<!-- more -->
+<h3 id="基本实现">基本实现</h3>
+<p>先显示一个界面，停留1~2s，然后跳转到另一个界面。<br>
+这里有个延时跳转，可以用 Timer、Handler 实现，我这里用 Handler 来实现。</p>
+<h4 id="1-添加-splashactivity">1. 添加 <code>SplashActivity</code></h4>
+<p>首先假设 App 打开的第一个界面为 <code>MainActivity</code>，新建一个 <code>SplashActivity</code>，在 <code>AndroidManifest</code> 中将 <code>SplashActivity</code> 设置为启动后第一个打开的页面：</p>
+<pre><code class="language-xml">&lt;activity
+      	android:name=&quot;.activity.SplashActivity&quot;
+      	android:label=&quot;@string/app_name&quot;
+      	android:theme=&quot;@style/AppTheme.NoActionBar.FullScreen&quot;&gt;
+      	&lt;intent-filter&gt;
+            	 	&lt;action android:name=&quot;android.intent.action.MAIN&quot; /&gt;
+            	 	&lt;category android:name=&quot;android.intent.category.LAUNCHER&quot; /&gt;
+      	&lt;/intent-filter&gt;
+&lt;/activity&gt;
+</code></pre>
+<p>这里只是将 <code>MainActivity</code> 的 <code>intent-filter</code> 参数剪切给 <code>SplashActivity</code>，此时你打开 App 第一个显示的就是 <code>SplashActivity</code> 了。</p>
+<h4 id="2-添加跳转">2. 添加跳转</h4>
+<p>跳转是用 Handler 的 <code>postDelayed()</code> 方法来设置延时来实现的，在 <code>SplashActivity</code> 的 <code>onCreate()</code> 方法中添加一下的代码，就可以实现在1500毫秒后跳转到 <code>MainActivity</code> 了。<br>
+这里需要注意的是 <code>Handler</code> 是引用自 <code>android.os.Handler</code>，import 的时候不要搞错了。</p>
+<pre><code class="language-java">Handler handler = new Handler();
+handler.postDelayed(new Runnable() {
+       @Override
+       public void run() {
+            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
+}, 1500);
+</code></pre>
+<p><code>postDelayed(Runnable r, long delayMillis)</code> 方法就是设置在设定的时间后执行 <code>Runnable</code> 中的 <code>run()</code>，<code>delayMillis</code> 单位是毫秒。</p>
+<h3 id="注意的问题">注意的问题</h3>
+<p>以上两步操作基本实现了启动页的基本功能，不过还是有一些小的问题需要注意的。</p>
+<h4 id="1-只显示一次启动页-app-没被-kill-的情况下">1. 只显示一次启动页（ App 没被 kill 的情况下）</h4>
+<p>微信打开之后，按下返回键回到桌面，再打开微信，并不会再看到启动页（除非你手动清了微信的后台或者被系统 kill 了），这个是怎么实现的呢？</p>
+<p>其实很简单，只需要重写一下 <code>MainActivity</code> 的 <code>onBackPressed()</code> 方法就行。</p>
+<pre><code class="language-java">@Override
+public void onBackPressed() {
+    // super.onBackPressed(); 	不要调用父类的方法
+    Intent intent = new Intent(Intent.ACTION_MAIN);
+    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    intent.addCategory(Intent.CATEGORY_HOME);
+    startActivity(intent);
+}
+</code></pre>
+<p>以上就实现了和微信一样的效果。</p>
+<h4 id="2-全屏页面切换到非全屏页面的问题">2. 全屏页面切换到非全屏页面的问题</h4>
+<p>由于启动页一般是全屏显示的，而主页则不是，因此从全屏切换到非全屏就存在一个卡顿的问题，这个问题我之前在 CSDN 上写过一篇解决办法，这里就直接贴地址了:<br>
+<a href="http://blog.csdn.net/u013011318/article/details/48296869">Android 全屏界面切换到非全屏界面的问题</a>。</p>
+<p>暂时就写这么多，需要 demo 的话可以看我最新开源的项目<a href="https://github.com/laobie/ListenRain">听雨</a>。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android 编码规范]]></title>
+        <id>https://xudadi.cn/post/2015-11-2-code-style-guideline-for-android/</id>
+        <link href="https://xudadi.cn/post/2015-11-2-code-style-guideline-for-android/">
+        </link>
+        <updated>2019-09-19T06:12:25.000Z</updated>
+        <summary type="html"><![CDATA[<p>在开发中，遵循良好的编码规范，不仅仅可以提高代码的可读性，减小出错的可能性，同时也降低与其他开发者交流的成本，易于他人的维护与协作。<br>
+本文简单总结了 Android 开发中的一些代码规范，供开发者参考。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>在开发中，遵循良好的编码规范，不仅仅可以提高代码的可读性，减小出错的可能性，同时也降低与其他开发者交流的成本，易于他人的维护与协作。<br>
+本文简单总结了 Android 开发中的一些代码规范，供开发者参考。</p>
+<!-- more -->
+<h3 id="基本要求">基本要求</h3>
+<ul>
+<li>除了注释，代码中不出现中文</li>
+<li>每个类写上必要的注释，类的说明，作者，联系方式</li>
+<li>方法加上必要的注释说明，方便以后维护</li>
+</ul>
+<h3 id="包管理">包管理</h3>
+<ol>
+<li>base: 存放基础类的包，里面的类以 <code>Base</code> 为前缀，例如 <code>BaseActivity</code>；</li>
+<li>activity: 存放 activity 的包，每个 activity 命名以Activity结尾，例如 <code>MainActivity</code>;</li>
+<li>fragment: 存放 fragment的包，每个 fragment 命名以 Fragment 结尾，例如 <code>ChatFragment</code>;</li>
+<li>receiver: 存放 receiver 的包；</li>
+<li>service: 存放 service 的包；</li>
+<li>adapter: 存放 adapter 的包，每个 adapter 命名以 Adapter 结尾，例如 <code>EventItemAdapter</code>;</li>
+<li>common: 存放一些公共常量，例如后端接口、<code>SharedPreferenceKey</code>、<code>IntentExtra</code> 等;</li>
+<li>utils: 存放工具类的包，比如常见的工具类：<code>LogUtils</code>、<code>DateUtils</code>；</li>
+<li>entity: 存放实体类的包；</li>
+<li>widget: 存放自定义View的包；</li>
+</ol>
+<p>以上是一些常见的包，但不局限于此，视项目的具体情况而定。</p>
+<h3 id="命名">命名</h3>
+<p><strong>大驼峰命名 (UpperCamelCase) ：每个单词的第一个字母都大写。</strong></p>
+<p><strong>小驼峰命名 (lowerCamelCase) ：除第一个单词以外，每一个单词的第一个字母大写。</strong></p>
+<p><strong>命名的基本原则:</strong></p>
+<ul>
+<li>尽可能地使用统一的命名规范；</li>
+<li>不使用汉语拼音；</li>
+<li>除了常见的英文缩写，尽量少地使用缩写；</li>
+</ul>
+<h5 id="1-包命名">1. 包命名</h5>
+<ul>
+<li>小写字母，参见上文包管理；</li>
+<li>连续的单词直接连接起来，不使用下划线；</li>
+</ul>
+<h5 id="2-java-类命名">2. Java 类命名</h5>
+<ul>
+<li>大驼峰命名 <code>UserListAdapter</code>；</li>
+<li>除常见的缩写单词以外，不使用缩写，缩写的单词每个字母都大写 <code>RequesURLList</code>；</li>
+<li>公共的工具类建议以 <code>Utils</code>、 <code>Manager</code> 为后缀，如 <code>LogUtils</code>；</li>
+<li>接口命名遵循以上原则，以 <code>able</code> 或 <code>ible</code> 为后缀；</li>
+</ul>
+<h5 id="3-变量命名">3. 变量命名</h5>
+<ul>
+<li>成员变量命名
+<ul>
+<li>小驼峰命名；</li>
+<li>不推荐使用谷歌的前面加 m 的编码风格（如果使用团队中使用 m ，则统一使用）；</li>
+</ul>
+</li>
+<li>常量命名
+<ul>
+<li>单词每个字母均大写；</li>
+<li>单词之间下划线连接；</li>
+</ul>
+</li>
+<li>控件变量命名
+<ul>
+<li>小驼峰命名；</li>
+<li>建议使用 <code>控件缩写+逻辑名称</code> 格式，例如 <code>tvPostTitle</code>、<code>etUserName</code>；</li>
+<li>对应的控件的 id 的命名<code>控件缩写_逻辑名称</code>，单词均小写，用下划线连接，例如：<code>tv_post_title</code>、<code>et_user_name</code>；</li>
+<li>常见的控件缩写如下：</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">控件</th>
+<th style="text-align:center">缩写</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Linearlayout</td>
+<td style="text-align:center">ll</td>
+</tr>
+<tr>
+<td style="text-align:center">RelativeLayout</td>
+<td style="text-align:center">rl</td>
+</tr>
+<tr>
+<td style="text-align:center">TextView</td>
+<td style="text-align:center">tv</td>
+</tr>
+<tr>
+<td style="text-align:center">EditText</td>
+<td style="text-align:center">et</td>
+</tr>
+<tr>
+<td style="text-align:center">Button</td>
+<td style="text-align:center">btn</td>
+</tr>
+<tr>
+<td style="text-align:center">ImageView</td>
+<td style="text-align:center">iv</td>
+</tr>
+<tr>
+<td style="text-align:center">CheckBox</td>
+<td style="text-align:center">chb</td>
+</tr>
+<tr>
+<td style="text-align:center">ListView</td>
+<td style="text-align:center">lv</td>
+</tr>
+<tr>
+<td style="text-align:center">GridView</td>
+<td style="text-align:center">gv</td>
+</tr>
+<tr>
+<td style="text-align:center">RadioButton</td>
+<td style="text-align:center">rb</td>
+</tr>
+</tbody>
+</table>
+<h5 id="4-方法命名">4. 方法命名</h5>
+<ul>
+<li>小驼峰命名；</li>
+<li>Getter 和 Setter 方法，推荐使用自动生成的，写起来也很方便。注意，bool 类型的变量 Getter 方法写成 <code>isTrue</code> 这种；</li>
+<li>方法名应当保证见名知义的原则，尽量不使用 <code>or</code> 或者 <code>and</code> ，遵循 “do one thing” 原则；</li>
+</ul>
+<h5 id="5-布局文件命名">5. 布局文件命名</h5>
+<ul>
+<li>activity、fragment 布局文件名以对应的类别名称为前缀，逻辑名称放在其后，以下划线连接，例如 <code>activity_home</code>、<code>fragment_chat_list</code>，方便查找；</li>
+<li>ListView、GridView 的 item 布局文件建议以 <code>list_item</code>、<code>gird_item</code>为前缀，加上对应的逻辑名称，例如 <code>list_item_post</code>、<code>grid_item_photo</code>；</li>
+<li>Dialog的布局文件以 <code>dialog</code> 为前缀，逻辑名称放在其后，下划线连接，例如 <code>dialog_warnning</code>;</li>
+<li>包含项布局命名以 <code>include</code> 开头，在加上对应的逻辑名称，例如 <code>include_foot</code></li>
+<li>控件的 id 命名参见控件变量命名；</li>
+</ul>
+<h5 id="6-资源命名">6. 资源命名</h5>
+<ul>
+<li>图标资源以 <code>ic</code> 为前缀，例如 <code>ic_chat</code> ，指聊天图标；</li>
+<li>背景图片以 <code>bg</code> 为前缀，例如 <code>bg_login</code> ，指的是登录页的背景图；</li>
+<li>按钮图片以 <code>btn</code> 为前缀，例如 <code>btn_login</code>，指的是登录按钮的图片，不过这只有一种状态，需要加上状态的可以在后面添加，例如 <code>btn_login_pressed</code> ，表示登录按钮按下的图片；</li>
+<li>当使用 shape 和 selector 文件为背景或者按钮时，命名参照以上说明；</li>
+</ul>
+<h3 id="参考资料">参考资料</h3>
+<p>本文参考了：</p>
+<ul>
+<li><a href="http://www.androidchina.net/2141.html">最佳实践之Android代码规范</a></li>
+<li><a href="http://blog.csdn.net/wwj_748/article/details/42347283">Android研发规范</a></li>
+</ul>
+<p>推荐阅读：</p>
+<ul>
+<li><a href="http://codecloud.net/google-java-style-5975.html">Google 的 Java 编程风格指南</a></li>
+</ul>
+<p>暂时写到这，后面再完善。：）</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[第一个插件：FindViewByMe]]></title>
+        <id>https://xudadi.cn/post/2015-11-27-find-view-by-me/</id>
+        <link href="https://xudadi.cn/post/2015-11-27-find-view-by-me/">
+        </link>
+        <updated>2019-09-19T06:12:21.000Z</updated>
+        <summary type="html"><![CDATA[<p>FindViewByMe 是一个自动生成 FindViewById 代码的 IDEA/Android Studio 插件，支持 Activity、Fragment 和 ViewHolder 中的 findViewById 的代码生成。</p>
+<p>该插件适用于 IntelliJ IDEA 和 Android Studio，以下说明以 Android Studio (简称 AS )为例。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>FindViewByMe 是一个自动生成 FindViewById 代码的 IDEA/Android Studio 插件，支持 Activity、Fragment 和 ViewHolder 中的 findViewById 的代码生成。</p>
+<p>该插件适用于 IntelliJ IDEA 和 Android Studio，以下说明以 Android Studio (简称 AS )为例。</p>
+<!-- more -->
+<h4 id="1-下载和安装">1. 下载和安装</h4>
+<ul>
+<li>
+<p>主菜单依次选择 <code>File | Settings</code> ，打开设置对话框，选择 <code>Plugins</code>；</p>
+</li>
+<li>
+<p>搜索框中输入 “findviewbyme” ,点击下面的“Browse”；</p>
+<figure data-type="image" tabindex="1"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/ed9e903a164b3de8.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>在找到的结果中点击 “Install”，然后会提示重启 AS，重启就行了。</p>
+<figure data-type="image" tabindex="2"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/179220e48074f2e4.png" alt="" loading="lazy"></figure>
+</li>
+</ul>
+<h4 id="2-基本使用">2. 基本使用</h4>
+<ul>
+<li>当你写完一个 layout 文件，在该文件编辑界面任意位置右键，发现菜单中有一个 <code>Find View By Me</code> 的选项；</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/4c8d9c9bc1a997b3.png" alt="" loading="lazy"></figure>
+<ul>
+<li>点击后会出现 “FindViewByMe” 的对话框，如下所示:</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/fa8259e43ce35445.png" alt="" loading="lazy"></figure>
+<ul>
+<li>在列表中勾选你需要生成代码的控件，下面就会出现对应的代码；</li>
+<li>点击 “Copy Code” 按钮就可以将代码复制到剪切板了，在java文件中粘贴就行了。</li>
+</ul>
+<h4 id="3-添加-rootview">3. 添加 RootView</h4>
+<ul>
+<li>针对 Fragment 需要添加 rootView 这种，首先勾选 “Add RootView”；</li>
+<li>然后在编辑框中输入 rootView 的名称，例 <code>contentView</code>；</li>
+<li>最后点击添加，生成的代码就更新了。</li>
+</ul>
+<h4 id="4-adapter-中的-viewholder">4. Adapter 中的 ViewHolder</h4>
+<ul>
+<li>勾选上 “Is ViewHolder” 就行了，代码就更新了；</li>
+<li>这里的控件变量不再添加任何修饰符。</li>
+<li>一些变量得自行去处理，这里不再赘述。</li>
+</ul>
+<h4 id="5-几点说明">5. 几点说明</h4>
+<ul>
+<li>控件变量的命名规则：变量命名是根据控件的id来的，例如 id 是 <code>edit_user_name</code> ，那么生成的变量名称就是 <code>editUserName</code>；</li>
+<li>控件变量默认使用 <code>private</code> 修饰符；</li>
+<li>关于添加“m”的问题，这个直接在兑换框中勾选 “Add “m”” 就行了，此时变量命名就变成<code>mEditUserName</code>。</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[再见，2015]]></title>
+        <id>https://xudadi.cn/post/2016-01-31-say-good-bye-to-2015/</id>
+        <link href="https://xudadi.cn/post/2016-01-31-say-good-bye-to-2015/">
+        </link>
+        <updated>2019-09-19T06:12:19.000Z</updated>
+        <summary type="html"><![CDATA[<h3 id="引子">引子</h3>
+<blockquote>
+<p>每一年都会携带着一些愿望和祝福到来，而又带着特有的记忆和故事离开。</p>
+<p>去了的就去了，该来的总归要来。</p>
+</blockquote>
+]]></summary>
+        <content type="html"><![CDATA[<h3 id="引子">引子</h3>
+<blockquote>
+<p>每一年都会携带着一些愿望和祝福到来，而又带着特有的记忆和故事离开。</p>
+<p>去了的就去了，该来的总归要来。</p>
+</blockquote>
+<!-- more -->
+<p>上面两句摘自13年元旦那天写的一篇 QQ 空间日志，不知不觉已经过去三年。</p>
+<p>三年时间，很多东西都变了。</p>
+<p>三年前还在发着中二、矫情状态的 QQ 空间，差不多也快关闭三年了，被彻底地尘封起来。</p>
+<p>昨晚女友给我说，我们在一起差不多快一年了。</p>
+<p>而三年前写日志的那天，也就是元旦，是和初恋女友在一起过的，不过也是那一年，初恋变成了前女友的。</p>
+<p>时间走的还是不紧不慢，生活却变化得越来越快。</p>
+<h3 id="过去的一年">过去的一年</h3>
+<p>回望过去的时候，我总是试图避免流水帐的叙述方式。可记忆总是顺着时间线，我的尝试恐怕再一次失败。</p>
+<h4 id="转行">转行</h4>
+<p>到了大四找工作的时候，才知道四年学的专业要找到一份自己满意的工作基本上是不可能了。加上大三暑假在机械公司的实习经历，心里开始承认这个事实——自己并不喜欢这个行业。我喜欢的，恐怕还是互联网行业。</p>
+<p>可是去年的这时候，我还在看着 Android 的入门书，还在一家公司当着技术支持的实习生。转行对我来说，充满了未知数。</p>
+<p>幸运的是，在年后回到学校之后，面试了几家公司，顺利地拿到了3家公司的实习生 offer。后来去了其中一家公司一直实习到毕业，毕业后也就正式和这家公司签了合同，算是完成了自己年初的转行愿望，成功进入了互联网行业。</p>
+<h4 id="毕业">毕业</h4>
+<p>毕业其实没什么好说的，不过还是有点小插曲。由于毕业论文第一次评审没通过，被延后到第二批答辩。正好趁中间让我修改论文这段时间，赶在毕业之前回家待了一个星期。后来答辩也算顺利，虽然老师提了不少问题，不过也没太刁难。</p>
+<p>后来自己也想了下，由于自己对机械这块基本没了兴趣，毕业设计也确实没花太多时间。连写论文那段时间我都忙里偷闲写点代码。</p>
+<p>后来就是毕业，发证书，离校。</p>
+<p>告别了学生时代。</p>
+<h4 id="爱情">爱情</h4>
+<p>和女票的相识是个奇妙的过程，暂不表。</p>
+<p>缘分吧~</p>
+<p>过去感情的失败，让我一度处在一种说不清楚的状态。时常徘徊在怀疑自己和怀疑世界的状态。</p>
+<p>不过遇见了现在的女票，让我知道我还是那个真实的自己，不需要伪装成别人喜欢的样子。</p>
+<p>虽然大部分时间都是异地，可是并没觉得累。大抵这就叫合适吧。</p>
+<h4 id="离职">离职</h4>
+<p>年底的时候，我又做了一个很突然的决定——离职。<br>
+其实对我自己来说并不是很突然，外人看来很突然。</p>
+<p>因为觉得工作任务并不多，对自己的学习和成长没有太多帮助的原因，加上正好遇到拿到一个较为理想的offer，就萌生了离职的想法。后来就是前东家走流程，12 月份中旬离职，加入新公司。</p>
+<p>离职后在家歇了4天，和女票开玩笑说自己成了失业青年了。😂</p>
+<p>期间也想了想自己离职的原因：</p>
+<ul>
+<li>国企的原因，管理层较为复杂，管理上也有很大问题；</li>
+<li>老员工工作积极性不高，技术氛围不好；</li>
+<li>同组的队友太坑，虽然都是比我工作久，但是合作起来真的很费劲；</li>
+<li>工作几年之后，我自己要成为什么样的人？我要处在什么样的状态？</li>
+</ul>
+<p>特别是最后一条，让我做下了决定。后来流程走完，也没等到年终奖就直接走人了。</p>
+<h4 id="量化">量化</h4>
+<ul>
+<li>发布了“去做” App，累计下载 20k+ ?但是我更新跳票半年了= =</li>
+<li>写了个Android Studio插件，昨晚发现不少人在用，并在博客里面推荐了，有点小开心😊</li>
+<li>玩了差不多半年多知乎，不过最近已经开始远离了，还是多写代码来的实在</li>
+</ul>
+<h3 id="结尾">结尾</h3>
+<p>这是一篇迟到的总结，主要是一月份真的太忙。最近也感觉自己的状态有点问题，工作一天下来，颈椎酸痛，视力相较以前也开始有点下降了。这就是码农的命吧。</p>
+<p>不过，既然选择了这条路，就坚定地走下去吧。</p>
+<p>嗯。</p>
+<p>PS：麻蛋啊，我今天真的没喝咖啡，大晚上失眠闹哪样啊！！！😔😔😔</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android Studio 小技巧/快捷键 合集]]></title>
+        <id>https://xudadi.cn/post/2016-02-14-android-studio-tips/</id>
+        <link href="https://xudadi.cn/post/2016-02-14-android-studio-tips/">
+        </link>
+        <updated>2019-09-19T06:12:15.000Z</updated>
+        <summary type="html"><![CDATA[<blockquote>
+<ul>
+<li>原文链接: <a href="https://github.com/pavlospt/Android-Studio-Tips-by-Philippe-Breault/wiki">Android Studio Tips by Philippe Breault</a></li>
+</ul>
+</blockquote>
+<ul>
+<li>原文作者 : <a href="https://github.com/pavlospt">Philippe Breault</a></li>
+<li>译文出自 : <a href="https://github.com/xitu/gold-miner">掘金翻译计划</a></li>
+<li>译者 : <a href="https://github.com/laobie">Jaeger</a>, <a href="https://github.com/brucezz">Brucezz</a></li>
+<li>校对者 :<a href="https://github.com/Glowin">Glow Chiang</a>, <a href="https://github.com/void-main">Void Main</a></li>
+<li>转载请联系，并注明出处。</li>
+</ul>
+]]></summary>
+        <content type="html"><![CDATA[<blockquote>
+<ul>
+<li>原文链接: <a href="https://github.com/pavlospt/Android-Studio-Tips-by-Philippe-Breault/wiki">Android Studio Tips by Philippe Breault</a></li>
+</ul>
+</blockquote>
+<ul>
+<li>原文作者 : <a href="https://github.com/pavlospt">Philippe Breault</a></li>
+<li>译文出自 : <a href="https://github.com/xitu/gold-miner">掘金翻译计划</a></li>
+<li>译者 : <a href="https://github.com/laobie">Jaeger</a>, <a href="https://github.com/brucezz">Brucezz</a></li>
+<li>校对者 :<a href="https://github.com/Glowin">Glow Chiang</a>, <a href="https://github.com/void-main">Void Main</a></li>
+<li>转载请联系，并注明出处。</li>
+</ul>
+<!-- more -->
+<h3 id="写在前面">写在前面</h3>
+<p>本文翻译自 <a href="https://github.com/pavlospt/Android-Studio-Tips-by-Philippe-Breault/wiki" target="_blank">Android Studio Tips by Philippe Breault</a>，一共收集了62个 Android Studio 使用小技巧和快捷键。<br>
+根据这些小技巧的使用场景，本文将这63个小技巧分为常用技巧（1 -- 28）、编码技巧（29 -- 50）和调试技巧（51 -- 63），分成三个部分。</p>
+<p>每个小技巧都配有 gif 动图，由于原图在 google photo 上，加载较慢，本文全部转存到七牛上了。</p>
+<p>由于能力有限，翻译过程中难免有所疏漏，如发现错误或问题，请在评论中提出，谢谢。</p>
+<br />
+<hr size="3px" color="#4285F4"/>
+<center> <font size="6" color="green">常用技巧</font></center>
+<hr size="3px" color="#4285F4"/>
+<br />
+<h4 id="1-书签bookmarks">1. 书签（Bookmarks）</h4>
+<ul>
+<li>**描述：**这是一个很有用的功能，让你可以在某处做个标记（书签），方便后面再跳转到此处。</li>
+<li>**调用：**Menu → Navigate → Bookmarks</li>
+<li><strong>快捷键：</strong>
+<ul>
+<li>添加/移除书签：F3(OS X) 、F11(Windows/Linux);</li>
+<li>添加/移除书签(带标记)：Alt + F3(OS X)、Ctrl + F11(Windows/Linux);</li>
+<li>显示全部书签：Cmd + F3(OS X) 、Shift + F11(Windows/Linux)，显示所有的书签列表，并且是可以搜索的。</li>
+<li>上一个/下一个书签：无，可以在设置中设置快捷键。</li>
+</ul>
+</li>
+<li>**更多：**当你为某个书签指定了标记，你可以使用快捷键 Ctrl + 标记 来快速跳转到标记处，比如输入Ctrl + 1，跳到标记为1的书签处。</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="../../../../assets/img/studio_tips/07-bookmarks.gif" alt="" loading="lazy"></figure>
+<h4 id="2-折叠展开代码块collapse-expand-code-block">2. 折叠/展开代码块（Collapse Expand Code Block）</h4>
+<ul>
+<li>**描述：**该操作提供一种方法，让你隐藏你不关心的部分代码，以一种较为简洁的格式显示关键代码。一个有意思的用法是隐藏匿名内部类的代码，让其看起来像一个Lambda表达式。</li>
+<li>**快捷键：**Cmd + &quot;+&quot;/&quot;-&quot;(OS X)、Ctrl + Shift + &quot;+&quot;/&quot;-&quot;(Windows/Linux);</li>
+<li>**更多：**可以在Settig → Editor → General → Code Folding 中设置折叠规则。</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="../../../../assets/img/studio_tips/06-codefolding.gif" alt="" loading="lazy"></figure>
+<h4 id="3-与分支比对compare-with-branch-git">3. 与分支比对（Compare With Branch (Git)）</h4>
+<ul>
+<li>**描述：**假如你的项目是使用git来管理的，你可以将当前文件或者文件夹与其他的分支进行比对。比较有用的是可以让你了解到你与主分支有多少差别。</li>
+<li>**调用：**Menu → VCS → Git → Compare With Branch</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="../../../../assets/img/studio_tips/38-comparewithbranch.gif" alt="" loading="lazy"></figure>
+<h4 id="4-与剪切板比对compare-with-clipboard">4. 与剪切板比对（Compare With Clipboard）</h4>
+<ul>
+<li>**描述：**将当前选中的部分与剪切板上的内容进行比对。</li>
+<li>**调用：**右键选中的部分，在右键菜单中选择“Compare With Clipboard”。</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="../../../../assets/img/studio_tips/34-comparewithclipboard.gif" alt="" loading="lazy"></figure>
+<h4 id="5-上下文信息context-info">5. 上下文信息（Context Info）</h4>
+<ul>
+<li>**描述：**当前作用域定义超过滚动区域，执行该操作将显示所在的上下文信息，通常它显示的是类名或者内部类类名或者当前所在的方法名。该操作在xml文件中同样适用。</li>
+<li>**调用：**Menu → View → Context Info</li>
+<li>**快捷键：**Alt + Q (Windows/Linux)</li>
+<li>**更多：**个人认为，这个功能更好的用法是快速查看当前类继承的父类或者实现的接口。</li>
+</ul>
+<figure data-type="image" tabindex="5"><img src="../../../../assets/img/studio_tips/47-contextinfo.gif" alt="" loading="lazy"></figure>
+<h4 id="6-查找操作find-action">6. 查找操作（Find Action）</h4>
+<ul>
+<li>**描述：**输入某个操作的名称，快速查找，对于没有快捷键的部分操作这是一个很有用的技巧。</li>
+<li>**快捷键：**Cmd +Shift + A(OS X)、Ctrl + Shift + A(Windows/Linux)；</li>
+<li>**更多：**当某个操作是有快捷键的，会显示在旁边。</li>
+</ul>
+<figure data-type="image" tabindex="6"><img src="../../../../assets/img/studio_tips/08-findaction.gif" alt="" loading="lazy"></figure>
+<h4 id="7-查找补全find-complection">7. 查找补全（Find Complection）</h4>
+<ul>
+<li>**描述：**当你在一个文件中进行查找时，使用自动补全快捷键可以给出在当前文件中出现的建议单词；</li>
+<li>**快捷键：**Cmd + F(OS X),Ctrl + F(Windows/Linux),输入一些字符，然后使用自动补全；</li>
+</ul>
+<figure data-type="image" tabindex="7"><img src="../../../../assets/img/studio_tips/61-findcompletion.gif" alt="" loading="lazy"></figure>
+<h4 id="8-隐藏所有面板hide-all-panels">8. 隐藏所有面板（Hide All Panels）</h4>
+<ul>
+<li>**描述：**切换编辑器铺满整个程序界面，隐藏其他的面板。再次执行该操作，将会回到隐藏前的状态。</li>
+<li>**调用：**Menu → Window → Active Tool Window → Hide All Windows；</li>
+<li>**快捷键：**Cmd +Shift + F12(OS X)、Ctrl + Shift + F12(Windows/Linux)；</li>
+</ul>
+<figure data-type="image" tabindex="8"><img src="../../../../assets/img/studio_tips/42-hideallwindows.gif" alt="" loading="lazy"></figure>
+<h4 id="9-高亮一切hightlight-all-the-things">9. 高亮一切（Hightlight All the Things）</h4>
+<ul>
+<li>**描述：**该操作将会高亮某个字符在当前文件中所有出现的地方。这不仅仅是简单的匹配，实际上它会分析当前的作用域，只高亮相关的部分。</li>
+<li>**调用：**Menu → Edit → Find → Highlight Usages in File；</li>
+<li>**定位到上一处/下一处：**Menu → Edit → Find → Find Next/Previous；</li>
+<li>**快捷键：**相关快捷键请在菜单中查看；</li>
+<li><strong>更多：</strong>
+<ul>
+<li>如果高亮一个方法的<code>return</code>或<code>throw</code>语句，将会高亮这个方法的所有出口/结束点；</li>
+<li>如果高亮某个类定义处的<code>extend</code>或<code>implements</code>语句，将会高亮继承的或实现的方法；</li>
+<li>高亮一个<code>import</code>语句也会高亮使用到的地方；</li>
+<li>按下Esc可以退出高亮模式；</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="9"><img src="../../../../assets/img/studio_tips/01-highlight.gif" alt="" loading="lazy"></figure>
+<h4 id="10-回到上一个工具窗口jump-to-last-tool-window">10. 回到上一个工具窗口（Jump to Last Tool Window）</h4>
+<ul>
+<li>**描述：**有时候你会从某个工具窗口跳到编辑器里面，然后又需要重新回到刚才操作的那个工具窗，比如你查找使用情况的时，使用该操作可以在不使用鼠标的情况下跳转到之前的工具窗口。</li>
+<li>**快捷键：**F12；</li>
+</ul>
+<figure data-type="image" tabindex="10"><img src="../../../../assets/img/studio_tips/41-lasttoolwindow.gif" alt="" loading="lazy"></figure>
+<h4 id="11-上一个编辑位置last-edit-location">11. 上一个编辑位置（Last Edit Location）</h4>
+<ul>
+<li>**描述：**该操作将使得你导航到上一处你改动过的地方，这与点击工具栏上的返回箭头回到上一个定位位置是不一样的，该操作将会返回到上一个编辑的位置。</li>
+<li><strong>快捷键：</strong> Cmd + Shift + Delete(OS X)、Ctrl + Shift + Backspace﻿(Windows/Linux);</li>
+</ul>
+<figure data-type="image" tabindex="11"><img src="../../../../assets/img/studio_tips/17-navigate-previous-changes.gif" alt="" loading="lazy"></figure>
+<h4 id="12-在方法和内部类之间跳转move-between-methods-and-inner-classes">12. 在方法和内部类之间跳转（Move Between Methods and Inner Classes）</h4>
+<ul>
+<li>**描述：**该操作让光标在当前文件的方法或内部类的名字间跳转。</li>
+<li>**调用：**Navigate → Next Method/Previous Method;</li>
+<li>**快捷键：**Ctrl + Up/Down﻿(OS X)、Alt + Up/Down﻿(Windows/Linux);</li>
+</ul>
+<figure data-type="image" tabindex="12"><img src="../../../../assets/img/studio_tips/02-move_between_methods.gif" alt="" loading="lazy"></figure>
+<h4 id="13-定位到嵌套文件navigate-to-nested-file">13. 定位到嵌套文件（Navigate to Nested File）</h4>
+<ul>
+<li>**描述：**有时你有一堆存放在不同目录下的同名文件，例如不同模块下的<code>AndroidManifest.xml</code>文件，当你想定位到其中的一个文件，你会得到一堆搜索结果，你还得辨认哪个才是你需要的。通过在检索框中输入部分路径的前缀，并添加斜杠号，你就可以在第一次尝试的时候就找到正确的那个。</li>
+<li>**快捷键：**Shift + Cmd + O(OS X)、Shift + Ctrl + N﻿(Windows/Linux);</li>
+</ul>
+<figure data-type="image" tabindex="13"><img src="../../../../assets/img/studio_tips/63-nestednavigation.gif" alt="" loading="lazy"></figure>
+<h4 id="14-定位到父类navigate-to-parent">14. 定位到父类（Navigate to parent）</h4>
+<ul>
+<li>**描述：**如果光标是在一个继承父类重写的方法里，这个操作将定位到父类实现的地方。如果光标是在类名上，则定位到父类类名。</li>
+<li>Menu → Navigate → Super Class/Method</li>
+<li>**快捷键：**Cmd + U(OS X)、Ctrl + U(Windows/Linux);</li>
+</ul>
+<figure data-type="image" tabindex="14"><img src="../../../../assets/img/studio_tips/39-navigatetoparent.gif" alt="" loading="lazy"></figure>
+<h4 id="15-根据编号打开面板open-a-panel-by-its-number">15. 根据编号打开面板（Open a Panel by Its Number）</h4>
+<ul>
+<li>**描述：**你可能已经注意到某些面板的名称左边有一个数字，这里有个快捷操作可以打开它们。如果你没看到面板的名称，请点击IDE的左下角的切换按钮。</li>
+<li>**快捷键：**Cmd + 数字(OS X)、Alt + 数字(Windows/Linux);</li>
+</ul>
+<figure data-type="image" tabindex="15"><img src="../../../../assets/img/studio_tips/42-openpanelbynumber.gif" alt="" loading="lazy"></figure>
+<h4 id="16-在外部打开文件open-file-externally">16. 在外部打开文件（Open File Externally）</h4>
+<ul>
+<li>**描述：**通过这个快捷键，简单地点击 Tab，就可以打开当前文件所在的位置或者该文件的任意上层路径。</li>
+<li>**快捷键：**Cmd + 单击Tab(OS X)、Ctrl + 点击Tab(Windows/Linux);</li>
+</ul>
+<figure data-type="image" tabindex="16"><img src="../../../../assets/img/studio_tips/62-openfinder.gif" alt="" loading="lazy"></figure>
+<h4 id="17-参数信息parameter-info">17. 参数信息（Parameter Info）</h4>
+<ul>
+<li>**描述：**这个操作将显示和你在方法声明处写一样的参数列表，当你想看某个存在的方法的参数，这是一个很有用的操作。光标下的参数显示为黄色，如果没有参数显示黄色，意味着你的方法调用是无效的，很可能是某个参数分配不对。（例如一个浮点数赋值给了整型参数）。如果你正在写一个方法调用，突然离开编辑的地方，再返回的时候，输入一个逗号，就可以重新触发参数信息。</li>
+<li>**快捷键：**Cmd + P(OS X)、Ctrl + P(Windows/Linux);</li>
+</ul>
+<figure data-type="image" tabindex="17"><img src="../../../../assets/img/studio_tips/44-parameterinfo.gif" alt="" loading="lazy"></figure>
+<h4 id="18-快速查看定义quick-definition-lookup">18. 快速查看定义（Quick Definition Lookup）</h4>
+<ul>
+<li>**描述：**你曾经是否想查看一个方法或者类的具体实现，但是不想离开当前界面？   该操作可以帮你搞定。</li>
+<li>**快捷键：**Alt + Space / Cmd + Y(OS X)、Ctrl + Shift + I(Windows/Linux)</li>
+</ul>
+<figure data-type="image" tabindex="18"><img src="../../../../assets/img/studio_tips/05-quickdefinition.gif" alt="" loading="lazy"></figure>
+<h4 id="19-最近修改的文件recently-changed-files">19. 最近修改的文件（Recently Changed Files）</h4>
+<ul>
+<li>**描述：**该操作类似于“最近访问（Recents）”弹窗，会显示最近本地修改过的文件列表，根据修改时间排列。可以输入字符来过滤列表结果。</li>
+<li>**快捷键：**Cmd + Shift + E(OS X)、Ctrl + Shift + E(Windows/Linux)</li>
+</ul>
+<figure data-type="image" tabindex="19"><img src="../../../../assets/img/studio_tips/49-recentlyedited.gif" alt="" loading="lazy"></figure>
+<h4 id="20-最近访问recents">20. 最近访问（Recents）</h4>
+<ul>
+<li>**描述：**该操作可以得到一个最近访问文件的可搜索的列表。</li>
+<li>**快捷键：**Cmd + E(OS X)、Ctrl + E(Windows/Linux)</li>
+</ul>
+<figure data-type="image" tabindex="20"><img src="../../../../assets/img/studio_tips/14-recents.gif" alt="" loading="lazy"></figure>
+<h4 id="21-相关文件related-file">21. 相关文件（Related File）</h4>
+<ul>
+<li>**描述：**该操作有助于在布局文件和Activity/Fragment之间轻松跳转。这也是一个快捷操作，在类名/布局顶端的左侧。</li>
+<li>**快捷键：**Ctrl + Cmd + Up(OS X)、Ctrl + Alt + Home(Windows/Linux)</li>
+</ul>
+<figure data-type="image" tabindex="21"><img src="../../../../assets/img/studio_tips/50-relatedfile.gif" alt="" loading="lazy"></figure>
+<h4 id="22-返回到编辑器return-to-the-editor">22. 返回到编辑器（Return to the Editor）</h4>
+<ul>
+<li>
+<p>**描述：**一大堆快捷键操作会把你从编辑器带走（type hierarchy, find usages, 等等）。如果你想返回到编辑器，你有两个选项：</p>
+<ol>
+<li>Esc：该操作仅仅把光标移回编辑器。</li>
+<li>Shift + Esc：该操作会关闭当前面板，然后把光标移回到编辑器。</li>
+</ol>
+</li>
+<li>
+<p><strong>快捷键：</strong></p>
+<ul>
+<li>返回但保留打开的面板：Esc</li>
+<li>关闭面板并返回：Shift + Esc</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="22"><img src="../../../../assets/img/studio_tips/40-returntoeditor.gif" alt="" loading="lazy"></figure>
+<h4 id="23-select-in">23. Select In</h4>
+<ul>
+<li>
+<p>**描述：**拿着当前文件然后问你在哪里选中该文件。恕我直言，最有用的就是在项目结构或者资源管理器中打开该文件。每一个操作都有数字或者字母作为前缀，可以通过这个前缀来快速跳转。通常，我会 Alt + F1 然后 回车(Enter) 来打开项目视图，然后 再用 Alt + F1 在OS X的Finder里找到文件。你可以在文件中或者直接在项目视图里使用该操作。</p>
+</li>
+<li>
+<p>**快捷键：**Alt + F1；</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="23"><img src="../../../../assets/img/studio_tips/19-select-in.gif" alt="" loading="lazy"></figure>
+<h4 id="24-扩大缩小选择extendshrink-selection">24. 扩大/缩小选择（Extend/Shrink Selection）</h4>
+<ul>
+<li>**描述：**该操作会在上下文逐渐扩大/缩小当前选择范围。例如，它会先选中当前变量，再选中当前语句，然后选中整个方法，缩小选择则相反。</li>
+<li>**快捷键：**Alt + 上/下 (OS X)、Ctrl+W / Ctrl + Shift + W﻿（Windows、Linux）</li>
+</ul>
+<figure data-type="image" tabindex="24"><img src="../../../../assets/img/studio_tips/12-expand_shrink_selection.gif" alt="" loading="lazy"></figure>
+<h4 id="25-sublime-text式的多处选择sublime-text-multi-selection">25. Sublime Text式的多处选择（Sublime Text Multi Selection）</h4>
+<ul>
+<li>**描述：**这个功能超级赞！该操作会识别当前选中字符串，选择下一个同样的字符串，并且添加一个光标。这意味着你可以在同一个文件里拥有多个光标，你可以同时在所有光标处输入任何东西。</li>
+<li>**快捷键：**Ctrl + G(OS X)、Alt + Ｊ（Windows、Linux）</li>
+</ul>
+<figure data-type="image" tabindex="25"><img src="../../../../assets/img/studio_tips/32-multiselection.gif" alt="" loading="lazy"></figure>
+<h4 id="26-文件结构弹窗the-file-structure-popup">26. 文件结构弹窗（The File Structure Popup）</h4>
+<ul>
+<li>
+<p>**描述：**该操作可以展示当前类的大纲，并且可以快速跳转。你还可以通过键盘输入来过滤结果。这是一种很高效的方法来跳转到指定方法。</p>
+</li>
+<li>
+<p><strong>更多：</strong></p>
+<ul>
+<li>你在输入字符的时候可以用驼峰风格来过滤选项。比如输入&quot;oCr&quot;会找到&quot;onCreate&quot;</li>
+<li>你可以通过勾选多选框来决定是否显示匿名类。这在某些情况下很有用，比如你想直接跳转到一个OnClickListener的onClick方法。</li>
+</ul>
+</li>
+<li>
+<p>**快捷键：**Cmd + F12(OS X)、Ctrl + F12(Windows/Linux)</p>
+</li>
+<li>
+<p>**调用：**Menu → Navigate → File Structure</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="26"><img src="../../../../assets/img/studio_tips/03-filestructure.gif" alt="" loading="lazy"></figure>
+<h4 id="27-切换器the-switcher">27. 切换器（The Switcher）</h4>
+<ul>
+<li>
+<p>**描述：**该快捷键基本上就是IDE的alt+tab/cmd+tab命令。你可以用它在导航tab或者面板切换。一旦打开这个窗口，只要一直按着ctrl键，你可以通过对应的数字或者字母快捷键快速选择。你也可以通过backspace键来关闭一个已选中的tab或者面板。</p>
+</li>
+<li>
+<p>**快捷键：**Ctrl + Tab</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="27"><img src="../../../../assets/img/studio_tips/46-switcher.gif" alt="" loading="lazy"></figure>
+<h4 id="28-版本控制操作弹窗vcs-operations-popup">28. 版本控制操作弹窗（VCS Operations Popup）</h4>
+<ul>
+<li>**描述：**该操作会给你显示最常用的版本控制操作。如果你的项目没有用git等版本控制软件进行管理，它至少会给你提供一个由IDE维护的本地历史记录。</li>
+<li>**快捷键：**Ctrl + V(OS X)、Alt + `(Windows/Linux)</li>
+</ul>
+<figure data-type="image" tabindex="28"><img src="../../../../assets/img/studio_tips/37-vcspopup.gif" alt="" loading="lazy"></figure>
+<br />
+<hr size="3px" color="#4285F4"/>
+<center> <font size="6" color="green">编码技巧</font></center>
+<hr size="3px" color="#4285F4"/>
+<br />
+<h4 id="29-列选择块选择column-selection">29. 列选择/块选择（Column Selection）</h4>
+<ul>
+<li>**描述：**正常选择时，当你向下选择时，会直接将当前行到行尾都选中，而块选择模式下，则是根据鼠标选中的矩形区域来选择。</li>
+<li>**调用：**按住Alt，然后拖动鼠标选择。</li>
+<li>开启/关闭块选择：Menu → Edit → Column Selection Mode</li>
+<li>**快捷键：**切换块选择模式：Cmd + Shift + 8(OS X)、Shift + Alt + Insert﻿(Windows/Linux);</li>
+</ul>
+<figure data-type="image" tabindex="29"><img src="../../../../assets/img/studio_tips/33-columnselection.gif" alt="" loading="lazy"></figure>
+<h4 id="30-语句补全complete-statement">30. 语句补全（Complete Statement）</h4>
+<ul>
+<li>**描述：**这个方法将会生成缺失的代码来补全语句，常用的使用场景如下：
+<ul>
+<li>在行末添加一个分号，即使光标不在行末；</li>
+<li>为if、while、for 语句生成圆括号和大括号；</li>
+<li>方法声明后，添加大括号；</li>
+</ul>
+</li>
+<li>**调用：**Menu → Edit → Compelete Current Statement</li>
+<li>**快捷键：**Cmd + Shift + Enter(OS X)、Ctrl + Shift + Enter(Windows/Linux)；</li>
+<li>**更多：**如果一个语句已经补全，当你执行该操作时，则会直接跳到下一行，即使光标不在当前行的行末。</li>
+</ul>
+<figure data-type="image" tabindex="30"><img src="../../../../assets/img/studio_tips/16-completestatement.gif" alt="" loading="lazy"></figure>
+<h4 id="31-删除行delete-line">31. 删除行（Delete Line）</h4>
+<ul>
+<li>**描述：**如果没选中，则删除光标所在行，如果选中，则会删除选中所在的所有行。</li>
+<li>**快捷键：**Cmd + Delete(OS X)、Ctrl + Y(Windows/Linux)</li>
+</ul>
+<figure data-type="image" tabindex="31"><img src="../../../../assets/img/studio_tips/10-deleteline.gif" alt="" loading="lazy"></figure>
+<h4 id="32-行复制duplicate-line">32. 行复制（Duplicate Line）</h4>
+<ul>
+<li>**描述：**复制当前行，并粘贴到下一行，这个操作不会影响剪贴板的内容。这个命令配合移动行快捷键非常有用。</li>
+<li>**快捷键：**Cmd + D(OS X)、Ctrl + D(Windows/Linux)</li>
+</ul>
+<figure data-type="image" tabindex="32"><img src="../../../../assets/img/studio_tips/11-duplicate_lines.gif" alt="" loading="lazy"></figure>
+<h4 id="33-编写正则表达式edit-regex">33. 编写正则表达式（Edit Regex）</h4>
+<ul>
+<li>**描述：**使用Java编写正则表达式是一件很困难的事，主要原因是：
+<ul>
+<li>你必须得避开反斜杠；</li>
+<li>说实话，正则很难；</li>
+<li>看第二条。</li>
+</ul>
+</li>
+</ul>
+<p>IDE能帮我们干点啥呢？当然是一个舒服的界面来编写和测试正则啦~</p>
+<ul>
+<li>**快捷键：**Alt + Enter → check regexp</li>
+</ul>
+<figure data-type="image" tabindex="33"><img src="../../../../assets/img/studio_tips/68-checkregexp.gif" alt="" loading="lazy"></figure>
+<h4 id="34-使用enter和tab进行代码补全的差别enter-vs-tab-for-code-completion">34. 使用Enter和Tab进行代码补全的差别（Enter vs Tab for Code Completion）</h4>
+<ul>
+<li>**描述：**代码补全时，可以使用Enter或Tab来进行补全操作，但是两者是有差别的。</li>
+<li>使用Enter时：从光标处插入补全的代码，对原来的代码不做任何操作。</li>
+<li>使用Tab时：从光标处插入补全的代码，并删除后面的代码，直到遇到点号、圆括号、分号或空格为止。</li>
+</ul>
+<figure data-type="image" tabindex="34"><img src="../../../../assets/img/studio_tips/45-codecompletionentertab.gif" alt="" loading="lazy"></figure>
+<h4 id="35-提取方法extract-method">35. 提取方法（Extract Method）</h4>
+<ul>
+<li>**描述：**提取一段代码块，生成一个新的方法。当你发现某个方法里面过于复杂，需要将某一段代码提取成单独的方法时，该技巧是很有用的。</li>
+<li>**调用：**Menu → Refactor → Extract → Method</li>
+<li>**快捷键：**Cmd + Alt + M(OS X)、Ctrl + Alt + M(Windows/Linux)；</li>
+<li>**更多：**在提取代码的对话框，你可以更改方法的修饰符和参数的变量名。</li>
+</ul>
+<figure data-type="image" tabindex="35"><img src="../../../../assets/img/studio_tips/53-extractmethod.gif" alt="" loading="lazy"></figure>
+<h4 id="36-提取参数extract-parameter">36. 提取参数（Extract Parameter）</h4>
+<ul>
+<li>**描述：**这是一个提取参数的快捷操作。当你觉得可以通过提取参数来优化某个方法的时候，这个技巧将很有用。该操作会将当前值作为一个方法的参数，将旧的值放到方法调用的地方，作为传进来的参数。</li>
+<li>**调用：**Menu → Refactor → Extract → Parameter</li>
+<li>**快捷键：**Cmd + Alt + P(OS X)、Ctrl + Alt + P(Windows/Linux)；</li>
+<li>**更多：**通过勾选“delegate”，可以保持旧的方法，重载生成一个新方法。</li>
+</ul>
+<figure data-type="image" tabindex="36"><img src="../../../../assets/img/studio_tips/52-extractparam.gif" alt="" loading="lazy"></figure>
+<h4 id="37-提取变量extract-variable">37. 提取变量（Extract Variable）</h4>
+<ul>
+<li>**描述：**这是一个提取变量的快捷操作。当你在没有写变量声明的直接写下值的时候，这是一个很方便生成变量声明的操作，同时还会给出一个建议的变量命名。</li>
+<li>**调用：**Menu → Refactor → Extract → Variable</li>
+<li>**快捷键：**Cmd + Alt + V(OS X)、Ctrl + Alt + V(Windows/Linux)；</li>
+<li>**更多：**当你需要改变变量声明的类型，例如使用 List 替代 ArrayList，可以按下Shift + Tab，就会显示所有可用的变量类型。</li>
+</ul>
+<figure data-type="image" tabindex="37"><img src="../../../../assets/img/studio_tips/51-extractvariable.gif" alt="" loading="lazy"></figure>
+<h4 id="38-内置inline">38. 内置（Inline）</h4>
+<ul>
+<li>**描述：**当你开始对提取操作有点兴奋的时候，突然觉得东西太多了，怎么办呢？这是一个和提取相反的操作。该操作对方法、字段、参数和变量均有效。</li>
+<li>**调用：**Menu → Refactor → Inline</li>
+<li>**快捷键：**Cmd + Alt + N(OS X)、Ctrl + Alt + N(Windows/Linux)；</li>
+</ul>
+<figure data-type="image" tabindex="38"><img src="../../../../assets/img/studio_tips/54-inline.gif" alt="" loading="lazy"></figure>
+<h4 id="39-合并行和文本join-lines-and-literals">39. 合并行和文本（Join Lines and Literals）</h4>
+<ul>
+<li>
+<p>**描述：**这个操作比起在行末使劲按删除键爽多了！该操作遵守格式化规则，同时：</p>
+<ul>
+<li>合并两行注释，同时移除多余的<code>//</code>；</li>
+<li>合并多行字符串，移除<code>+</code>和双引号；</li>
+<li>合并字段的声明和初始化赋值；</li>
+</ul>
+</li>
+<li>
+<p>**快捷键：**Ctrl + Shift + J；</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="39"><img src="../../../../assets/img/studio_tips/18-joinlines.gif" alt="" loading="lazy"></figure>
+<h4 id="40-动态模板live-templates">40. 动态模板（Live Templates）</h4>
+<ul>
+<li>**描述：**动态模板是一种快速插入代码片段的方法，使用动态模板比较有意思的是你可以使用合适的默认值将模板参数化，当你插入代码片段时，这可以指导你完成参数。</li>
+<li>**更多：**如果你知道模板的缩写，就可以不必使用快捷键，只需要键入缩写并使用Tab键补全即可。</li>
+<li>**快捷键：**Cmd + J(OS X)、Ctrl + J(Windows/Linux);</li>
+</ul>
+<figure data-type="image" tabindex="40"><img src="../../../../assets/img/studio_tips/15-live_templates.gif" alt="" loading="lazy"></figure>
+<h4 id="41-上下移动行move-lines-up-down">41. 上下移动行（Move Lines Up Down）</h4>
+<ul>
+<li>**描述：**不需要复制粘贴就可以上下移动行了。</li>
+<li>**快捷键：**Alt + Shift + Up/Down﻿；</li>
+</ul>
+<figure data-type="image" tabindex="41"><img src="../../../../assets/img/studio_tips/09-movelines.gif" alt="" loading="lazy"></figure>
+<h4 id="42-移动方法move-methods">42. 移动方法（Move Methods）</h4>
+<ul>
+<li>**描述：**这个操作和移动行操作很类似，不过该操作是应用于整个方法的，在不需要复制、粘贴的情况下，就可以将整个方法块移动到另一个方法的前面或后面。该操作的实际叫做“移动语句”，这意味着你可以移动任何类型的语句，你可以方便地调整字段或内部类的顺序。</li>
+<li>**快捷键：**Cmd + Alt + Up/Down(OS X)、Ctrl + Shift + Up/Down(Windows/Linux);</li>
+</ul>
+<figure data-type="image" tabindex="42"><img src="../../../../assets/img/studio_tips/15-movemethods.gif" alt="" loading="lazy"></figure>
+<h4 id="43-取反补全negation-completion">43. 取反补全（Negation Completion）</h4>
+<ul>
+<li>**描述：**有时你自动补全一个布尔值，然后回到该值的前面添加一个感叹号来完成取反操作，现在通过使用输入<code>!</code>代替<code>enter</code>完成补全操作，就可以跳过这些繁琐的操作了。</li>
+<li>**快捷键：**代码补全的时候，按下<code>!</code>即可（有时需要上下键选中候选项）；</li>
+</ul>
+<figure data-type="image" tabindex="43"><img src="../../../../assets/img/studio_tips/58-negatecompletion.gif" alt="" loading="lazy"></figure>
+<h4 id="44-后缀补全postfix-completion">44. 后缀补全（Postfix Completion）</h4>
+<ul>
+<li>**描述：**你可以认为该操作是一种代码补全，它会在点号之前生成代码，而不是在点号之后。实际上你调用这个操作和正常的代码补全操作一样：在一个表达式之后输入点号。</li>
+</ul>
+<p>例如对一个列表进行遍历，你可以输入<code>myList.for</code>，然后按下Tab键，就会自动生成<code>for</code>循环代码。</p>
+<ul>
+<li>
+<p><strong>调用：</strong><br>
+你可以在某个表达式后面输入点号，出现一个候选列表，在常规的代码补全提示就可以看到一系列后缀补全关键字，同样的，你也可以在<code>Editor → Postfix Completion</code>中看到一系列后缀补全关键字。</p>
+</li>
+<li>
+<p>常用的有后缀补全关键字有：</p>
+<ul>
+<li><strong>.for</strong> (补全foreach语句)</li>
+<li><strong>.format</strong> (使用<code>String.format()</code>包裹一个字符串)</li>
+<li><strong>.cast</strong> (使用类型转化包裹一个表达式)</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="44"><img src="../../../../assets/img/studio_tips/33-postfixcompletion.gif" alt="" loading="lazy"></figure>
+<h4 id="45-重构refactor-this">45. 重构（Refactor This）</h4>
+<ul>
+<li>
+<p>**描述：**该操作可以显示所有对当前选中项可行的重构方法。这个列表可以用数字序号快速选择。</p>
+</li>
+<li>
+<p>**快捷键：**Ctrl + T(OS X)、Ctrl + Alt + Shift + T(Windows/Linux)</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="45"><img src="../../../../assets/img/studio_tips/50-relatedfile.gif" alt="" loading="lazy"></figure>
+<h4 id="46-重命名rename">46. 重命名（Rename）</h4>
+<ul>
+<li>**描述：**你可以通过该操作重命名变量、字段、方法、类、包。当然了，该操作会确保重命名对上下文有意义，不会无脑替换掉所有文件中的名字；</li>
+<li>**快捷键：**Shift + F6</li>
+<li>**更多：**如果你忘记了这个快捷键，你可以使用快速修复（Quick Fix）的快捷键，它通常包含重命名选项。</li>
+</ul>
+<figure data-type="image" tabindex="46"><img src="../../../../assets/img/studio_tips/55-rename.gif" alt="" loading="lazy"></figure>
+<h4 id="47-分号点-补全semicolon-dot-completion">47. 分号/点 补全（Semicolon Dot Completion）</h4>
+<ul>
+<li>**描述：**代码补全这个功能太棒啦！我们大概都对以下这种情况很熟悉：开始输入点什么东西，接着从IDE得到一些建议的选项，然后通过Enter或者Tab来选择我们想要的补全代码。其实还有另外一种方法来选择补全的代码：我们可以输入一个点(.)或者一个分号(😉。这样就会完成补全，添加所选字符。这在结束一条语句补全或者快速链式调用方法的时候特别有用。</li>
+<li>**注意点：**如果你要代码补全的方法需要参数，这些参数会被略过。</li>
+<li>**快捷键：**Autocomplete + &quot;.&quot; 或者 &quot;;&quot;</li>
+</ul>
+<figure data-type="image" tabindex="47"><img src="../../../../assets/img/studio_tips/69-semicolondotcompletion.gif" alt="" loading="lazy"></figure>
+<h4 id="48-包裹代码surround-with">48. 包裹代码（Surround With）</h4>
+<ul>
+<li>
+<p><strong>描述：</strong> 该操作可以用特定代码结构包裹住选中的代码块，通常是if语句，循环，try/catch语句或者runnable语句。<br>
+如果你没有选中任何东西，该操作会包裹当前一整行。</p>
+</li>
+<li>
+<p>**快捷键：**Cmd + Alt + T(OS X)、Ctrl + Alt + T(Windows/Linux)</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="48"><img src="../../../../assets/img/studio_tips/13-surround_with.gif" alt="" loading="lazy"></figure>
+<h4 id="49-移除包裹代码unwrap-remove">49. 移除包裹代码（Unwrap Remove）</h4>
+<ul>
+<li>
+<p>**描述：**该操作会移除周围的代码，它可能是一条if语句，一个while循环，一个try/catch语句甚至是一个runnable语句。该操作恰恰和包裹代码（Surround With）相反。</p>
+</li>
+<li>
+<p>**快捷键：**Cmd + Shift + Delete(OS X)、Ctrl + Shift + Delete(Windows/Linux)</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="49"><img src="../../../../assets/img/studio_tips/20-unwrap.gif" alt="" loading="lazy"></figure>
+<h4 id="50-手动唤出自动补全class-name-completion">50. 手动唤出自动补全（Class Name Completion）</h4>
+<ul>
+<li>**描述：**一般使用 Android Studio 的时候，自动提示会在你想要提示的时候自动出现，比如输入 <code>Log.</code> ，就出现 <code>Log.d()</code>、<code>Log.e</code>、<code>Log.i()</code> 等提示。不过如果在自动提示的时候手一抖选错的话，比如想选 <code>Log.d()</code> 结果选了 <code>Log.e()</code> ，你可能会把 <code>.e()</code> 都删掉，然后再输入一个 . ，<br>
+然后弹出自动补全提示。其实这时候只需要删除 <code>e()</code> 然后手动唤出自动补全即可。</li>
+<li><strong>快捷键：</strong> Ctrl + Alt + Space (OS X/Windows/Linux) (可能存在快捷键冲突无法唤出，修改下快捷键即可)</li>
+</ul>
+<figure data-type="image" tabindex="50"><img src="../../../../assets/img/studio_tips/class_name_completion.gif" alt="" loading="lazy"></figure>
+<br />
+<hr size="3px" color="#4285F4"/>
+<center> <font size="6" color="green">调试技巧</font></center>
+<hr size="3px" color="#4285F4"/>
+<br />
+<h4 id="51-分析传入数据流analyze-data-flow-to-here">51. 分析传入数据流（Analyze data flow to here）</h4>
+<ul>
+<li>**描述：**这个操作将会根据当前选中的变量、参数或者字段，分析出其传递到此处的路径。<br>
+当你进入某段陌生的代码，试图明白某个参数是怎么传递到此处的时候，这是一个非常有用的操作。</li>
+<li>**调用：**Menu → Analyze → Analyze Data Flow to Here</li>
+<li>**快捷键：**无，可以在设置中指定。</li>
+<li>**相反的操作：**分析传出数据流（Analyze data flow from here），这个将会分析当前选中的变量往下传递的路径，直到结束。</li>
+</ul>
+<figure data-type="image" tabindex="51"><img src="../../../../assets/img/studio_tips/31-analyzedataflow.gif" alt="" loading="lazy"></figure>
+<h4 id="52-堆栈追踪分析analyze-stacktrace">52. 堆栈追踪分析（Analyze Stacktrace）</h4>
+<ul>
+<li><strong>描述：</strong> 这个操作读取一份堆栈追踪信息，并且使它像logcat中那样可以点击。当你从bug报告中或者终端复制了一份堆栈追踪，使用该操作可以很方便地调试。</li>
+<li>**调用：**Menu → Analyze → Analyze Stacktrace</li>
+<li>**快捷键：**无，可以在设置中指定。</li>
+<li>**更多：**通过使用“ProGuard Unscramble Plugin”插件，也可以分析混淆过的堆栈追踪。</li>
+</ul>
+<figure data-type="image" tabindex="52"><img src="../../../../assets/img/studio_tips/30-analyzestacktrace.gif" alt="" loading="lazy"></figure>
+<h4 id="53-关联调试程序attach-debugger">53.  关联调试程序（Attach Debugger）</h4>
+<ul>
+<li>**描述：**随时启动调试程序，即使你没有以调试模式启动你的应用。这是一个很方便的操作，因为你不必为了调试程序而以调试模式重新部署你的应用。当别人正在测试应用，突然遇到一个bug而将设备交给你时，你也可以很快地进入调试模式。</li>
+<li>**调用：**点击工具栏图标或者Menu → Build → Attach to Android Process</li>
+<li>**快捷键：**无，可以在设置中指定，或者点击工具栏对应的图标。</li>
+</ul>
+<figure data-type="image" tabindex="53"><img src="../../../../assets/img/studio_tips/26-attachdebugger.gif" alt="" loading="lazy"></figure>
+<h4 id="54-条件断点conditional-breakpoints">54. 条件断点（Conditional Breakpoints）</h4>
+<ul>
+<li>**描述：**简单说，就是当设定的条件满足时，才会触发断点。你可以基于当前范围输入一个java布尔表达式，并且条件输入框内是支持代码补全的。</li>
+<li>**调用：**右键需要填写表达式的断点，然后输入布尔表达式。</li>
+</ul>
+<figure data-type="image" tabindex="54"><img src="../../../../assets/img/studio_tips/22-conditionalbreakpoint.gif" alt="" loading="lazy"></figure>
+<h4 id="55-禁用断点disable-breakpoints">55. 禁用断点（Disable Breakpoints）</h4>
+<ul>
+<li>这个操作将使得断点。当你有一个设置过复杂条件的断点或者是日志断点，当前不需要，但是下次又不用重新创建，该操作是很方便的。</li>
+<li>**调用：**按住Alt，然后单击断点即可。</li>
+</ul>
+<figure data-type="image" tabindex="55"><img src="../../../../assets/img/studio_tips/25-diablebreakpoint.gif" alt="" loading="lazy"></figure>
+<h4 id="56-计算表达式evaluate-expression">56. 计算表达式（Evaluate Expression）</h4>
+<ul>
+<li>**描述：**这个操作可以用来查看变量的内容并且计算几乎任何有效的java表达式。需要注意的是，如果你修改了变量的状态，这个状态在你恢复代码执行后依然会保留。</li>
+<li>**快捷键：**处在断点状态时，光标放在变量处，按Alt + F8，即可显示计算表达式对话框。</li>
+</ul>
+<figure data-type="image" tabindex="56"><img src="../../../../assets/img/studio_tips/27-evaluateexpression.gif" alt="" loading="lazy"></figure>
+<h4 id="57-审查变量inspect-variable">57. 审查变量（Inspect Variable）</h4>
+<ul>
+<li>**描述：**该操作可以在不打开计算表达式对话框就能审查表达式的值。</li>
+<li>**快捷键：**调试状态下，按住Alt键，然后单击表达式即可。</li>
+</ul>
+<figure data-type="image" tabindex="57"><img src="../../../../assets/img/studio_tips/28-mouse_evaluate_expression.gif" alt="" loading="lazy"></figure>
+<h4 id="58-日志断点logging-breakpoints">58. 日志断点（Logging Breakpoints）</h4>
+<ul>
+<li>**描述：**这是一种打印日志而不是暂停的断点，当你想打印一些日志信息但是不想添加<code>log</code>代码后重新部署项目，这是一个非常有用的操作。</li>
+<li>**调用：**在断点上右键，取消<code>Suspend</code>的勾选，然后勾选上<code>Log evaluated Expression</code>，并在输入框中输入你要打印的日志信息。</li>
+</ul>
+<figure data-type="image" tabindex="58"><img src="../../../../assets/img/studio_tips/23-loggingbreakpoints.gif" alt="" loading="lazy"></figure>
+<h4 id="59-标记对象mark-object">59. 标记对象（Mark Object）</h4>
+<ul>
+<li>**描述：**当你在调试的时候，这个操作可以让你给某个特殊的对象添加一个标签，方便你后面很快地辨认。在调试时，当你从一堆相似的对象中查看某个对象是否和之前是一样的，这就是一个非常有用的操作。</li>
+<li>**调用：**右键你需要标记的对象，选中<code>Mark Object</code>，输入标签；</li>
+<li>**快捷键：**选中对象时，按F3(OS X)、F11(Windows/Linux)；</li>
+</ul>
+<figure data-type="image" tabindex="59"><img src="../../../../assets/img/studio_tips/29-markobject.gif" alt="" loading="lazy"></figure>
+<h4 id="60-显示当前运行点show-execution-point">60. 显示当前运行点（Show Execution Point）</h4>
+<ul>
+<li>**描述：**该操作会立刻把你的光标移回到当前debug处。</li>
+</ul>
+<p>通常的情况是：</p>
+<ol>
+<li>你在某处触发了断点</li>
+<li>然后在文件中随意浏览</li>
+<li>直接调用这个快捷键，快速返回之前逐步调试的地方。</li>
+</ol>
+<ul>
+<li><strong>快捷键：</strong>（Debug时) Alt + F10；</li>
+</ul>
+<figure data-type="image" tabindex="60"><img src="../../../../assets/img/studio_tips/36-executionpoint.gif" alt="" loading="lazy"></figure>
+<h4 id="61-终止进程stop-process">61. 终止进程（Stop Process）</h4>
+<ul>
+<li>**描述：**该操作会终止当前正在运行的任务。如果任务数量大于一，则显示一个列表供你选择。在终止调试或者中止编译的时候特别有用！</li>
+<li>**快捷键：**Cmd + F2(OS X)、Ctrl + F2（Windows、Linux）；</li>
+</ul>
+<figure data-type="image" tabindex="61"><img src="../../../../assets/img/studio_tips/35-stoprocess.gif" alt="" loading="lazy"></figure>
+<h4 id="62-临时断点temporary-breakpoints">62. 临时断点（Temporary Breakpoints）</h4>
+<ul>
+<li>
+<p>**描述：**通过该操作可以添加一个断点，这个断点会在第一次被命中的时候自动移除。</p>
+</li>
+<li>
+<p>**快捷键：**Alt + 鼠标左键 点击代码左侧（鼠标）、Cmd + Alt + Shift + F8(OS X)、Ctrl + Alt + Shift + F8(Windows/Linux)</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="62"><img src="../../../../assets/img/studio_tips/24-temporarybreakpoints.gif" alt="" loading="lazy"></figure>
+<h4 id="63-调用层级树弹窗the-call-hierarchy-popup">63. 调用层级树弹窗（The Call Hierarchy Popup）</h4>
+<ul>
+<li>
+<p>**描述：**该操作会给你展示 在一个方法的声明和调用之间所有可能的路径。</p>
+</li>
+<li>
+<p>**快捷键：**Ctrl + Alt + H</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="63"><img src="../../../../assets/img/studio_tips/04-callinghierarchy.gif" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Android App 沉浸式状态栏解决方案]]></title>
+        <id>https://xudadi.cn/post/2016-02-15-status-bar-demo/</id>
+        <link href="https://xudadi.cn/post/2016-02-15-status-bar-demo/">
+        </link>
+        <updated>2019-09-19T06:12:12.000Z</updated>
+        <summary type="html"><![CDATA[<p>伴随着 Android 5.0 发布的 Material Design，让 Android 应用告别了以前的工程师审美，迎来了全新的界面，灵动的交互，也让越来越多的 App 开始遵从 material design 设计原则，不再是以前拿着iOS设计稿，做着Android开发。本文就其中的沉浸式状态栏这一特性，描述其兼容到4.4的实现，以及一些使用中的小细节。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>伴随着 Android 5.0 发布的 Material Design，让 Android 应用告别了以前的工程师审美，迎来了全新的界面，灵动的交互，也让越来越多的 App 开始遵从 material design 设计原则，不再是以前拿着iOS设计稿，做着Android开发。本文就其中的沉浸式状态栏这一特性，描述其兼容到4.4的实现，以及一些使用中的小细节。</p>
+<!-- more -->
+<p><strong>建议直接看最新的解决方案：</strong><br>
+<a href="http://laobie.github.io/android/2016/03/27/statusbar-util.html">Android 状态栏工具类（实现沉浸式状态栏/变色状态栏）</a></p>
+<h3 id="前言">前言</h3>
+<p>在4.4之前状态栏一直是黑色的，在4.4中带来了 <code>windowTranslucentStatus</code> 这一特性，因此可以实现给状态栏设置颜色，如下图所示，状态栏颜色不再是黑色，而是可以定制的颜色。</p>
+<figure data-type="image" tabindex="1"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/e61aeb3f3cc44354.png" alt="" loading="lazy"></figure>
+<p>国内将状态栏变色叫做沉浸式状态栏，时间久了，叫的人多了，大家就不再深究，默认了这种叫法。</p>
+<p>可以在知乎上看到关于这个问题的讨论：<a href="https://www.zhihu.com/question/27040217">为什么在国内会有很多用户把「透明栏」（Translucent Bars）称作 「沉浸式顶栏」？</a></p>
+<h3 id="需要解决的问题">需要解决的问题</h3>
+<ol>
+<li>4.4及其以上都是可以实现沉浸式状态栏效果的，5.0及其以上可以直接在主题中设置颜色，或者调用 <code>Window</code> 类中的 <code>setStatusBarColor(int color)</code> 来实现，这两种方式在5.0上都比较简单，但是如何兼容到4.4呢？</li>
+<li>图片背景的页面,怎样让状态栏透明或者半透明（效果如下）？<br>
+<img src="https://lc-qygvx1cc.cn-n1.lcfile.com/74a963666851b9bd.png" alt="" loading="lazy"></li>
+<li>使用 DrawerLayout 时，主界面实现沉浸状态栏同时，怎样保证抽屉视图也能延伸到状态栏（如下图所示），且兼容到4.4？<br>
+<img src="https://lc-qygvx1cc.cn-n1.lcfile.com/9585eb130bb180b5.png" alt="" loading="lazy"></li>
+</ol>
+<p>以上就是本文要解决的问题，下面给出解决方案。</p>
+<h3 id="解决方案">解决方案</h3>
+<h4 id="1-给状态栏设置颜色">1. 给状态栏设置颜色</h4>
+<p>思路是：</p>
+<ul>
+<li>先设置状态栏透明属性；</li>
+<li>给根布局加上一个和状态栏一样大小的矩形View（色块），添加到顶上；</li>
+<li>然后设置根布局的 <code>FitsSystemWindows</code> 属性为 <code>true</code>,此时根布局会延伸到状态栏，处在状态栏位置的就是之前添加的色块，这样就给状态栏设置上颜色了。</li>
+</ul>
+<p>代码如下：</p>
+<pre><code class="language-java">    /**
+     * 设置状态栏颜色
+     *
+     * @param activity 需要设置的activity
+     * @param color    状态栏颜色值
+     */
+    public static void setColor(Activity activity, int color) {
+        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.KITKAT) {
+            // 设置状态栏透明
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            // 生成一个状态栏大小的矩形
+            View statusView = createStatusView(activity, color);
+            // 添加 statusView 到布局中
+            ViewGroup decorView = (ViewGroup) activity.getWindow().getDecorView();
+            decorView.addView(statusView);
+            // 设置根布局的参数
+            ViewGroup rootView = (ViewGroup) ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
+            rootView.setFitsSystemWindows(true);
+            rootView.setClipToPadding(true);
+        }
+    }
+</code></pre>
+<p>其中生成状态栏一样大小的矩形色块的代码如下：</p>
+<pre><code class="language-java">    /**
+     * 生成一个和状态栏大小相同的矩形条
+     *
+     * @param activity 需要设置的activity
+     * @param color    状态栏颜色值
+     * @return 状态栏矩形条
+     */
+    private static View createStatusView(Activity activity, int color) {
+        // 获得状态栏高度
+        int resourceId = activity.getResources().getIdentifier(&quot;status_bar_height&quot;, &quot;dimen&quot;, &quot;android&quot;);
+        int statusBarHeight = activity.getResources().getDimensionPixelSize(resourceId);
+
+        // 绘制一个和状态栏一样高的矩形
+        View statusView = new View(activity);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                statusBarHeight);
+        statusView.setLayoutParams(params);
+        statusView.setBackgroundColor(color);
+        return statusView;
+    }
+</code></pre>
+<p>在 <code>setContentView()</code> 之后调用 <code>setColor(Activity activity, int color)</code> 方法即可。</p>
+<h4 id="2-图片作背景时状态栏透明">2. 图片作背景时，状态栏透明</h4>
+<p>这个实现比较简单，根布局背景设置为图片，然后添加状态栏透明 Flag， 然后设置根布局的 <code>FitsSystemWindows</code> 属性为 <code>true</code> 即可。代码如下：</p>
+<pre><code class="language-java">    /**
+     * 使状态栏透明
+     * &lt;p&gt;
+     * 适用于图片作为背景的界面,此时需要图片填充到状态栏
+     *
+     * @param activity 需要设置的activity
+     */
+    public static void setTranslucent(Activity activity) {
+        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.KITKAT) {
+            // 设置状态栏透明
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            // 设置根布局的参数
+            ViewGroup rootView = (ViewGroup) ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
+            rootView.setFitsSystemWindows(true);
+            rootView.setClipToPadding(true);
+        }
+    }
+</code></pre>
+<p>同样的，在 <code>setContentView()</code> 之后调用 <code>setTranslucent(Activity activity)</code> 方法即可。</p>
+<h4 id="3-使用-drawerlayout-时的特殊处理">3. 使用 DrawerLayout 时的特殊处理</h4>
+<p><strong>注意点：</strong></p>
+<ul>
+<li>
+<p>使用 DrawerLayout 时，此时不能再对根布局，即 DrawerLayout 进行设置，而要针对 DrawerLayout 的内容布局进行设置，即抽屉之外的另一个布局。</p>
+<p>如下是一个典型的 DrawerLayout 的布局，其内容布局即 <code>FrameLayout</code>,我们需要对 <code>FrameLayout</code> 进行仿状态栏色块的添加、<code>FitsSystemWindows</code> 属性的设置。</p>
+</li>
+</ul>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+
+&lt;android.support.v4.widget.DrawerLayout
+    android:id=&quot;@+id/drawer_layout&quot;
+    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    xmlns:app=&quot;http://schemas.android.com/apk/res-auto&quot;
+    android:layout_width=&quot;match_parent&quot;
+    android:layout_height=&quot;match_parent&quot;&gt;
+
+    &lt;FrameLayout
+        android:layout_width=&quot;match_parent&quot;
+        android:layout_height=&quot;match_parent&quot;&gt;
+
+        &lt;LinearLayout
+            android:id=&quot;@+id/main&quot;
+            android:layout_width=&quot;match_parent&quot;
+            android:layout_height=&quot;match_parent&quot;
+            android:orientation=&quot;vertical&quot;&gt;
+
+            &lt;android.support.v7.widget.Toolbar
+                android:id=&quot;@+id/toolbar&quot;
+                android:layout_width=&quot;match_parent&quot;
+                android:layout_height=&quot;?attr/actionBarSize&quot;
+                android:background=&quot;@color/colorPrimary&quot;
+                app:popupTheme=&quot;@style/ThemeOverlay.AppCompat.Light&quot;
+                app:theme=&quot;@style/ThemeOverlay.AppCompat.Dark.ActionBar&quot;/&gt;
+        &lt;/LinearLayout&gt;
+    &lt;/FrameLayout&gt;
+
+    &lt;android.support.design.widget.NavigationView
+        android:id=&quot;@+id/navigation&quot;
+        android:layout_width=&quot;wrap_content&quot;
+        android:layout_height=&quot;match_parent&quot;
+        android:layout_gravity=&quot;start&quot;
+        app:headerLayout=&quot;@layout/nav_header&quot;
+        app:menu=&quot;@menu/activity_main_drawer&quot;/&gt;
+
+&lt;/android.support.v4.widget.DrawerLayout&gt;
+</code></pre>
+<ul>
+<li>还有一个需要注意的设置抽屉布局（Drawer）的 <code>FitsSystemWindows</code> 属性为 <code>false</code>，即上面布局中的 <code>NavigationView</code>。</li>
+</ul>
+<p><strong>解决方案</strong></p>
+<ul>
+<li>
+<p>DrawerLayout 状态栏变色</p>
+<p>代码如下：</p>
+</li>
+</ul>
+<pre><code class="language-java">    /**
+     * 为DrawerLayout 布局设置状态栏变色
+     *
+     * @param activity     需要设置的activity
+     * @param drawerLayout DrawerLayout
+     * @param color        状态栏颜色值
+     */
+    public static void setColorForDrawerLayout(Activity activity, DrawerLayout drawerLayout, int color) {
+        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.KITKAT) {
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            // 生成一个状态栏大小的矩形
+            View statusBarView = createStatusBarView(activity, color);
+            // 添加 statusBarView 到布局中
+            ViewGroup contentLayout = (ViewGroup) drawerLayout.getChildAt(0);
+            contentLayout.addView(statusBarView, 0);
+            // 内容布局不是 LinearLayout 时,设置padding top
+            if (!(contentLayout instanceof LinearLayout) &amp;&amp; contentLayout.getChildAt(1) != null) {
+                contentLayout.getChildAt(1).setPadding(0, getStatusBarHeight(activity), 0, 0);
+            }
+            // 设置属性
+            ViewGroup drawer = (ViewGroup) drawerLayout.getChildAt(1);
+            drawerLayout.setFitsSystemWindows(false);
+            contentLayout.setFitsSystemWindows(false);
+            contentLayout.setClipToPadding(true);
+            drawer.setFitsSystemWindows(false);
+        }
+    }
+</code></pre>
+<p>需要注意的是，<code>DrawerLayout</code> 的布局只能包含两个直接子布局，一个是内容布局，一个是抽屉布局，结构如前面的示例布局所示，如果内容布局的根布局如果不是 <code>LinearLayout</code> 需要对其子布局设置<code>padding top</code>值，否则仿状态栏色块会被遮挡在最下面，布局内容延伸到状态栏，如下图所示：</p>
+<figure data-type="image" tabindex="2"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/49f7e6a7bd524179.png" alt="" loading="lazy"></figure>
+<p>（ps：就上图中的问题，目前的解决方案感觉并不是很好，如果你有更好的解决方案，请告诉我~）</p>
+<ul>
+<li>DrawerLayout 状态栏透明</li>
+</ul>
+<pre><code class="language-java">    /**
+     * 为 DrawerLayout 布局设置状态栏透明
+     *
+     * @param activity     需要设置的activity
+     * @param drawerLayout DrawerLayout
+     */
+    public static void setTranslucentForDrawerLayout(Activity activity, DrawerLayout drawerLayout) {
+        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.KITKAT) {
+            // 设置状态栏透明
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            // 设置内容布局属性
+            ViewGroup contentLayout = (ViewGroup) drawerLayout.getChildAt(0);
+            contentLayout.setFitsSystemWindows(true);
+            contentLayout.setClipToPadding(true);
+            // 设置抽屉布局属性
+            ViewGroup vg = (ViewGroup) drawerLayout.getChildAt(1);
+            vg.setFitsSystemWindows(false);
+            // 设置 DrawerLayout 属性
+            drawerLayout.setFitsSystemWindows(false);
+        }
+    }
+</code></pre>
+<p>同样的，在 <code>setContentView()</code> 之后调用上述解决方案中的方法即可。</p>
+<h3 id="在项目中使用">在项目中使用</h3>
+<p>以上代码我整理成了一个工具类库，放在 github 上：<a href="https://github.com/laobie/StatusBarUtil">laobie/StatusBarUtil</a></p>
+<p>在项目中推荐这样使用，在 <code>BaseActivity</code> 中重写 <code>setContentView(int layoutResID)</code> 方法，新建一个 <code>setStatusBar()</code>方法，全局设置状态栏颜色，因为一般 App 大部分界面状态栏都是主题色。</p>
+<pre><code class="language-java">
+public class BaseActivity extends AppCompatActivity {
+
+    @Override
+    public void setContentView(int layoutResID) {
+        super.setContentView(layoutResID);
+        setStatusBar();
+    }
+
+    protected void setStatusBar() {
+        StatusBarUtils.setColor(this, getResources().getColor(R.color.colorPrimary));
+    }
+
+}
+</code></pre>
+<p>当子类 Activity 的状态栏需要特殊处理时，比如设置不同的颜色，或者设置图片为背景时，重写父类的 <code>setStatusBar()</code> 方法即可，例如：</p>
+<pre><code class="language-java">public class ImageStatusBarActivity extends BaseActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_image_status_bar);
+        
+    }
+
+    @Override
+    protected void setStatusBar() {
+        StatusBarUtils.setTranslucent(this);
+    }
+</code></pre>
+<p>对 DrawerLayout 布局使用时，需要注意一点，因为方法是在 <code>setContentView()</code> 之后立即调用的，所以传进来的 <code>DrawerLayout</code> 要通过 <code>findViewById()</code> 传进来。如果传入在 <code>setContentView()</code> 之后通过 <code>findViewById()</code> 得到的 <code>DrawerLayout</code>， 则会造成空指针异常。</p>
+<pre><code class="language-java"> StatusBarUtils.setColorForDrawerLayout(this, (DrawerLayout) findViewById(R.id.drawer_layout), getResources()
+                .getColor(R.color.colorPrimary));
+</code></pre>
+<h3 id="源码和demo下载">源码和Demo下载</h3>
+<p><a href="https://github.com/laobie/StatusBarUtil">laobie/StatusBarUtil 项目地址</a></p>
+<p><a href="http://fir.im/5mnp">Demo apk 下载</a></p>
+<p>效果在前文中都有截图，就不多放了。</p>
+<p>如文章中有疏漏的地方，请联系我或在评论里告知。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[NavigationView 的使用]]></title>
+        <id>https://xudadi.cn/post/2016-02-16-use-navigation-view-detail/</id>
+        <link href="https://xudadi.cn/post/2016-02-16-use-navigation-view-detail/">
+        </link>
+        <updated>2019-09-19T06:12:09.000Z</updated>
+        <summary type="html"><![CDATA[<p>NavigationView 的引入让 Android 侧边栏实现起来相当方便，最近公司项目中也使用这个新的控件完成了侧边栏的改版。在使用过程中遇到一些坑，写篇博文记录一下。</p>
+<p>本文分为两大主要部分，第一部分是基本使用，第二部分是各种使用小细节（坑），如果你对其使用已经熟悉了，可以跳过第一部分。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>NavigationView 的引入让 Android 侧边栏实现起来相当方便，最近公司项目中也使用这个新的控件完成了侧边栏的改版。在使用过程中遇到一些坑，写篇博文记录一下。</p>
+<p>本文分为两大主要部分，第一部分是基本使用，第二部分是各种使用小细节（坑），如果你对其使用已经熟悉了，可以跳过第一部分。</p>
+<!-- more -->
+<h3 id="基本使用">基本使用</h3>
+<ol>
+<li>
+<p><code>NavigationView</code> 在 design 库中，添加依赖（最新的是 23.2.0）；</p>
+<pre><code class="language-groovy">compile 'com.android.support:design:23.1.1'
+</code></pre>
+</li>
+<li>
+<p>然后在 DrawerLayout 布局中添加 NavigationView ；</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+
+&lt;android.support.v4.widget.DrawerLayout
+    android:id=&quot;@+id/drawer_layout&quot;
+    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    xmlns:app=&quot;http://schemas.android.com/apk/res-auto&quot;
+    android:layout_width=&quot;match_parent&quot;
+    android:layout_height=&quot;match_parent&quot;&gt;
+
+    &lt;FrameLayout
+        android:layout_width=&quot;match_parent&quot;
+        android:layout_height=&quot;match_parent&quot;&gt;
+
+        &lt;LinearLayout
+            android:id=&quot;@+id/main&quot;
+            android:layout_width=&quot;match_parent&quot;
+            android:layout_height=&quot;match_parent&quot;
+            android:orientation=&quot;vertical&quot;&gt;
+
+            &lt;android.support.v7.widget.Toolbar
+                android:id=&quot;@+id/toolbar&quot;
+                android:layout_width=&quot;match_parent&quot;
+                android:layout_height=&quot;?attr/actionBarSize&quot;
+                android:background=&quot;@color/colorPrimary&quot;
+                app:popupTheme=&quot;@style/ThemeOverlay.AppCompat.Light&quot;
+                app:theme=&quot;@style/ThemeOverlay.AppCompat.Dark.ActionBar&quot;/&gt;
+
+           ......
+
+        &lt;/LinearLayout&gt;
+    &lt;/FrameLayout&gt;
+
+    &lt;android.support.design.widget.NavigationView
+        android:id=&quot;@+id/navigation&quot;
+        android:layout_width=&quot;wrap_content&quot;
+        android:layout_height=&quot;match_parent&quot;
+        android:layout_gravity=&quot;start&quot;
+        app:headerLayout=&quot;@layout/nav_header&quot;
+        app:menu=&quot;@menu/activity_main_drawer&quot;/&gt;
+
+&lt;/android.support.v4.widget.DrawerLayout&gt;
+</code></pre>
+<p>其中需要注意给 NavigationView 设置 <code>android:layout_gravity=&quot;start&quot;</code> 属性。</p>
+</li>
+<li>
+<p>然后注意到 NavigationView 其实是分两个部分的，一个是头部，一个是下面的菜单列表部分，如下图所示：</p>
+<figure data-type="image" tabindex="1"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/9585eb130bb180b5.png" alt="" loading="lazy"></figure>
+<p>其中头部通过 <code>app:headerLayout=&quot;@layout/nav_header&quot;</code> 属性添加，<code>nav_header</code> 的布局如下：</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;FrameLayout xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+             android:layout_width=&quot;match_parent&quot;
+             android:layout_height=&quot;192dp&quot;
+             android:theme=&quot;@style/ThemeOverlay.AppCompat.Dark&quot;&gt;
+
+    &lt;ImageView
+        android:layout_width=&quot;match_parent&quot;
+        android:layout_height=&quot;match_parent&quot;
+        android:background=&quot;@drawable/nav_header_bg&quot;
+        android:scaleType=&quot;centerCrop&quot;/&gt;
+
+    &lt;ImageView
+        android:layout_width=&quot;96dp&quot;
+        android:layout_height=&quot;96dp&quot;
+        android:layout_gravity=&quot;bottom&quot;
+        android:layout_marginBottom=&quot;36dp&quot;
+        android:padding=&quot;8dp&quot;
+        android:src=&quot;@drawable/ic_avatar&quot;/&gt;
+
+    &lt;TextView
+        android:layout_width=&quot;match_parent&quot;
+        android:layout_height=&quot;wrap_content&quot;
+        android:layout_gravity=&quot;bottom&quot;
+        android:padding=&quot;16dp&quot;
+        android:text=&quot;Jaeger&quot;
+        android:textAppearance=&quot;@style/TextAppearance.AppCompat.Body1&quot;/&gt;
+
+&lt;/FrameLayout&gt;
+</code></pre>
+<p>下面的菜单列表部分是一个 <code>menu</code> 文件，通过 <code>app:menu=&quot;@menu/activity_main_drawer&quot;</code>属性添加。</p>
+<p><code>activity_main_drawer.xml</code> 文件在 menu 文件夹下，内容为：</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;menu xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;&gt;
+
+    &lt;group android:checkableBehavior=&quot;single&quot;&gt;
+        &lt;item
+            android:id=&quot;@+id/nav_camera&quot;
+            android:icon=&quot;@drawable/ic_menu_camera&quot;
+            android:title=&quot;Import&quot;/&gt;
+        &lt;item
+            android:id=&quot;@+id/nav_gallery&quot;
+            android:icon=&quot;@drawable/ic_menu_gallery&quot;
+            android:title=&quot;Gallery&quot;/&gt;
+        &lt;item
+            android:id=&quot;@+id/nav_slideshow&quot;
+            android:icon=&quot;@drawable/ic_menu_slideshow&quot;
+            android:title=&quot;Slideshow&quot;/&gt;
+        &lt;item
+            android:id=&quot;@+id/nav_manage&quot;
+            android:icon=&quot;@drawable/ic_menu_manage&quot;
+            android:title=&quot;Tools&quot;/&gt;
+    &lt;/group&gt;
+
+    &lt;item android:title=&quot;Communicate&quot;&gt;
+        &lt;menu&gt;
+            &lt;item
+                android:id=&quot;@+id/nav_share&quot;
+                android:icon=&quot;@drawable/ic_menu_share&quot;
+                android:title=&quot;Share&quot;/&gt;
+            &lt;item
+                android:id=&quot;@+id/nav_send&quot;
+                android:icon=&quot;@drawable/ic_menu_send&quot;
+                android:title=&quot;Send&quot;/&gt;
+        &lt;/menu&gt;
+    &lt;/item&gt;
+
+&lt;/menu&gt;
+</code></pre>
+</li>
+<li>
+<p>菜单列表的点击事件<br>
+菜单列表的点击事件设置代码如下：</p>
+<pre><code class="language-java">navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+       switch (item.getItemId()){
+           case R.id.nav_personal_info:
+           		// do something
+               break;
+           ...
+       }
+        return false;
+    }
+});
+</code></pre>
+</li>
+</ol>
+<p>至此，<code>NavigationView</code> 的基本使用就差不多搞定了，效果就是前面图片显示的效果。接下来是各种填坑环节。😂</p>
+<h3 id="使用小细节和坑">使用小细节（和坑）</h3>
+<ol>
+<li>
+<p>获得头部（header）内控件</p>
+<p>在旧版本中，假如你要获得 NavigationView 中的头像 <code>ImageView</code>，你可以在 activity 中直接调用 <code>findViewById()</code> 方法来获得。但是在 Support Library 23.1.0 版本之后，这个不再适用，在我使用的 Support Library 23.1.1 版本中，可以直接调用 <code>getHeaderView()</code>方法先得到 Header,然后在通过header来获得头部内的控件。</p>
+<pre><code class="language-java">View headerView = navigationView.getHeaderView(0);
+ImageView ivAvatar = (ImageView) headerView.findViewById(R.id.nav_avatar);
+</code></pre>
+<p>然后就可以进行各种愉快的头像设置，用户名设置了~</p>
+<p>关于这个问题，如果你用的不是23.1.1版本的话，你可以看 stackoverflow 上的讨论<a href="http://stackoverflow.com/questions/33194594/navigationview-get-find-header-layout"> NavigationView get/find header layout</a>，针对其他版本也有解决方法说明。</p>
+</li>
+<li>
+<p>菜单列表中的图标不显示原始颜色</p>
+<p>当设计师为每一项的图标都设置了不同的颜色时，你将切好的彩色图标文件放进去，运行后发现全变成灰色了。此时可以通过 <code>app:itemIconTint=&quot;@color/blue&quot;</code> 为图标统一设置颜色，前后效果如下：</p>
+<figure data-type="image" tabindex="2"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/28339a52ef1959fb.png" alt="" loading="lazy"></figure>
+<p>然而这还不是我们需要的效果，我们需要的是彩色的图标，而不是统一的图标颜色。</p>
+<p>解决方法是调用 <code>NavigationView</code> 的 <code>setItemIconTintList(ColorStateList tint)</code> 方法，传入 <code>null</code> 参数：</p>
+<pre><code class="language-java">navigationView.setItemIconTintList(null);
+</code></pre>
+<p>最终效果如下：</p>
+<figure data-type="image" tabindex="3"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/b6274eeeb060aafb.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>添加分割线</p>
+<p>如上面的截图所示，菜单列表分成了两个部分，中间用一个分割线隔开。解决方法是在 menu 文件中分成多个 <code>group</code> ，且为每个 group 设置 id ，如下：</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;menu xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;&gt;
+    &lt;group
+        android:id=&quot;@+id/first_group&quot;
+        android:checkableBehavior=&quot;none&quot;&gt;
+        &lt;item
+            android:id=&quot;@+id/nav_personal_info&quot;
+            android:icon=&quot;@drawable/nav_personal_info&quot;
+            android:title=&quot;@string/personal_info_setting&quot;/&gt;
+
+        ...
+
+        &lt;item
+            android:id=&quot;@+id/nav_system_setting&quot;
+            android:icon=&quot;@drawable/nav_setting&quot;
+            android:title=&quot;@string/system_setting&quot;/&gt;
+    &lt;/group&gt;
+
+    &lt;group android:id=&quot;@+id/second_group&quot;&gt;
+        &lt;item
+            android:id=&quot;@+id/nav_score&quot;
+            android:icon=&quot;@drawable/nav_score&quot;
+            android:title=&quot;@string/score&quot;/&gt;
+        &lt;item
+            android:id=&quot;@+id/nav_feedback&quot;
+            android:icon=&quot;@drawable/nav_feedback&quot;
+            android:title=&quot;@string/feedback&quot;/&gt;
+    &lt;/group&gt;
+
+&lt;/menu&gt;
+</code></pre>
+</li>
+<li>
+<p>隐藏某个菜单列表项</p>
+<p>公司项目会根据你是否是管理员，来控制某个菜单列表项的显示和隐藏，因此就出现了这个问题。</p>
+<p>原以为比较麻烦，后来搜了下，也比较简单地解决了，直接上代码：</p>
+<pre><code class="language-java">MenuItem menuItem = navigationView.getMenu().findItem(R.id.some_menu_item);
+menuItem.setVisible(false);	// true 为显示，false 为隐藏
+</code></pre>
+<p>这个问题也就这么解决了。😊</p>
+</li>
+<li>
+<p>使用 NavigationView 时透明状态栏的处理</p>
+<p>这个问题可以看我上一篇文章来解决<a href="http://laobie.github.io/android/2016/02/15/status-bar-demo.html"> Android App 沉浸式状态栏解决方案</a>，里面会讲到如何处理抽屉视图的透明状态栏的实现。</p>
+<p>或者直接使用我最新开源的 <a href="https://github.com/laobie/StatusBarUtil">StatusBarUtil</a> 工具类来处理。</p>
+</li>
+</ol>
+<h3 id="写在最后">写在最后</h3>
+<ul>
+<li>
+<p>目前来说 NavigationView 的定制性还是很不友好的，后面有时间研究下为其自定义布局，或者继承重写一个好用的 NavigationView。</p>
+</li>
+<li>
+<p>在使用 NavigationView 过程中，也有很多自己一开始不知道怎么解决的问题，通过 Google 搜索基本都找到了答案，同时现在也开始使用英文搜索，发现确实好用很多，果然如之前一个笑话所说:</p>
+<blockquote>
+<p>普通程序猿 + 搜索引擎 = 中高级程序猿</p>
+</blockquote>
+<p>虽说是笑话，不过使用好搜索引擎确实能解决很多问题。</p>
+</li>
+</ul>
+<p>如发现本文中错误或者提出建议，请评论或联系我，谢谢。</p>
+]]></content>
+    </entry>
+</feed>

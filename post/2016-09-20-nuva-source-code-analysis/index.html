@@ -1,0 +1,579 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>热修复实现：ClassLoader 方式的实现 | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>热修复实现：ClassLoader 方式的实现</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><blockquote>
+<ul>
+<li>文章来源：itsCoder 的 <a href="https://github.com/itsCoder/weeklyblog">WeeklyBolg</a> 项目</li>
+<li>itsCoder 主页：<a href="http://itscoder.com/">http://itscoder.com/</a></li>
+<li>作者：<a href="https://github.com/laobie">Jaeger</a></li>
+<li>审阅者：<a href="https://github.com/hymanme">Hymanme</a>, <a href="https://github.com/brucezz">Brucezz</a></li>
+</ul>
+</blockquote>
+<p>在之前的文章 <a href="http://jaeger.itscoder.com/android/2016/08/27/android-classloader.html">热修复入门：Android 中的 ClassLoader</a> 中，讲解了 Android 中的 ClassLoader 工作原理和通过 ClassLoader 实现热修复的可能性。本文结合 <a href="https://github.com/jasonross/Nuwa">Nuva</a> 项目，来讲讲基于 ClassLoader 方式如何具体实现热修复，阅读本文之前建议先通过前面提到的文章了解下 Android 的 ClassLoader。</p>
+<!-- more -->
+<h3 id="实现的几个关键点">实现的几个关键点</h3>
+<p>在讲解实现思路之前，先回顾下 <a href="http://jaeger.itscoder.com/android/2016/08/27/android-classloader.html">热修复入门：Android 中的 ClassLoader</a> 文章中提到的几个关键点，这也是 ClassLoader 方式实现热修复的关键：</p>
+<ul>
+<li>
+<p>在 Android 中，App 安装到手机后，apk 里面的 class.dex 中的 class 均是通过 PathClassLoader 来加载的。</p>
+</li>
+<li>
+<p>DexClassLoader 可以用来加载 SD 卡上加载包含 class.dex 的 .jar 和 .apk 文件</p>
+</li>
+<li>
+<p>DexClassLoader 和 PathClassLoader 的基类 BaseDexClassLoader 查找 class 是通过其内部的 <code>DexPathList pathList</code> 来查找的</p>
+</li>
+<li>
+<p>DexPathList 内部有一个 <code>Element[] dexElements</code> 数组，其 <code>findClass()</code> 方法（源码如下）的实现就是遍历该数组，查找 class ，一旦找到需要的类，就直接返回，停止遍历：</p>
+<pre><code class="language-java">public Class findClass(String name, List&lt;Throwable&gt; suppressed) {
+    for (Element element : dexElements) {
+        DexFile dex = element.dexFile;
+        if (dex != null) {
+            Class clazz = dex.loadClassBinaryName(name, definingContext, suppressed);
+            if (clazz != null) {
+                return clazz;
+            }
+        }
+    }
+    if (dexElementsSuppressedExceptions != null) {
+        suppressed.addAll(Arrays.asList(dexElementsSuppressedExceptions));
+    }
+    return null;
+}
+</code></pre>
+</li>
+</ul>
+<h3 id="实现思路">实现思路</h3>
+<p>基于 ClassLoader 方式实现的热修复思路如下图所示：</p>
+<figure data-type="image" tabindex="1"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/b1c92f1555e7fb4b.jpg" alt="" loading="lazy"></figure>
+<p>主要步骤：</p>
+<ol>
+<li>
+<p>假设 MainActivity 中有一个方法<code>showMsg</code> ，现在显示的是 “bug” ，需要修复。</p>
+<pre><code class="language-java">public class MainActivity extends AppCompatActivity {
+    ...
+    public void showMsg() {
+        Toast.makeText(this, &quot;bug&quot;, Toast.LENGTH_SHORT).show();
+    }
+}
+</code></pre>
+</li>
+<li>
+<p>我们修改 <code>showMsg()</code> 方法，让其显示正确的结果 “meaasge”。</p>
+<pre><code class="language-java">public void showMsg() {
+    Toast.makeText(this, &quot;message&quot;, Toast.LENGTH_SHORT).show();
+}
+</code></pre>
+</li>
+<li>
+<p>制作好补丁包，即 patch.jar 文件，该 patch.jar 文件中就包含已经修复了的 dex 文件，注意此时 patch.jar 会包含一个和原来安装 apk 文件中同样的类 <code>MainActivity</code> 。</p>
+</li>
+<li>
+<p>在 Application 的 <code>onCreate</code> 方法中检测是否已经下载好补丁包，如果存在补丁包，就通过 DexClassLoader 加载 patch.jar，然后通过反射拿到 DexClassLoader 中的 DexPathList 对象，进而拿到 <code>Element[] dexElements</code> 数组，这里标记该 Element 数组为 <strong>newDexElements</strong> 。</p>
+</li>
+<li>
+<p>还是通过反射，拿到 App 默认的 ClassLoader 即 PathClassLoader 的 DexPathList 对象，进而拿到  Element 数组，这里标记下该数组为 <strong>baseDexElements</strong> 。</p>
+</li>
+<li>
+<p>将 newDexElements 和 baseDexElements 合成一个新的数组 <strong>allDexElements</strong> ，且保证 newDexElements 中的值在 allDexElements 数组的最前面。</p>
+</li>
+<li>
+<p>然后还是通过通过反射，将合成的 Element 数组设置给 PathClassLoader 的 DexPathList 对象。</p>
+</li>
+<li>
+<p>在 Application 完成初始化之后，会开始加载 <code>MainActivity</code> ，加载过程就是通过 DexPathList 对象的 <code>findClass()</code> 方法来完成的，会从头开始遍历其 Element 数组，会优先查找到之前插入的补丁包中的 dexFile，而原 apk 中的则不会查找到，因此就实现了热修复的目的。</p>
+</li>
+</ol>
+<h3 id="基于-classloader-方式实现需要解决的问题">基于 ClassLoader 方式实现需要解决的问题</h3>
+<p>在对 Nuwa 源码开始解读之前，先说明下在基于 ClassLoader 方式实现热修复需要解决的问题。</p>
+<ul>
+<li>
+<p>CLASS_ISPREVERIFIED 问题</p>
+<p>odex 文件是 OptimizedDEX 的缩写，表示经过优化的 dex 文件。由于 Android 程序的 apk 文件为 zip 压缩包格式，Dalvik虚拟机每次加载都需要从 apk 中读取 classes.dex 文件，这会耗费很多 cpu 时间，而采用 odex 方式优化的 dex 文件已经包含了加载 dex 必须的依赖库文件列表，Dalvik 虚拟机只需检测并加载所需的依赖库即可执行相应的 dex 文件，大大缩短了读取 dex 文件所需的时间。同时，Android专门提供了一个验证与优化 dex 文件的工具 dexopt，Dalvik 虚拟机在加载一个 dex 文件时，通过指定的验证与优化选项来调用 dexopt 进行相应的验证与优化操作。</p>
+<p>在 dex 优化过程中：</p>
+<blockquote>
+<p>如果某个类直接方法中引用到的类（第一层级关系，不会进行递归搜索）在同一个 dex 中的话，那么这个类就会被打上 <strong>CLASS_ISPREVERIFIED</strong> 标志。</p>
+</blockquote>
+<p>打上这个标志的类，其引用到的类就只会在该类所在的 dex 中查找，如果没找到，就直接报以下异常：</p>
+<pre><code class="language-verilog">java.lang.IllegalAccessError: Class ref in pre-verified class resolved to unexpected implementation
+</code></pre>
+<p>而 ClassLoader 方式实现的热修复，必然需要在 patch.jar 的 dex 文件中查找其他类。为了防止类打上 CLASS_ISPREVERIFIED 标志，我们只需要在每个类中引用一个单独的 dex 中的类即可。这个 dex 我们命名为 hack.dex，其包含一个 <code>HackLoad.java</code> ，接下来需要做的就是在除了 Applicaton 类以为的类的默认构造方法中都引用一下 <code>HackLoad</code> 类，如下所示：</p>
+<pre><code class="language-java">public class MainActivity extends AppCompatActivity {
+    public MainActivity() {
+        System.out.println(HackLoad.class);
+    }
+   
+   ...
+}
+</code></pre>
+<p>以上插入外部类防止打上 CLASS_ISPREVERIFIED 标志的操作也叫做打桩。</p>
+<p>目前开源的热修复项目插入打桩的代码均是通过 javassist 来实现的，本文这里不做详细介绍了，可以参考一下文章来深入了解：</p>
+<ul>
+<li><a href="http://www.jianshu.com/p/56facb3732a7">安卓 App 热补丁动态修复实现 - 简书</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/java/j-dyn0916/">Java 编程的动态性， 第四部分: 用 Javassist 进行类转换</a></li>
+</ul>
+<blockquote>
+<p>注：Android 官方增加类的验证过程，并打上 CLASS_ISPREVERIFIED 标志，肯定是为了提升性能和效率的，因此这种解决方案对性能确实存在一定的影响，在微信的 Tinker 方案对比中，也给出了实际的效率对比，差距还是挺大的，因此在使用该方式实现热修复需要了解到这一点。</p>
+</blockquote>
+<figure data-type="image" tabindex="2"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/04eb03974bad8947.png" alt="" loading="lazy"></figure>
+</li>
+</ul>
+<h3 id="nuva-项目的源码解读">Nuva 项目的源码解读</h3>
+<p>在前面的实现思路分析中，可以说整体思路是比较简单清晰的，按照此思路来，具体的实现其实也不难。接下来就以 Nuwa 项目的源码来解读下具体的实现。</p>
+<ol>
+<li>
+<p>项目结构分析</p>
+<figure data-type="image" tabindex="3"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/473528c66cc757e3.jpg" alt="" loading="lazy"></figure>
+<p>Nuwa 项目的结构如上图所示，可以看出，项目结构并不复杂：</p>
+<ul>
+<li><code>util/AssetUtils.java</code> Asset 工具类，内部两个方法：复制 Asset 资源和复制文件。</li>
+<li><code>util/DexUtils.java</code> dex 工具类，主要是实现将 patch.jar 文件中的 dexFile 插入到 PathClassLoader 对应的  Element 数组的前面。</li>
+<li><code>util/ReflectionUtils.java</code> 反射工具类，实现了两个方法：获取和设置无访问权限域（字段）的值。</li>
+<li><code>Nuwa.java</code> 项目主类，其包含两个方法：初始化方法，加载补丁方法。</li>
+</ul>
+</li>
+<li>
+<p>Nuva 的实现过程：初始化和加载 dex</p>
+<p>在 Nuwa 项目的使用说明中，需要在 Application 中添加如下代码：</p>
+<pre><code class="language-java">      @Override
+      protected void attachBaseContext(Context base) {
+          super.attachBaseContext(base);
+          Nuwa.init(this);
+      }
+</code></pre>
+<p>直接看 <code>Nuwa.java</code> 中的源码：</p>
+<pre><code class="language-java">   public class Nuwa {
+   
+       private static final String TAG = &quot;nuwa&quot;;
+       private static final String HACK_DEX = &quot;hack.apk&quot;;
+   
+       private static final String DEX_DIR = &quot;nuwa&quot;;
+       private static final String DEX_OPT_DIR = &quot;nuwaopt&quot;;
+   
+       /**
+        * 初始时加载 hack.pak 的 dex 文件,处理打桩
+        * @param context
+        */
+       public static void init(Context context) {
+            File dexDir = new File(context.getFilesDir(), DEX_DIR);
+            dexDir.mkdir();
+    
+            String dexPath = null;
+            try {
+                dexPath = AssetUtils.copyAsset(context, HACK_DEX, dexDir);
+            } catch (IOException e) {
+                Log.e(TAG, &quot;copy &quot; + HACK_DEX + &quot; failed&quot;);
+                e.printStackTrace();
+            }
+    
+            loadPatch(context, dexPath);
+        }
+    
+       public static void loadPatch(Context context, String dexPath) {
+    
+            if (context == null) {
+                Log.e(TAG, &quot;context is null&quot;);
+                return;
+            }
+            if (!new File(dexPath).exists()) {
+                Log.e(TAG, dexPath + &quot; is null&quot;);
+                return;
+          }
+          File dexOptDir = new File(context.getFilesDir(), DEX_OPT_DIR);
+          dexOptDir.mkdir();
+          try {
+              DexUtils.injectDexAtFirst(dexPath, dexOptDir.getAbsolutePath());
+          } catch (Exception e) {
+              Log.e(TAG, &quot;inject &quot; + dexPath + &quot; failed&quot;);
+              e.printStackTrace();
+          }
+      }
+   }
+</code></pre>
+<p>在 <code>init()</code> 方法中，通过加载  asset 文件夹中的 hack.apk 文件，将插桩类加载进来，防止之前插桩的那些类报找不到 <code>HackLoad.class</code> 异常。这里也可以意识到一点，就是 Application    不应该插桩，否则直接报异常出错。</p>
+<p>接下来的 <code>loadPatch(Context context, String dexPath)</code> 才是重点，除了在 <code>init()</code> 方法中被调用以为，后面加载补丁 patch.jar 时也是使用该方法来加载。其需要两个参数：一个是上下文    context，一个是包含 dex 的 jar 或者 apk 文件的路径。</p>
+<p>注意到其中有这么一段代码：</p>
+<pre><code class="language-java">File dexOptDir = new File(context.getFilesDir(), DEX_OPT_DIR);
+dexOptDir.mkdir();
+</code></pre>
+<p>这个得到的是一个存放优化后的 dex 文件的路径，这是 DexClassLoader 类的构造方法所需要的：</p>
+<pre><code class="language-java">public DexClassLoader(String dexPath, String optimizedDirectory,
+        String libraryPath, ClassLoader parent) {
+    super(dexPath, new File(optimizedDirectory), libraryPath, parent);
+}
+</code></pre>
+<ul>
+<li><code>String optimizedDirectory</code> : 用来缓存优化的 dex 文件的路径，即从 apk 或 jar 文件中提取出来的 dex 文件。该路径不可以为空，且应该是应用私有的，有读写权限的路径（实际上也可以使用外部存储空间，但是这样的话就存在代码注入的风险）。</li>
+</ul>
+<p>关于 DexClassLoader 的其他细节，可以阅读本文开头提到的那篇文章。</p>
+<p>接下来就是调用 <code>DexUtils.injectDexAtFirst()</code> 方法，看该方法的名称就可以知道，是将对应的 dex 注入到所有的 dex 的最前面。</p>
+</li>
+<li>
+<p>注入补丁的 dex</p>
+<p>注入补丁的过程主要在 DexUtil 类中：</p>
+<pre><code class="language-java">public class DexUtils {
+
+    public static void injectDexAtFirst(String dexPath, String defaultDexOptPath) throws NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
+        DexClassLoader dexClassLoader = new DexClassLoader(dexPath, defaultDexOptPath, dexPath, getPathClassLoader());
+        Object baseDexElements = getDexElements(getPathList(getPathClassLoader()));
+        Object newDexElements = getDexElements(getPathList(dexClassLoader));
+        Object allDexElements = combineArray(newDexElements, baseDexElements);
+        Object pathList = getPathList(getPathClassLoader());
+        ReflectionUtils.setField(pathList, pathList.getClass(), &quot;dexElements&quot;, allDexElements);
+    }
+
+    private static PathClassLoader getPathClassLoader() {
+        PathClassLoader pathClassLoader = (PathClassLoader) DexUtils.class.getClassLoader();
+        return pathClassLoader;
+    }
+
+    private static Object getDexElements(Object paramObject)
+            throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
+        return ReflectionUtils.getField(paramObject, paramObject.getClass(), &quot;dexElements&quot;);
+    }
+
+    private static Object getPathList(Object baseDexClassLoader)
+            throws IllegalArgumentException, NoSuchFieldException, IllegalAccessException, ClassNotFoundException {
+        return ReflectionUtils.getField(baseDexClassLoader, Class.forName(&quot;dalvik.system.BaseDexClassLoader&quot;), &quot;pathList&quot;);
+    }
+
+    private static Object combineArray(Object firstArray, Object secondArray) {
+        Class&lt;?&gt; localClass = firstArray.getClass().getComponentType();
+        int firstArrayLength = Array.getLength(firstArray);
+        int allLength = firstArrayLength + Array.getLength(secondArray);
+        Object result = Array.newInstance(localClass, allLength);
+        for (int k = 0; k &lt; allLength; ++k) {
+            if (k &lt; firstArrayLength) {
+                Array.set(result, k, Array.get(firstArray, k));
+            } else {
+                Array.set(result, k, Array.get(secondArray, k - firstArrayLength));
+            }
+        }
+        return result;
+    }
+    
+}
+</code></pre>
+<p>结合上文实现思路的分析，<code>injectDexAtFirst()</code> 方法的流程是很清晰的：</p>
+<ul>
+<li>通过 <code>DexClassLoader</code> 加载补丁中的 dex 文件，然后反射得到新的 Element 集合：<code>newDexElements</code> ；</li>
+<li>拿到 <code>PathClassLoader</code> 中的 Element 集合：<code>baseDexElements</code> ；</li>
+<li>将 <code>newDexElements</code> 和 <code>baseDexElements</code> 组合成整个的 Element 组合，组合是放在 <code>combineArray</code> 方法中执行的，看看其具体的实现，就可以发现会优先将 newDexElements 中的值放在合成数组的最前面，这也是之前所提到的实现热修复的关键点之一。</li>
+<li>将合成后的 <code>allDexElements</code> 设置给 PathClassLoader 的 DexPathList 对应的 Element 数组。</li>
+</ul>
+<p>反射工具类的源码如下：</p>
+<pre><code class="language-java">public class ReflectionUtils {
+    public static Object getField(Object obj, Class&lt;?&gt; cl, String field)
+            throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field localField = cl.getDeclaredField(field);
+        localField.setAccessible(true);
+        return localField.get(obj);
+    }
+    public static void setField(Object obj, Class&lt;?&gt; cl, String field, Object value)
+            throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field localField = cl.getDeclaredField(field);
+        localField.setAccessible(true);
+        localField.set(obj, value);
+    }
+}
+</code></pre>
+<p>关于反射，你可以通过 <a href="http://www.jianshu.com/p/1a60d55a94cd">Java 基础与提高干货系列——Java反射机制</a> 来了解，本文就不多做探讨了。</p>
+<p>至此，Nuva 的关键代码均解读完毕，就该项目而言，代码量并不多，但是整个实现的思路是很巧妙很清晰的，这也是该项目的关键之处。</p>
+</li>
+</ol>
+<h3 id="后续内容">后续内容</h3>
+<ul>
+<li>在接下来的系列文章中，还会结合 Nuva 项目，介绍下补丁包 patch.jar 的生成操作。</li>
+<li>由于本文时间较为仓促，后续有时间的话会补上实践过程。</li>
+</ul>
+<h3 id="参考资料">参考资料</h3>
+<ul>
+<li><a href="http://blog.sina.com.cn/s/blog_71338cc10102uwgt.html">绕过 Dalvik 验证技术分析</a></li>
+<li><a href="http://www.jianshu.com/p/56facb3732a7">安卓 App 热补丁动态修复实现 - 简书</a></li>
+</ul>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

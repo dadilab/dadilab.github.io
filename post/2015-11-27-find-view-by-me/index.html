@@ -1,0 +1,337 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>第一个插件：FindViewByMe | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>第一个插件：FindViewByMe</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><p>FindViewByMe 是一个自动生成 FindViewById 代码的 IDEA/Android Studio 插件，支持 Activity、Fragment 和 ViewHolder 中的 findViewById 的代码生成。</p>
+<p>该插件适用于 IntelliJ IDEA 和 Android Studio，以下说明以 Android Studio (简称 AS )为例。</p>
+<!-- more -->
+<h4 id="1-下载和安装">1. 下载和安装</h4>
+<ul>
+<li>
+<p>主菜单依次选择 <code>File | Settings</code> ，打开设置对话框，选择 <code>Plugins</code>；</p>
+</li>
+<li>
+<p>搜索框中输入 “findviewbyme” ,点击下面的“Browse”；</p>
+<figure data-type="image" tabindex="1"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/ed9e903a164b3de8.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>在找到的结果中点击 “Install”，然后会提示重启 AS，重启就行了。</p>
+<figure data-type="image" tabindex="2"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/179220e48074f2e4.png" alt="" loading="lazy"></figure>
+</li>
+</ul>
+<h4 id="2-基本使用">2. 基本使用</h4>
+<ul>
+<li>当你写完一个 layout 文件，在该文件编辑界面任意位置右键，发现菜单中有一个 <code>Find View By Me</code> 的选项；</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/4c8d9c9bc1a997b3.png" alt="" loading="lazy"></figure>
+<ul>
+<li>点击后会出现 “FindViewByMe” 的对话框，如下所示:</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/fa8259e43ce35445.png" alt="" loading="lazy"></figure>
+<ul>
+<li>在列表中勾选你需要生成代码的控件，下面就会出现对应的代码；</li>
+<li>点击 “Copy Code” 按钮就可以将代码复制到剪切板了，在java文件中粘贴就行了。</li>
+</ul>
+<h4 id="3-添加-rootview">3. 添加 RootView</h4>
+<ul>
+<li>针对 Fragment 需要添加 rootView 这种，首先勾选 “Add RootView”；</li>
+<li>然后在编辑框中输入 rootView 的名称，例 <code>contentView</code>；</li>
+<li>最后点击添加，生成的代码就更新了。</li>
+</ul>
+<h4 id="4-adapter-中的-viewholder">4. Adapter 中的 ViewHolder</h4>
+<ul>
+<li>勾选上 “Is ViewHolder” 就行了，代码就更新了；</li>
+<li>这里的控件变量不再添加任何修饰符。</li>
+<li>一些变量得自行去处理，这里不再赘述。</li>
+</ul>
+<h4 id="5-几点说明">5. 几点说明</h4>
+<ul>
+<li>控件变量的命名规则：变量命名是根据控件的id来的，例如 id 是 <code>edit_user_name</code> ，那么生成的变量名称就是 <code>editUserName</code>；</li>
+<li>控件变量默认使用 <code>private</code> 修饰符；</li>
+<li>关于添加“m”的问题，这个直接在兑换框中勾选 “Add “m”” 就行了，此时变量命名就变成<code>mEditUserName</code>。</li>
+</ul>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,817 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>自定义选择复制功能的实现 | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>自定义选择复制功能的实现</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><blockquote>
+<ul>
+<li>文章来源：itsCoder 的 <a href="https://github.com/itsCoder/weeklyblog">WeeklyBolg</a> 项目</li>
+<li>itsCoder 主页：<a href="http://itscoder.com/">http://itscoder.com/</a></li>
+<li>作者：<a href="https://github.com/laobie">写代码的猴子</a></li>
+<li>审阅者：<a href="https://github.com/jasonim">jasonim (Jiandong Hu)</a></li>
+</ul>
+</blockquote>
+<h3 id="写在前面">写在前面</h3>
+<p>先来个段子：</p>
+<blockquote>
+<p>刚工作时遇到一个特别难搞定的需求，当时没做出来，感到很羞耻。过了几年，再一次遇到这个需求，还是没做出来，只是不再感到羞耻了。</p>
+</blockquote>
+<p>在我刚开始工作的时候，也有过一次这样的经历。当时项目中有个需求，让 TextView 中的文本可以选择复制，正常来讲，应该是很容易实现的，直接按照下面的设置就可以了：</p>
+<!-- more -->
+<pre><code class="language-java">mTextView.setTextIsSelectable(true);
+</code></pre>
+<p>但是，这个简单的实现并不是完美的，主要有几个问题：</p>
+<ul>
+<li>
+<p><strong>不同版本选择复制样式不统一</strong>：在原生系统上 6.0 之前和之后的操作样式是不同的，这里不得不说，6.0 以下的这个选择复制操作交互很不合理，且对应用的界面侵入太多。</p>
+<figure data-type="image" tabindex="1"><img src="/img/postimg/selectable_text_diff.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p><strong>万恶的国产 ROM 问题</strong>：当时公司测试同事提 bug 反馈，在 vivo 手机上这么设置，长按之后并没有效果。（再一次吐槽乱改系统的国产 ROM，这也是为什么 Android 开发比起 iOS 费事费力的原因之一）</p>
+</li>
+<li>
+<p><strong>可定制性不高</strong>：如果仅仅是一个选择复制的功能，不考虑以上两个问题，还能凑合搞定，但是假如多个需求，选中文字之后直接进行某个操作，比如收藏、发送给好友，此时原生的选择复制功能可能就不足以胜任了。</p>
+</li>
+</ul>
+<p>以上说了这么多，问题的解决办法就是：自己写一个选择复制的功能，这样以上三个问题都能很好地解决了。</p>
+<p>看起来很容易，但是对于当时刚刚入门的我来说，这是个完全没头绪的任务。</p>
+<p>时隔一年之后，再遇到这个需求，这次通过 Google、GitHub ，以及参考 SDK 23 中 TextView 源码，基本上实现了自定义选择复制的功能，效果如下：</p>
+<figure data-type="image" tabindex="2"><img src="/img/postimg/selectabletexthelper.png" alt="" loading="lazy"></figure>
+<p>保证所有的平台上显示效果一致，弹出的操作菜单可以自己定制，并设置相应的操作。</p>
+<h3 id="实现要求和要点">实现要求和要点</h3>
+<p>在开始具体的实现之前，先确定下实现的要求：</p>
+<ul>
+<li>尽可能保证和 Android 6.0 原生选择复制一样的交互和基础功能</li>
+<li>尽可能不需要侵入太多，为了实现选择复制功能，重新自定义 TextView 的方式是不够优雅的，特别是考虑到项目中本来就已经使用了自定义的 TextView ，一旦需求变更，改动成本很大</li>
+<li>可用的自定义配置</li>
+</ul>
+<p>本文最终实现的使用方式如下所示，均满足以上的实现要求：</p>
+<pre><code class="language-java">mSelectableTextHelper = new SelectableTextHelper.Builder(mTvTest)
+    .setSelectedColor(getResources().getColor(R.color.selected_blue))
+    .setCursorHandleSizeInDp(20)
+    .setCursorHandleColor(getResources().getColor(R.color.cursor_handle_color))
+    .build();
+</code></pre>
+<p>整个自定义的选择复制功能视图上主要有三个部分：</p>
+<figure data-type="image" tabindex="3"><img src="/img/postimg/selectable_text_helper_views.png" alt="" loading="lazy"></figure>
+<ul>
+<li>选择游标</li>
+<li>选中的文本</li>
+<li>操作框</li>
+</ul>
+<p>在具体实现中有以下要点：</p>
+<ul>
+<li>自定义选择游标，可以拖动定位选中文本</li>
+<li>文本的选中状态</li>
+<li>操作框的显示，以及对应操作的处理</li>
+<li>在可滑动布局中的特殊处理，例如在 ScrollView 中，当视图滚动时隐藏或者移动选择游标，隐藏操作框，停止滑动时重新显示选择游标和操作框</li>
+<li>选中文本后，点击 TextView 取消选择</li>
+</ul>
+<h3 id="实现思路">实现思路</h3>
+<p>在开始实践之前，查找资料是少不了的，首先找到了 <a href="http://kymjs.com/code/2016/08/13/01">记划词模块重构感受|开源实验室-张涛</a> 这篇文章，但是这篇文章中更多是提供了一个改进某个开源项目的思路，并没有给出具体的代码，而且连那个开源项目也没给出地址。</p>
+<p>后来通过搜索关键字，找到了那个开源项目：<br>
+<a href="https://github.com/zhouray/SelectableTextView">zhouray/SelectableTextView</a></p>
+<p>如张涛吐槽的那样，这个项目的实现确实不够优雅，主要存在两个问题：</p>
+<ul>
+<li>自定义 TextView 实现的，侵入太多</li>
+<li>解决嵌套在滑动布局中的处理太简单粗暴，竟然自定义了一个 ScrollView 来处理，应用到实际场景中是存在问题的</li>
+</ul>
+<p>如果你有时间可以看一下这个项目的代码，在本文后面的实现中，也部分参考了该项目。</p>
+<p>参考上面提到的文章和开源项目，实现思路基本确定了：</p>
+<ul>
+<li>选择游标使用 PopupWindow 实现，并重写 Touch 事件处理逻辑，实现拖动定位选择文本</li>
+<li>选中文本使用 <code>BackgroundColorSpan</code> 来显示，比较简单</li>
+<li>操作框同样使用 PopupWindow 实现，重点是处理好显示的位置</li>
+</ul>
+<p>大致的思路确定，接下来就是具体的实现了。</p>
+<h3 id="具体实现过程">具体实现过程</h3>
+<p>自定义的选择复制类取名为 <code>SelectableTextHelper</code>，其有一个字段 <code>mTextView</code>，持有需要设置选择复制的 <code>TextView</code> 对象。</p>
+<h4 id="初步设置">初步设置</h4>
+<p>由于 <code>TextView</code> 的文本的 <code>BufferType</code> 类型是 <code>SPANNABLE</code> 时才可以设置 Span ，实现选中的效果，因此在一开始先给 TextView 设置下：</p>
+<pre><code class="language-java">mTextView.setText(mTextView.getText(), TextView.BufferType.SPANNABLE);
+</code></pre>
+<p>接下来给 TextView 设置相关的点击、长按、Touch 事件：</p>
+<pre><code class="language-java">    mTextView.setOnLongClickListener(new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+            showSelectView(mTouchX, mTouchY);
+            return true;
+        }
+    });
+    
+    mTextView.setOnTouchListener(new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            mTouchX = (int) event.getX();
+            mTouchY = (int) event.getY();
+            return false;
+        }
+    });
+    
+    mTextView.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            resetSelectionInfo();
+            hideSelectView();
+        }
+    });
+
+</code></pre>
+<ul>
+<li>其中 <code>onTouch()</code> 记录了触摸点坐标，用于后面的选择文本的位置定位以及选择游标的显示，即传递给 <code>showSelectView()</code> 方法。</li>
+<li><code>onClick()</code> 中的处理比较简单，重置选中文本信息、隐藏选择相关的 View 。</li>
+</ul>
+<p>直接看一下 <code>showSelectView()</code> 和 <code>hideSelectView()</code> 的实现：</p>
+<h4 id="显示选择相关组件">显示选择相关组件</h4>
+<pre><code class="language-java">private void showSelectView(int x, int y) {
+    hideSelectView();
+    resetSelectionInfo();
+    isHide = false;
+    if (mStartHandle == null) mStartHandle = new CursorHandle(true);
+    if (mEndHandle == null) mEndHandle = new CursorHandle(false);
+    int startOffset = TextLayoutUtil.getPreciseOffset(mTextView, x, y);
+    int endOffset = startOffset + DEFAULT_SELECTION_LENGTH;
+    if (mTextView.getText() instanceof Spannable) {
+        mSpannable = (Spannable) mTextView.getText();
+    }
+    if (mSpannable == null || startOffset &gt;= mTextView.getText().length()) {
+        return;
+    }
+    selectText(startOffset, endOffset);
+    showCursorHandle(mStartHandle);
+    showCursorHandle(mEndHandle);
+    mOperateWindow.show();
+}
+</code></pre>
+<ul>
+<li>在 show 方法开始，因为之前可能已经显示了选择相关的 View ，比如先长按 TextView 的 A 点，然后弹出选择游标、操作框，此时再长按 B 点，此时再次弹出选择游标和操作框时，就需要先隐藏之前的相关 View 了，这里就这样简单粗暴地处理了下。</li>
+<li><code>int startOffset = TextLayoutUtil.getPreciseOffset(mTextView, x, y);</code> 是一个很有意思的地方，这里参考了前面提到的开源项目里面的实现，这个方法通过传入 TextView 中一个点的坐标，就可以计算出来对应的最接近的那个文字的索引，简单说明如下：</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="/img/postimg/get_text_offset.png" alt="" loading="lazy"></figure>
+<p>通过传入『种』那个字附近的某个点的坐标 (x,y)，就可以得出『种』在 TextView 的文本中的索引是 9 (从 0 开始计数)。</p>
+<p><code>TextLayoutUtil.getPreciseOffset()</code> 方法如下：</p>
+<pre><code class="language-java">public static int getPreciseOffset(TextView textView, int x, int y) {
+    Layout layout = textView.getLayout();
+    if (layout != null) {
+        int topVisibleLine = layout.getLineForVertical(y);
+        int offset = layout.getOffsetForHorizontal(topVisibleLine, x);
+        int offsetX = (int) layout.getPrimaryHorizontal(offset);
+        if (offsetX &gt; x) {
+            return layout.getOffsetToLeftOf(offset);
+        } else {
+            return offset;
+        }
+    } else {
+        return -1;
+    }
+}
+</code></pre>
+<p>这里涉及到 TextView 的文本布局类 Layout ，虽然看过这块的部分源码，但是这里的处理还是有点懵，本文就不多深入了，有兴趣的话可以自行了解下这块的源码。</p>
+<ul>
+<li>
+<p>文本的选中显示是在 <code>selectText()</code> 方法中处理的，重点是设置 Span 和记录选中的文本信息：</p>
+<pre><code class="language-java">private void selectText(int startPos, int endPos) {
+    if (startPos != -1) {
+        mSelectionInfo.mStart = startPos;
+    }
+    if (endPos != -1) {
+        mSelectionInfo.mEnd = endPos;
+    }
+    if (mSelectionInfo.mStart &gt; mSelectionInfo.mEnd) {
+        int temp = mSelectionInfo.mStart;
+        mSelectionInfo.mStart = mSelectionInfo.mEnd;
+        mSelectionInfo.mEnd = temp;
+    }
+    if (mSpannable != null) {
+        if (mSpan == null) {
+            mSpan = new BackgroundColorSpan(mSelectedColor);
+        }
+        mSelectionInfo.mSelectionContent = mSpannable.subSequence(mSelectionInfo.mStart, mSelectionInfo.mEnd).toString();
+        mSpannable.setSpan(mSpan, mSelectionInfo.mStart, mSelectionInfo.mEnd, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        if (mSelectListener != null) {
+            mSelectListener.onTextSelected(mSelectionInfo.mSelectionContent);
+        }
+    }
+}
+</code></pre>
+<p>其中处理了下可能存在的 endPos 小于 startPos 的情况，进行了一次交换，后面就是设置 <code>BackgroundColorSpan</code> 已经记录下选中文本的信息，已经设置了选中监听时的回调。</p>
+<p>其中 mSelectionInfo 是 <code>SelectionInfo</code> 类的一个简单实例，该类就三个字段，选中文字的开始位置、结束位置和选中的文本：</p>
+<pre><code class="language-java">public class SelectionInfo {
+    public int mStart;
+    public int mEnd;
+    public String mSelectionContent;
+}
+</code></pre>
+</li>
+<li>
+<p><code>showCursorHandle()</code> 方法顾名思义就是显示选择游标，因为是 PopupWindow 实现的，重点就是显示位置的确定，这里再次涉及到 Layout 相关的 API :</p>
+<pre><code class="language-java">private void showCursorHandle(CursorHandle cursorHandle) {
+    Layout layout = mTextView.getLayout();
+    int offset = cursorHandle.isLeft ? mSelectionInfo.mStart : mSelectionInfo.mEnd;
+    cursorHandle.show((int) layout.getPrimaryHorizontal(offset), layout.getLineBottom(layout.getLineForOffset(offset)));
+}
+</code></pre>
+<p>这里和之前的是反的，通过文本中的文字索引，来获取到对应的点的坐标。然后显示 PopupWindow 即可。</p>
+</li>
+<li>
+<p>最后是显示操作框，同样是一个  PopupWindow ，这里的细节后面再展开。</p>
+</li>
+</ul>
+<h4 id="隐藏选择相关组件">隐藏选择相关组件</h4>
+<p>这里没啥好说的，就是判空下左右选择游标和操作框，如果非空，则调用对应的 <code>dismiss()</code> 方法</p>
+<pre><code class="language-java">private void hideSelectView() {
+    isHide = true;
+    if (mStartHandle != null) {
+        mStartHandle.dismiss();
+    }
+    if (mEndHandle != null) {
+        mEndHandle.dismiss();
+    }
+    if (mOperateWindow != null) {
+        mOperateWindow.dismiss();
+    }
+}
+</code></pre>
+<p>这里基本的流程和相关的实现细节已大概讲述了下，接下来就是就是选择游标和操作框的实现。</p>
+<h4 id="选择游标">选择游标</h4>
+<p>由于游标的移动涉及到文字的选中，以及操作框的显隐、定位，就直接实现为 <code>SelectableTextHelper</code> 的内部类。直接上代码：</p>
+<pre><code class="language-java">private class CursorHandle extends View {
+    private PopupWindow mPopupWindow;
+    private Paint mPaint;
+  
+    private int mCircleRadius = mCursorHandleSize / 2;
+    private int mWidth = mCircleRadius * 2;
+    private int mHeight = mCircleRadius * 2;
+    private int mPadding = 25;
+    private boolean isLeft;
+    public CursorHandle(boolean isLeft) {
+        super(mContext);
+        this.isLeft = isLeft;
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaint.setColor(mCursorHandleColor);
+        mPopupWindow = new PopupWindow(this);
+        mPopupWindow.setClippingEnabled(false);
+        mPopupWindow.setWidth(mWidth + mPadding * 2);
+        mPopupWindow.setHeight(mHeight + mPadding / 2);
+    }
+    @Override
+    protected void onDraw(Canvas canvas) {
+        canvas.drawCircle(mCircleRadius + mPadding, mCircleRadius, mCircleRadius, mPaint);
+        if (isLeft) {
+            canvas.drawRect(mCircleRadius + mPadding, 0, mCircleRadius * 2 + mPadding, mCircleRadius, mPaint);
+        } else {
+            canvas.drawRect(mPadding, 0, mCircleRadius + mPadding, mCircleRadius, mPaint);
+        }
+    }
+  
+  ......
+    
+}
+</code></pre>
+<p>直接继承 PopupWindow 的话，没有 onDraw 方法 ，这里直接继承 View ，然后在 CursorHandle 的构造函数中初始化了一个 PopupWindow ，并将 CursorHandle 实例作为 contentView 传递进去，然后在 <code>onDraw()</code> 方法中绘制了自定义的选择游标，仿照 6.0 的选择游标效果。</p>
+<figure data-type="image" tabindex="5"><img src="/img/postimg/cursor_handle.svg" alt="" loading="lazy"></figure>
+<p>这个也是绘制起来也是很简单的，一个正方形和一个圆组合下即可，处理下是左边还是右边就可以了，具体参照上面的代码。</p>
+<p>接下来就是设置相关的触摸事件，响应拖动游标时更新选中的文本。</p>
+<pre><code class="language-java">private int mAdjustX;
+private int mAdjustY;
+private int mBeforeDragStart;
+private int mBeforeDragEnd;
+@Override
+public boolean onTouchEvent(MotionEvent event) {
+    switch (event.getAction()) {
+        case MotionEvent.ACTION_DOWN:
+            mBeforeDragStart = mSelectionInfo.mStart;
+            mBeforeDragEnd = mSelectionInfo.mEnd;
+            mAdjustX = (int) event.getX();
+            mAdjustY = (int) event.getY();
+            break;
+        case MotionEvent.ACTION_UP:
+        case MotionEvent.ACTION_CANCEL:
+            mOperateWindow.show();
+            break;
+        case MotionEvent.ACTION_MOVE:
+            mOperateWindow.dismiss();
+            int rawX = (int) event.getRawX();
+            int rawY = (int) event.getRawY();
+            update(rawX + mAdjustX - mWidth, rawY + mAdjustY - mHeight);
+            break;
+    }
+    return true;
+}
+</code></pre>
+<ul>
+<li>
+<p>在游标移动时，隐藏操作框，停止移动时，再显示操作框。</p>
+</li>
+<li>
+<p>在触摸发生移动时，即 <code>MotionEvent.ACTION_MOVE</code> 时，更新游标位置和选中的文本，<code>update()</code> 方法如下：</p>
+<pre><code class="language-java">private int[] mTempCoors = new int[2];
+public void update(int x, int y) {
+    mTextView.getLocationInWindow(mTempCoors);
+    int oldOffset;
+    if (isLeft) {
+        oldOffset = mSelectionInfo.mStart;
+    } else {
+        oldOffset = mSelectionInfo.mEnd;
+    }
+    y -= mTempCoors[1];
+    int offset = TextLayoutUtil.getHysteresisOffset(mTextView, x, y, oldOffset);
+    if (offset != oldOffset) {
+        resetSelectionInfo();
+        if (isLeft) {
+            if (offset &gt; mBeforeDragEnd) {
+                CursorHandle handle = getCursorHandle(false);
+                changeDirection();
+                handle.changeDirection();
+                mBeforeDragStart = mBeforeDragEnd;
+                selectText(mBeforeDragEnd, offset);
+                handle.updateCursorHandle();
+            } else {
+                selectText(offset, -1);
+            }
+            updateCursorHandle();
+        } else {
+            if (offset &lt; mBeforeDragStart) {
+                CursorHandle handle = getCursorHandle(true);
+                handle.changeDirection();
+                changeDirection();
+                mBeforeDragEnd = mBeforeDragStart;
+                selectText(offset, mBeforeDragStart);
+                handle.updateCursorHandle();
+            } else {
+                selectText(mBeforeDragStart, offset);
+            }
+            updateCursorHandle();
+        }
+    }
+}
+</code></pre>
+<p>在一开始的实现中，<code>update()</code> 方法没这么复杂，但是考虑到左边的游标在移动到右边游标的右边时，如下面的动图所示：</p>
+<figure data-type="image" tabindex="6"><img src="http://ww2.sinaimg.cn/large/91e23208jw1f9s285jsn8g20900g0gop.gif" alt="" loading="lazy"></figure>
+<p>此时就需要多一点处理，左边的右边变右边，右边的游标变左边，同时选中的文本也需要重新变换起点位置，原来是 end ，现在则变成了 start 。</p>
+<p>具体的逻辑实现就是根据之前选中的文本的前后位置信息，进行前后位置的交换。同时调整游标的方向，更新视图，这个逻辑在 <code>changeDirection()</code> 方法中：</p>
+<pre><code class="language-java">private void changeDirection() {
+    isLeft = !isLeft;
+    invalidate();
+}
+</code></pre>
+</li>
+<li>
+<p>更新选择游标位置：由于游标的位置处理成只和选中的文本有关，因而处理起来较为简单，在上面的反转变化中，只要选中的文本正确变化了，那么这里的游标位置更新就是正确的。</p>
+<pre><code class="language-java">private void updateCursorHandle() {
+    mTextView.getLocationInWindow(mTempCoors);
+    Layout layout = mTextView.getLayout();
+    if (isLeft) {
+        mPopupWindow.update((int) layout.getPrimaryHorizontal(mSelectionInfo.mStart) - mWidth + getExtraX(),
+            layout.getLineBottom(layout.getLineForOffset(mSelectionInfo.mStart)) + getExtraY(), -1, -1);
+    } else {
+        mPopupWindow.update((int) layout.getPrimaryHorizontal(mSelectionInfo.mEnd) + getExtraX(),
+            layout.getLineBottom(layout.getLineForOffset(mSelectionInfo.mEnd)) + getExtraY(), -1, -1);
+    }
+}
+</code></pre>
+</li>
+</ul>
+<h4 id="操作框">操作框</h4>
+<p>操作框的实现则简单的多，就是自定义布局的 PopupWindow ，然后处理下内部的 View 的点击事件即可，直接贴代码：</p>
+<pre><code class="language-java">private class OperateWindow {
+    private PopupWindow mWindow;
+    private int[] mTempCoors = new int[2];
+    private int mWidth;
+    private int mHeight;
+    public OperateWindow(final Context context) {
+        View contentView = LayoutInflater.from(context).inflate(R.layout.layout_operate_windows, null);
+        contentView.measure(View.MeasureSpec.makeMeasureSpec(Integer.MAX_VALUE &gt;&gt; 2, View.MeasureSpec.AT_MOST),
+            View.MeasureSpec.makeMeasureSpec(Integer.MAX_VALUE &gt;&gt; 2, View.MeasureSpec.AT_MOST));
+        mWidth = contentView.getMeasuredWidth();
+        mHeight = contentView.getMeasuredHeight();
+        mWindow =
+            new PopupWindow(contentView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, false);
+        mWindow.setClippingEnabled(false);
+        contentView.findViewById(R.id.tv_copy).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ClipboardManager clip = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+                clip.setPrimaryClip(
+                    ClipData.newPlainText(mSelectionInfo.mSelectionContent, mSelectionInfo.mSelectionContent));
+                if (mSelectListener != null) {
+                    mSelectListener.onTextSelected(mSelectionInfo.mSelectionContent);
+                }
+                SelectableTextHelper.this.resetSelectionInfo();
+                SelectableTextHelper.this.hideSelectView();
+            }
+        });
+        contentView.findViewById(R.id.tv_select_all).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideSelectView();
+                selectText(0, mTextView.getText().length());
+                isHide = false;
+                showCursorHandle(mStartHandle);
+                showCursorHandle(mEndHandle);
+                mOperateWindow.show();
+            }
+        });
+    }
+  
+    public void show() {
+        mTextView.getLocationInWindow(mTempCoors);
+        Layout layout = mTextView.getLayout();
+        int posX = (int) layout.getPrimaryHorizontal(mSelectionInfo.mStart) + mTempCoors[0];
+        int posY = layout.getLineTop(layout.getLineForOffset(mSelectionInfo.mStart)) + mTempCoors[1] - mHeight - 16;
+        if (posX &lt;= 0) posX = 16;
+        if (posY &lt; 0) posY = 16;
+        if (posX + mWidth &gt; TextLayoutUtil.getScreenWidth(mContext)) {
+            posX = TextLayoutUtil.getScreenWidth(mContext) - mWidth - 16;
+        }
+        if (Build.VERSION.SDK_INT &gt;= Build.VERSION_CODES.LOLLIPOP) {
+            mWindow.setElevation(8f);
+        }
+        mWindow.showAtLocation(mTextView, Gravity.NO_GRAVITY, posX, posY);
+    }
+  
+    public void dismiss() {
+        mWindow.dismiss();
+    }
+}
+</code></pre>
+<p>在显示的之后，判断了下是否会显示到屏幕外面，如果会超出屏幕，则做一下微调即可。</p>
+<h3 id="一些细节的处理">一些细节的处理</h3>
+<h4 id="嵌套在滚动视图中的处理">嵌套在滚动视图中的处理</h4>
+<p>在一开始的实现要点中就提到，需要注意一下嵌套在滚动视图中的处理，在尝试了一些方法之后，最终直接设置 <code>OnScrollChangedListener</code> 来解决，具体代码如下：</p>
+<pre><code class="language-java">mOnScrollChangedListener = new ViewTreeObserver.OnScrollChangedListener() {
+    @Override
+    public void onScrollChanged() {
+        if (!isHideWhenScroll &amp;&amp; !isHide) {
+            isHideWhenScroll = true;
+            if (mOperateWindow != null) {
+                mOperateWindow.dismiss();
+            }
+            if (mStartHandle != null) {
+                mStartHandle.dismiss();
+            }
+            if (mEndHandle != null) {
+                mEndHandle.dismiss();
+            }
+        }
+    }
+};
+mTextView.getViewTreeObserver().addOnScrollChangedListener(mOnScrollChangedListener);
+</code></pre>
+<p>这倒是解决了滑动时可以隐藏相关的选择控件的问题，但是停止滚动之后呢，如何重新显示选择控件呢？</p>
+<p>在经过一些尝试之后，发现了 <code>OnPreDrawListener</code> 这个接口，在 TextView 发生滚动时期间一直在被调用，因此在这个接口里处理重新显示选择控件的逻辑是合适的：</p>
+<pre><code class="language-java">mOnPreDrawListener = new ViewTreeObserver.OnPreDrawListener() {
+    @Override
+    public boolean onPreDraw() {
+        if (isHideWhenScroll) {
+            isHideWhenScroll = false;
+            showSelectView();
+        }
+        return true;
+    }
+};
+mTextView.getViewTreeObserver().addOnPreDrawListener(mOnPreDrawListener);
+</code></pre>
+<p>在这样的设置之后，确实能保证停止滚动时重新显示选择相关的控件，但是整个滚动过程变得异常卡顿。</p>
+<p>原因其实很简单，前面也提到了，<code>onPreDraw</code>  方法在 TextView 发生滚动时期间一直在被调用，然后这里一直处理显示选择控件的逻辑，能不卡顿么？</p>
+<p>最后的解决方法是在源码中找到的，将 <code>showSelectView()</code> 方法替换成 <code>postShowSelectView()</code> 方法，</p>
+<pre><code class="language-java">private void postShowSelectView(int duration) {
+    mTextView.removeCallbacks(mShowSelectViewRunnable);
+    if (duration &lt;= 0) {
+        mShowSelectViewRunnable.run();
+    } else {
+        mTextView.postDelayed(mShowSelectViewRunnable, duration);
+    }
+}
+
+private final Runnable mShowSelectViewRunnable = new Runnable() {
+    @Override
+    public void run() {
+        if (isHide) return;
+        if (mOperateWindow != null) {
+            mOperateWindow.show();
+        }
+        if (mStartHandle != null) {
+            showCursorHandle(mStartHandle);
+        }
+        if (mEndHandle != null) {
+            showCursorHandle(mEndHandle);
+        }
+    }
+};
+</code></pre>
+<p>很巧妙的方法，通过延迟调用具体的逻辑，避免了一直调用显示选择控件的逻辑，又学习到了。</p>
+<h4 id="textview-移除出-window-时一些处理">TextView 移除出 Window 时一些处理</h4>
+<p>在一开始没处理这个的时候，一直报如下的错误：</p>
+<figure data-type="image" tabindex="7"><img src="http://ww4.sinaimg.cn/large/91e23208jw1f9s28uh9y1j21kw0hbjzv.jpg" alt="" loading="lazy"></figure>
+<p>这么明显的错误可不能不管，处理起来也很简单：</p>
+<pre><code class="language-java">mTextView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+    @Override
+    public void onViewAttachedToWindow(View v) {
+    }
+    @Override
+    public void onViewDetachedFromWindow(View v) {
+        destroy();
+    }
+});
+
+public void destroy() {
+    mTextView.getViewTreeObserver().removeOnScrollChangedListener(mOnScrollChangedListener);
+    mTextView.getViewTreeObserver().removeOnPreDrawListener(mOnPreDrawListener);
+    resetSelectionInfo();
+    hideSelectView();
+    mStartHandle = null;
+    mEndHandle = null;
+    mOperateWindow = null;
+}
+</code></pre>
+<p>将上面添加 Listener 也移除，同时隐藏响应的视图并置空。</p>
+<h3 id="写在最后">写在最后</h3>
+<p>至此，自定义的选择复制功能完成，效果如下，GitHub 地址：<a href="https://github.com/laobie/SelectableTextHelper">laobie/SelectableTextHelper</a></p>
+<figure data-type="image" tabindex="8"><img src="http://ww2.sinaimg.cn/large/91e23208jw1f9s29s2jf7g20900g0npd.gif" alt="" loading="lazy"></figure>
+<p>在开发之初，通过简单的查阅资料，梳理了个大概的实现思路，并考虑到实现中需要注意到的点，保证在开发中保持足够的警惕，不给自己挖坑。在整个开发过程中，通过阅读他人的源码，以及直接看官方的源码，一点点解决所遇到的问题，以及一点点地尝试，都是一次不错的开发经历，也算是弥补了当初没做出来这个任务的缺憾。</p>
+<p>当然，这个项目还是有很多值得优化的地方，比如一些边界状态的处理，多个 TextView 的选择复制的场景等等，代码上的内部类的使用也是不够优雅的，不能够做到足够的解耦，都是有优化空间的，欢迎沟通交流。</p>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,755 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>热修复入门：Android 中的 ClassLoader | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>热修复入门：Android 中的 ClassLoader</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><blockquote>
+<ul>
+<li>文章来源：itsCoder 的 <a href="https://github.com/itsCoder/weeklyblog">WeeklyBolg</a> 项目</li>
+<li>itsCoder 主页：<a href="http://itscoder.com/">http://itscoder.com/</a></li>
+<li>作者：<a href="https://github.com/laobie">Jaeger</a></li>
+<li>审阅者：<a href="https://github.com/Zheaoli">Zheaoli</a>, <a href="https://github.com/xcc3641">xcc3641</a></li>
+</ul>
+</blockquote>
+<p>从去年下半年开始，热修复技术在 Android 技术社区热了一阵子，这种不用发布新版本就可以修复线上 bug 的技术确实有很大的需求，最近正好在研究一些开源的热修复方案，本文就其中常用的 ClassLoader 方式实现的热修复方案中的 ClassLoader 机制作一个简单的介绍。</p>
+<!-- more -->
+<h3 id="classloader-简介">ClassLoader 简介</h3>
+<blockquote>
+<p>对于 Java 程序来说，编写程序就是编写类，运行程序也就是运行类（编译得到的 class 文件），其中起到关键作用的就是类加载器 ClassLoader。</p>
+</blockquote>
+<p>任何一个 Java 程序都是由若干个 class 文件组成的一个完整的 Java 程序，在程序运行时，需要将 class 文件加载到 JVM 中才可以使用，负责加载这些 class 文件的就是 Java 的类加载（ClassLoader）机制。</p>
+<figure data-type="image" tabindex="1"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/78e71017bdd24420.jpeg" alt="" loading="lazy"></figure>
+<p>因此 ClassLoader 的作用简单来说就是加载 class 文件，提供给程序运行时使用。</p>
+<h4 id="classloader-的双亲委托模型parent-delegation-model">ClassLoader 的双亲委托模型（Parent <em>Delegation Model</em> ）</h4>
+<p>先来看 jdk 中的 ClassLoader 类的构造方法，其需要传入一个父类加载器，并持有该引用。</p>
+<pre><code class="language-java">protected ClassLoader(ClassLoader parent) {
+    this(checkCreateClassLoader(), parent);
+}
+</code></pre>
+<p>当类加载器收到加载类或资源的请求时，通常都是先委托给父类加载器加载，也就是说只有当父类加载器找不到指定类或资源时，自身才会执行实际的类加载过程，具体的加载过程如下：</p>
+<ol>
+<li>源 ClassLoader 先判断该 Class 是否已加载，如果已加载，则直接返回 Class，如果没有则委托给父类加载器。</li>
+<li>父类加载器判断是否加载过该 Class，如果已加载，则直接返回 Class，如果没有则委托给祖父类加载器。</li>
+<li>依此类推，直到始祖类加载器（引用类加载器）。</li>
+<li>始祖类加载器判断是否加载过该 Class，如果已加载，则直接返回 Class，如果没有则尝试从其对应的类路径下寻找 class 字节码文件并载入。如果载入成功，则直接返回 Class，如果载入失败，则委托给始祖类加载器的子类加载器。</li>
+<li>始祖类加载器的子类加载器尝试从其对应的类路径下寻找 class 字节码文件并载入。如果载入成功，则直接返回 Class，如果载入失败，则委托给始祖类加载器的孙类加载器。</li>
+<li>依此类推，直到源 ClassLoader。</li>
+<li>源 ClassLoader 尝试从其对应的类路径下寻找 class 字节码文件并载入。如果载入成功，则直接返回 Class，如果载入失败，源 ClassLoader 不会再委托其子类加载器，而是抛出异常。</li>
+</ol>
+<p>如果需要详细了解 ClassLoader 的信息，可以借助以下文章深入了解：</p>
+<ul>
+<li><a href="https://segmentfault.com/a/1190000002579346">JVM 的工作原理,层次结构以及 GC 工作原理</a></li>
+<li><a href="http://blog.csdn.net/xyang81/article/details/7292380">深入分析Java ClassLoader原理</a></li>
+<li><a href="http://blog.csdn.net/zhangzeyuaaa/article/details/42499839">类加载机制：全盘负责和双亲委托</a></li>
+</ul>
+<h3 id="android-中的-classloader">Android 中的 ClassLoader</h3>
+<p>Android 的 Dalvik/ART 虚拟机如同标准 Java 的 JVM 虚拟机一样，也是同样需要加载 class 文件到内存中来使用，但是在 ClassLoader 的加载细节上会有略微的差别。</p>
+<h4 id="android-中的-dex-文件">Android 中的 dex 文件</h4>
+<p>Android 应用打包成 apk 文件时，class 文件会被打包成一个或者多个 dex 文件。将一个 apk 文件后缀改成 .zip 格式解压后（也可以直接解压，apk 文件本质是个 zip 文件），里面就有 class.dex 文件，由于 Android 的 65K 问题（不要纠结是 64K 还是 65K），使用 MultiDex 就会生成多个 dex 文件。</p>
+<figure data-type="image" tabindex="2"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/3c5e66e9e048d343.jpg" alt="" loading="lazy"></figure>
+<p>当 Android 系统安装一个应用的时候，会针对不同平台对 Dex 进行优化，这个过程由一个专门的工具来处理，叫 DexOpt 。DexOpt 是在第一次加载 Dex 文件的时候执行的，该过程会生成一个 ODEX 文件，即 Optimised Dex。执行 ODEX 的效率会比直接执行 Dex 文件的效率要高很多，加快 App 的启动和响应。</p>
+<p>ODEX 相关的细节可以阅读以下文章扩展：</p>
+<ul>
+<li><a href="http://www.mywiki.cn/hovercool/index.php/ART%E5%92%8CDalvik">ART 和 Dalvik</a></li>
+<li><a href="http://www.jianshu.com/p/242abfb7eb7f">ODEX格式及生成过程</a></li>
+<li><a href="http://stackoverflow.com/questions/9593527/what-are-odex-files-in-android">What are ODEX files in Android</a></li>
+</ul>
+<blockquote>
+<p>注：本人的 5.0 机器 ODEX 优化后的文件是在 <code>/data/dalvilk-cache</code> 文件夹下的，6.0 机器该文件夹下只有 framework 和部分内置的 App 的优化后的 dex 文件，查找相关资料后没有找到明确的说法，目前猜测和 ROM 有关系，后续再深究下这个问题。</p>
+</blockquote>
+<figure data-type="image" tabindex="3"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/b79b994f71a47130.png" alt="" loading="lazy"></figure>
+<p>总之，Android 中的 Dalvik/ART 无法像 JVM 那样 <strong>直接</strong> 加载 class 文件和 jar 文件中的 class，需要通过 dx 工具来优化转换成 Dalvik byte code 才行，只能通过 dex 或者 包含 dex 的jar、apk 文件来加载（注意 odex 文件后缀可能是 .dex 或 .odex，也属于 dex 文件），因此 Android 中的 ClassLoader 工作就交给了 BaseDexClassLoader 来处理。</p>
+<blockquote>
+<p>注：如果 jar 文件包含有 dex 文件，此时 jar 文件也是可以用来加载的，不过实际加载的还是其中的 dex 文件，不要弄混淆了。</p>
+</blockquote>
+<h4 id="basedexclassloader-及其子类">BaseDexClassLoader 及其子类</h4>
+<p>在 Android 开发者官网上的 <a href="https://developer.android.com/reference/java/lang/ClassLoader.html">ClassLoader</a> 的文档说明中我们可以看到，ClassLoader 是个抽象类，其具体实现的子类有 <code>BaseDexClassLoader</code> 和 <code>SecureClassLoader</code> 。</p>
+<p>SecureClassLoader 的子类是 <code>URLClassLoader</code> ，其只能用来加载 jar 文件，这在 Android 的 Dalvik/ART  上没法使用的。</p>
+<p>BaseDexClassLoader 的子类是 <code>PathClassLoader</code> 和 <code>DexClassLoader</code> 。</p>
+<h5 id="pathclassloader">PathClassLoader</h5>
+<p>PathClassLoader 在应用启动时创建，从 data/app/… 安装目录下加载 apk 文件。</p>
+<p>其有 2 个构造函数，如下所示，这里遵从之前提到的双亲委托模型：</p>
+<pre><code class="language-java">public PathClassLoader(String dexPath, ClassLoader parent) {
+    super(dexPath, null, null, parent);
+}
+
+public PathClassLoader(String dexPath, String libraryPath,
+        ClassLoader parent) {
+    super(dexPath, null, libraryPath, parent);
+}
+</code></pre>
+<ul>
+<li><code>dexPath</code> :  包含 dex 的 jar 文件或 apk 文件的路径集，多个以文件分隔符分隔，默认是“：”</li>
+<li><code>libraryPath</code> : 包含 C/C++ 库的路径集，多个同样以文件分隔符分隔，可以为空</li>
+</ul>
+<p>PathClassLoader 里面除了这 2 个构造方法以外就没有其他的代码了，具体的实现都是在 BaseDexClassLoader 里面，其 dexPath 比较受限制，一般是已经安装应用的 apk 文件路径。</p>
+<p>在 Android 中，App 安装到手机后，apk 里面的 class.dex 中的 class 均是通过 PathClassLoader 来加载的。</p>
+<p>我们可以新建一个项目来验证下，在 MainActivity 中添加如下代码：</p>
+<pre><code class="language-java">public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        ClassLoader loader = MainActivity.class.getClassLoader();
+        while (loader != null) {
+            System.out.println(loader.toString());
+            loader = loader.getParent();
+        }
+    }
+}
+</code></pre>
+<p>输出结果是：</p>
+<pre><code> I/System.out: dalvik.system.PathClassLoader[DexPathList[[zip file &quot;/data/app/com.jaeger.testclassloader-2/base.apk&quot;],nativeLibraryDirectories=[/vendor/lib, /system/lib]]]
+ I/System.out: java.lang.BootClassLoader@1d9c6226
+</code></pre>
+<p><code>/data/app/com.jaeger.testclassloader-2/base.apk</code> 就是示例应用安装在手机上的位置。</p>
+<p>BootClassLoader 是 PathClassLoader 的父加载器，其在系统启动时创建，在 App 启动时会将该对象传进来，具体的调用在 <code>com.android.internal.os.ZygoteInit</code> 的 <code>main()</code> 方法中调用了 <code>preload()</code> ， 然后调用 <code>preloadClasses()</code> 方法，在该方法内部调用了 Class 的 <code>forName()</code> 方法：</p>
+<pre><code class="language-java">Class.forName(line, true, null);
+</code></pre>
+<p><code>forName()</code> 方法源码如下，方法内部获取到 BootClassLoader 实例：</p>
+<pre><code class="language-java">public static Class&lt;?&gt; forName(String className, boolean shouldInitialize,
+        ClassLoader classLoader) throws ClassNotFoundException {
+    if (classLoader == null) {
+        classLoader = BootClassLoader.getInstance();
+    }
+    // Catch an Exception thrown by the underlying native code. It wraps
+    // up everything inside a ClassNotFoundException, even if e.g. an
+    // Error occurred during initialization. This as a workaround for
+    // an ExceptionInInitializerError that's also wrapped. It is actually
+    // expected to be thrown. Maybe the same goes for other errors.
+    // Not wrapping up all the errors will break android though.
+    Class&lt;?&gt; result;
+    try {
+        result = classForName(className, shouldInitialize, classLoader);
+    } catch (ClassNotFoundException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof LinkageError) {
+            throw (LinkageError) cause;
+        }
+        throw e;
+    }
+    return result;
+}
+</code></pre>
+<p>而 PathClassLoader 的实例化又是在哪进行的呢？在源码中寻找下其构造方法调用的地方，结果如下：</p>
+<figure data-type="image" tabindex="4"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/a0a44b8cac607cae.jpg" alt="" loading="lazy"></figure>
+<p>其中：</p>
+<ul>
+<li>
+<p>在 ZygoteInit 中的调用是用来启动相关的系统服务</p>
+</li>
+<li>
+<p>在 ApplicationLoaders 中用来加载系统安装过的 apk，用来加载 apk 内的 class ，其调用是在 LoadApk 类中的 <code>getClassLoader()</code> 方法中调用的，得到的就是 PathClassLoader：</p>
+<pre><code class="language-java">mClassLoader = ApplicationLoaders.getDefault().getClassLoader(zip, lib,
+        mBaseClassLoader);
+</code></pre>
+</li>
+</ul>
+<h5 id="dexclassloader">DexClassLoader</h5>
+<p>介绍 DexClassLoader 之前，先来看看其官方描述：</p>
+<blockquote>
+<p>A class loader that loads classes from .jar and .apk filescontaining a  classes.dex entry. This can be used to execute code notinstalled as part of an application.</p>
+</blockquote>
+<p>很明显，对比 PathClassLoader 只能加载已经安装应用的 dex 或 apk 文件，DexClassLoader 则没有此限制，可以从 SD 卡上加载包含 class.dex 的 .jar 和 .apk 文件，这也是插件化和热修复的基础，在不需要安装应用的情况下，完成需要使用的 dex 的加载。</p>
+<p>DexClassLoader 的源码里面只有一个构造方法，这里也是遵从双亲委托模型：</p>
+<pre><code class="language-java">public DexClassLoader(String dexPath, String optimizedDirectory,
+        String libraryPath, ClassLoader parent) {
+    super(dexPath, new File(optimizedDirectory), libraryPath, parent);
+}
+</code></pre>
+<p>参数说明：</p>
+<ul>
+<li>
+<p><code>String dexPath</code> : 包含 class.dex 的 apk、jar 文件路径 ，多个用文件分隔符(默认是 ：)分隔</p>
+</li>
+<li>
+<p><code>String optimizedDirectory</code> : 用来缓存优化的 dex 文件的路径，即从 apk 或 jar 文件中提取出来的 dex 文件。该路径不可以为空，且应该是应用私有的，有读写权限的路径（实际上也可以使用外部存储空间，但是这样的话就存在代码注入的风险），可以通过以下方式来创建一个这样的路径：</p>
+<pre><code class="language-java">File dexOutputDir = context.getCodeCacheDir();
+</code></pre>
+<blockquote>
+<p>注：后续发现，getCodeCacheDir() 方法只能在 API 21 以上可以使用。</p>
+</blockquote>
+</li>
+<li>
+<p><code>String libraryPath</code> : 存储 C/C++ 库文件的路径集</p>
+</li>
+<li>
+<p><code>ClassLoader parent</code>: 父类加载器，遵从双亲委托模型</p>
+</li>
+</ul>
+<p>简单介绍了 PathClassLoader 和 DexClassLoader，但这两者都是对 BaseDexClassLoader 的一层简单封装，真正的实现都在 BaseClassLoader 内。</p>
+<h5 id="baseclassloader-源码分析">BaseClassLoader 源码分析</h5>
+<p>先来看一眼 BaseClassLoader 的结构：</p>
+<figure data-type="image" tabindex="5"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/a6f9824c199cf304.jpg" alt="" loading="lazy"></figure>
+<p>其中有个重要的字段 <code>private final DexPathList pathList</code> ，其继承 ClassLoader 实现的 <code>findClass()</code> 、<code>findResource()</code> 均是基于 pathList 来实现的（省略了部分源码）：</p>
+<pre><code class="language-java">    @Override
+    protected Class&lt;?&gt; findClass(String name) throws ClassNotFoundException {
+        List&lt;Throwable&gt; suppressedExceptions = new ArrayList&lt;Throwable&gt;();
+        Class c = pathList.findClass(name, suppressedExceptions);
+        ...
+        return c;
+    }
+    @Override
+    protected URL findResource(String name) {
+        return pathList.findResource(name);
+    }
+    @Override
+    protected Enumeration&lt;URL&gt; findResources(String name) {
+        return pathList.findResources(name);
+    }
+    @Override
+    public String findLibrary(String name) {
+        return pathList.findLibrary(name);
+    }
+</code></pre>
+<p>那么重要的部分则是在 DexPathList 类的内部了，DexPathList 的构造方法也较为简单，和之前介绍的类似：</p>
+<pre><code class="language-java">public DexPathList(ClassLoader definingContext, String dexPath,
+        String libraryPath, File optimizedDirectory) {
+    ...
+}
+</code></pre>
+<p>接受之前传进来的包含 dex 的 apk/jar/dex 的路径集、native 库的路径集和缓存优化的 dex 文件的路径，然后调用 <code>makePathElements()</code> 方法生成一个 <code>Element[] dexElements</code> 数组，Element 是 DexPathList 的一个嵌套类，其有以下字段：</p>
+<pre><code class="language-java">static class Element {
+	private final File dir;
+	private final boolean isDirectory;
+	private final File zip;
+	private final DexFile dexFile;
+	private ZipFile zipFile;
+	private boolean initialized;
+}
+</code></pre>
+<p><code>makePathElements()</code> 是如何生成 Element 数组的？继续看源码：</p>
+<pre><code class="language-java">private static Element[] makePathElements(List&lt;File&gt; files, File optimizedDirectory,
+                                          List&lt;IOException&gt; suppressedExceptions) {
+    List&lt;Element&gt; elements = new ArrayList&lt;&gt;();
+    // 遍历所有的包含 dex 的文件
+    for (File file : files) {
+        File zip = null;
+        File dir = new File(&quot;&quot;);
+        DexFile dex = null;
+        String path = file.getPath();
+        String name = file.getName();
+        // 判断是不是 zip 类型
+        if (path.contains(zipSeparator)) {
+            String split[] = path.split(zipSeparator, 2);
+            zip = new File(split[0]);
+            dir = new File(split[1]);
+        } else if (file.isDirectory()) {
+            // 如果是文件夹,则直接添加 Element,这个一般是用来处理 native 库和资源文件
+            elements.add(new Element(file, true, null, null));
+        } else if (file.isFile()) {
+            // 直接是 .dex 文件,而不是 zip/jar 文件(apk 归为 zip),则直接加载 dex 文件
+            if (name.endsWith(DEX_SUFFIX)) {
+                try {
+                    dex = loadDexFile(file, optimizedDirectory);
+                } catch (IOException ex) {
+                    System.logE(&quot;Unable to load dex file: &quot; + file, ex);
+                }
+            } else {
+                // 如果是 zip/jar 文件(apk 归为 zip),则将 file 值赋给 zip 字段,再加载 dex 文件
+                zip = file;
+                try {
+                    dex = loadDexFile(file, optimizedDirectory);
+                } catch (IOException suppressed) {
+                    suppressedExceptions.add(suppressed);
+                }
+            }
+        } else {
+            System.logW(&quot;ClassLoader referenced unknown path: &quot; + file);
+        }
+        if ((zip != null) || (dex != null)) {
+            elements.add(new Element(dir, false, zip, dex));
+        }
+    }
+    // list 转为数组
+    return elements.toArray(new Element[elements.size()]);
+}
+</code></pre>
+<p><code>loadDexFile()</code> 方法最终会调用 JNI 层的方法来读取 dex 文件，这里不再深入探究，有兴趣的可以阅读 <a href="http://blog.csdn.net/nanzhiwen666/article/details/50515895">从源码分析 Android dexClassLoader 加载机制原理</a> 这篇文章深入了解。</p>
+<p>接下来看以下 DexPathList 的 <code>findClass()</code> 方法，其根据传入的完整的类名来加载对应的 class，源码如下：</p>
+<pre><code class="language-java">public Class findClass(String name, List&lt;Throwable&gt; suppressed) {
+	// 遍历 dexElements 数组，依次寻找对应的 class，一旦找到就终止遍历
+    for (Element element : dexElements) {
+        DexFile dex = element.dexFile;
+        if (dex != null) {
+            Class clazz = dex.loadClassBinaryName(name, definingContext, suppressed);
+            if (clazz != null) {
+                return clazz;
+            }
+        }
+    }
+    // 抛出异常
+    if (dexElementsSuppressedExceptions != null) {
+        suppressed.addAll(Arrays.asList(dexElementsSuppressedExceptions));
+    }
+    return null;
+} 
+</code></pre>
+<p>这里有关于热修复实现的一个点，就是将补丁 dex 文件放到 dexElements 数组前面，这样在加载 class 时，优先找到补丁包中的 dex 文件，加载到 class 之后就不再寻找，从而原来的 apk 文件中同名的类就不会再使用，从而达到修复的目的，虽然说起来较为简单，但是实现起来还有很多细节需要注意，本文先热身，后期再分析具体实现。</p>
+<p>至此，BaseDexClassLader 寻找 class 的路线就清晰了：</p>
+<ol>
+<li>当传入一个完整的类名，调用 BaseDexClassLader 的 <code>findClass(String name)</code> 方法</li>
+<li>BaseDexClassLader 的 findClass 方法会交给 DexPathList 的 <code>findClass(String name, List&lt;Throwable&gt; suppressed</code> 方法处理</li>
+<li>在 DexPathList 方法的内部，会遍历 dexFile ，通过 DexFile 的 <code>dex.loadClassBinaryName(name, definingContext, suppressed)</code> 来完成类的加载</li>
+</ol>
+<h5 id="实际使用">实际使用</h5>
+<p>需要注意到的是，在项目中使用 BaseDexClassLoader 或者 DexClassLoader 去加载某个 dex 或者 apk 中的 class 时，是无法调用 <code>findClass()</code> 方法的，因为该方法是包访问权限，你需要调用 <code>loadClass(String className)</code> ，该方法其实是 BaseDexClassLoader 的父类 ClassLoader 内实现的：</p>
+<pre><code class="language-java">public Class&lt;?&gt; loadClass(String className) throws ClassNotFoundException {
+    return loadClass(className, false);
+}
+
+protected Class&lt;?&gt; loadClass(String className, boolean resolve) throws ClassNotFoundException {
+    Class&lt;?&gt; clazz = findLoadedClass(className);
+    if (clazz == null) {
+        ClassNotFoundException suppressed = null;
+        try {
+            clazz = parent.loadClass(className, false);
+        } catch (ClassNotFoundException e) {
+            suppressed = e;
+        }
+        if (clazz == null) {
+            try {
+                clazz = findClass(className);
+            } catch (ClassNotFoundException e) {
+                e.addSuppressed(suppressed);
+                throw e;
+            }
+        }
+    }
+    return clazz;
+}
+</code></pre>
+<p>上面这段代码结合之前提到的双亲委托模型就很好理解了，先查找当前的 ClassLoader 是否已经加载过，如果没有就交给父 ClassLoader 去加载，如果父 ClassLoader 没有找到，才调用当前 ClassLoader 来加载，此时就是调用上面分析的 <code>findClass()</code> 方法了。</p>
+<h3 id="classloader-使用示例">ClassLoader 使用示例</h3>
+<p>上面说了这么多理论知识，只说不练假把式，接下来实战：从 SD 卡中动态加载一个包含 class.dex 的 jar 文件，加载其中的类，并调用其方法。</p>
+<ol>
+<li>
+<p>新建一个 Java 项目，包含两个文件：<code>ISayHello.java</code> 和 <code>HelloAndroid.java</code></p>
+<pre><code class="language-java">   package com.jaeger;
+
+   public interface ISayHello {
+       String say();
+   }
+</code></pre>
+<pre><code class="language-java">   package com.jaeger;
+
+   public class HelloAndroid implements ISayHello {
+       @Override
+       public String say() {
+           return &quot;Hello Android&quot;;
+       }
+   }
+</code></pre>
+</li>
+<li>
+<p>导出 jar 包</p>
+<p>这一步使用 IntelliJ IDEA 导出有点问题，最终我是用 Eclipse 导出 jar 包的。</p>
+<figure data-type="image" tabindex="6"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/88ede5c72013c55b.jpg" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>使用 SDK 目录 &gt; platform-tools 里面的 dx 工具生成包含 class.dex 的 jar 包</p>
+<p>将上一步生成的 <code>sayhello.jar</code> 放到 你的 SDK 下的 platform-tools 文件夹下，使用下面的命令生成 dex 化的 jar 文件，其中是 output 后面的 <code>sayhello_dex.jar</code> 就是最终生成的 jar 包。</p>
+<pre><code>dx --dex --output=sayhello_dex.jar sayhello.jar
+</code></pre>
+<p>生成 <code>sayhello_dex.jar</code> 之后，用解压解压后就会发现其已经包含了 class.dex 文件了。</p>
+<figure data-type="image" tabindex="7"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/ba0d600fc2a90e2d.jpg" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>将 <code>sayhello_dex.jar</code> 文件拷贝到手机存储空间的根目录，不一定是内存卡。</p>
+<figure data-type="image" tabindex="8"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/7efba4a5a816a8e1.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>新建一个 Android 项目，在 MainActivity 中添加如下的代码：</p>
+<pre><code class="language-java">public class MainActivity extends AppCompatActivity {
+    private static final String TAG = &quot;TestClassLoader&quot;;
+    private TextView mTvInfo;
+    private Button mBtnLoad;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mTvInfo = (TextView) findViewById(R.id.tv_info);
+        mBtnLoad = (Button) findViewById(R.id.btn_load);
+        mBtnLoad.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // 获取到包含 class.dex 的 jar 包文件
+                final File jarFile =
+                    new File(Environment.getExternalStorageDirectory().getPath() + File.separator + &quot;sayhello_dex.jar&quot;);
+                
+                // 如果没有读权限,确定你在 AndroidManifest 中是否声明了读写权限
+                Log.d(TAG, jarFile.canRead() + &quot;&quot;);
+
+                if (!jarFile.exists()) {
+                    Log.e(TAG, &quot;sayhello_dex.jar not exists&quot;);
+                    return;
+                }
+
+                // getCodeCacheDir() 方法在 API 21 才能使用,实际测试替换成 getExternalCacheDir() 等也是可以的
+                // 只要有读写权限的路径均可
+                DexClassLoader dexClassLoader =
+                    new DexClassLoader(jarFile.getAbsolutePath(), getExternalCacheDir().getAbsolutePath(), null, getClassLoader());
+                try {
+                    // 加载 HelloAndroid 类
+                    Class clazz = dexClassLoader.loadClass(&quot;com.jaeger.HelloAndroid&quot;);
+                    // 强转成 ISayHello, 注意 ISayHello 的包名需要和 jar 包中的一致
+                    ISayHello iSayHello = (ISayHello) clazz.newInstance();
+                    mTvInfo.setText(iSayHello.say());
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+}
+</code></pre>
+<p>同时需要新建一个和第一步创建的 Java 项目中包名一致的 <code>ISayHello</code> 接口：</p>
+<pre><code class="language-java">package com.jaeger;
+
+public interface ISayHello {
+    String say();
+}
+</code></pre>
+<p>这里需要注意几点：</p>
+<ul>
+<li>因为需要从存储空间中读取 jar 文件，需要在 AndroidManifest 中声明读写权限</li>
+<li>ISayHello 接口的包名必须一致</li>
+<li><code>getCodeCacheDir()</code> 方法在 API 21 才能使用,实际测试替换成 <code>getExternalCacheDir()</code> 等也是可以的</li>
+</ul>
+</li>
+<li>
+<p>接下来就是运行，运行的结果如图，和预期的一样，完美收工。</p>
+<figure data-type="image" tabindex="9"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/4b94e8fbecf66b72.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>示例代码以及 jar 包上传到 GitHub 了，请前往 <a href="https://github.com/laobie/TestClassLoader">这里</a> 去查看。</p>
+</li>
+</ol>
+<h3 id="总结">总结</h3>
+<p>顺着相关资料，从源头开始分析起，然后再进入源码，理清楚具体的运行机制，最终通过简单的示例验证了分析的结果。</p>
+<p>在这过程中，查阅了不少资料，也阅读了很多前辈的博文，受益匪浅，这也是现在技术圈内很好的氛围。同时在分析中也发现自己对 Android 底层了解相当薄弱，这也是今后需要多学习的地方。</p>
+<p>鉴于自己能力有限，如果本文中有遗漏或者错误的地方，请在评论区指出或者通过邮件等方式联系我，谢谢。</p>
+<h3 id="参考资料">参考资料</h3>
+<ul>
+<li>
+<p><a href="https://segmentfault.com/a/1190000002579346">JVM 的工作原理,层次结构以及 GC 工作原理</a></p>
+</li>
+<li>
+<p><a href="http://blog.csdn.net/xyang81/article/details/7292380">深入分析Java ClassLoader原理</a></p>
+</li>
+<li>
+<p><a href="https://segmentfault.com/a/1190000004062880">Android动态加载基础 ClassLoader工作机制</a></p>
+</li>
+<li>
+<p><a href="http://blog.zhaiyifan.cn/2015/11/20/HotPatchCompare/">各大热补丁方案分析和比较</a></p>
+</li>
+<li>
+<p><a href="https://github.com/kaedea/android-dynamical-loading">android-dynamical-loading</a></p>
+</li>
+<li>
+<p><a href="http://bugly.qq.com/bbs/forum.php?mod=viewthread&amp;tid=193">dex分包变形记</a></p>
+</li>
+<li>
+<p><a href="http://blog.csdn.net/mr_liabill/article/details/50497055">Android ClassLoader机制</a></p>
+</li>
+<li>
+<p><a href="http://weli.iteye.com/blog/1682625">彻底搞懂 Java ClassLoader</a></p>
+</li>
+<li>
+<p><a href="http://blog.csdn.net/nanzhiwen666/article/details/50515895">从源码分析 Android dexClassLoader 加载机制原理</a></p>
+</li>
+<li>
+<p><a href="http://www.iloveandroid.net/">码农故事</a></p>
+</li>
+</ul>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

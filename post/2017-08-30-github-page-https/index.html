@@ -1,0 +1,349 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>GitHub Page 博客自定义域名添加 HTTPS 支持 | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>GitHub Page 博客自定义域名添加 HTTPS 支持</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+	<a href="https://xudadi.cn/tag/PtZMw7q3Fy/" class="tag">github</a>
+
+	<a href="https://xudadi.cn/tag/R2E3TcvHcD/" class="tag">pages</a>
+
+	<a href="https://xudadi.cn/tag/3TaTIjBbwb/" class="tag">github pages</a>
+
+	<a href="https://xudadi.cn/tag/hxdngfgbgQ/" class="tag">https</a>
+
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><p>2015 年底，不少互联网公司已经实现了全站 HTTPS 了，如今已经 2017 年了，作为一个开发者，个人博客还没加锁的，不免有点惭愧。最近博客改版，在家打开博客欣赏的时候，发现被糊了一堆牛皮癣，就花了点时间给本站上了 HTTPS。</p>
+<!-- more -->
+<h3 id="为什么要上-https">为什么要上 HTTPS</h3>
+<p>关于 HTTPS 就不多介绍了，感兴趣的可以去看下知乎这个问题 <a href="https://www.zhihu.com/question/40371841">为什么 2015 年底各大网站都纷纷用起了 HTTPS？ - 知乎</a> 里面提到最多的就是运营商流量劫持，插入牛皮癣广告。</p>
+<p>下图就是我在家欣赏本站的截图:<br>
+<img src="/img/postimg/blog_with_ad.jpeg" alt="" loading="lazy"></p>
+<p>全是治疗脱发的广告，干他大爷的长城宽带 😒</p>
+<p>我以为就是一时劫持，就没在意了。过了几天，再看看，还是一堆牛皮癣，我就怒了，是时候上 HTTPS 了。</p>
+<h3 id="上-https-教程">上 HTTPS 教程</h3>
+<p>搞小程序那会接触了下 HTTPS，那会了解到的 SSL 证书都是需要花钱买的，前阵子看到 <a href="https://certbot.eff.org/">Certbot</a> 的介绍，才知道 <a href="https://letsencrypt.org/">Let's Encrypt</a> 有提供免费证书的服务：</p>
+<blockquote>
+<p>Let's Encrypt 是一个于2015年三季度推出的数字证书认证机构，将通过旨在消除当前手动创建和安装证书的复杂过程的自动化流程，为安全网站提供免费的SSL/TLS证书。</p>
+</blockquote>
+<p>但是 Certbot 适用于博客放在自己主机上的，本站是基于 GitHub 搭建的，因此没法使用 Certbot 服务。如果是直接使用 <code>username.github.io</code> 这样的域名的话，是默认就支持了 HTTPS 的, 直接访问 <code>https://username.github.io</code> 即可，自定义域名就需要自己折腾一下了。</p>
+<p>整个过程也是比较简单的，10 分钟就可以给你的博客加个锁。</p>
+<p>这里使用 <a href="https://www.netlify.com/">Netlify</a> 提供的服务来完成我们操作。</p>
+<ol>
+<li>
+<p>注册一个 Netlify 帐号，地址 <a href="https://app.netlify.com/signup">Netlify App</a> 选择用 GitHub 注册就好了。</p>
+</li>
+<li>
+<p>添加一个新的站点<br>
+<img src="/img/postimg/netlify_add_site.jpg" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>配置站点，简单来说就是添加你的博客仓库地址，然后把博客的构建放在 Netlify 上，按照步骤来即可。<br>
+<img src="/img/postimg/netify_select_repo.jpg" alt="" loading="lazy"></p>
+<p>在最后的 Deploy 步骤中，提示你 Published deploy 就说明好了，直接访问链接，就可以看到你的博客了。<br>
+<img src="/img/postimg/deploy_result.jpg" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>点 Back to Deploys 返回到设置页面，在 <code>Site Details</code> 中可以点击 <code>Change site name</code>，修改成一个简短点的名字，我这里取名叫 <code>jaeger</code>，然后就可以通过 <a href="https://jaeger.netlify.com/">https://jaeger.netlify.com/</a> 来访问博客了。</p>
+</li>
+<li>
+<p>设置自己的域名<br>
+在 <code>Domain management</code> 中设置自己的域名，我这里设置成 <code>jaeger.itscoder.com</code>。<br>
+<img src="/img/postimg/domin_setting.jpg" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>在自己的域名管理中设置 DNS 解析，itsCoder 组织的域名使用的是阿里云，在域名管理里面设置如下的域名解析规则：</p>
+<figure data-type="image" tabindex="1"><img src="/img/postimg/set_domain_dns.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>回到 Netlify ，还是在 <code>Domain management</code> 中，找到 HTTPS，依次设置如下两个即可，稍等片刻之后，你就发现你的站点加上了小锁了。整个世界都美好了。<br>
+<img src="/img/postimg/netlify_https_setting.jpg" alt="" loading="lazy"></p>
+</li>
+</ol>
+<h3 id="最后">最后</h3>
+<p>欣赏下成果，完美。</p>
+<figure data-type="image" tabindex="2"><img src="/img/postimg/laobie_blog.jpg" alt="" loading="lazy"></figure>
+<p>最后再问候下劫持流量插广告的垃圾运营商。</p>
+<figure data-type="image" tabindex="3"><img src="/img/postimg/fuck_ad.jpg" alt="" loading="lazy"></figure>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

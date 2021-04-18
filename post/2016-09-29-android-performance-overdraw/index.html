@@ -1,0 +1,566 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>Android 过度绘制优化 | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>Android 过度绘制优化</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><blockquote>
+<ul>
+<li>文章来源：itsCoder 的 <a href="https://github.com/itsCoder/weeklyblog">WeeklyBolg</a> 项目</li>
+<li>itsCoder 主页：<a href="http://itscoder.com/">http://itscoder.com/</a></li>
+<li>作者：<a href="https://github.com/laobie">Jaeger</a></li>
+<li>审阅者：<a href="https://github.com/yongyu0102">yongyu0102 (用语)</a></li>
+</ul>
+</blockquote>
+<p>Android 从一诞生到现在已经发布的 7.0 版本，卡顿和不流畅问题却一直被人们所诟病。客观地来讲，Android 的流畅性确实一直不给力，哪怕是某些大厂的 App ，也都不同程度地存在卡顿问题。从开发角度来说，每个开发者都应该关注下性能优化，在平时的开发工作中注意一些细节，尽可能地去优化应用。本文作为性能优化系列的开篇，先从过度绘制优化讲起。</p>
+<!-- more -->
+<h3 id="过度绘制overdraw的概念">过度绘制（Overdraw）的概念</h3>
+<blockquote>
+<p>过度绘制（Overdraw）描述的是屏幕上的某个像素在同一帧的时间内被绘制了多次。在多层次重叠的 UI 结构里面，如果不可见的 UI 也在做绘制的操作，会导致某些像素区域被绘制了多次，同时也会浪费大量的 CPU 以及 GPU 资源。</p>
+</blockquote>
+<p>在 Android 手机的开发者选项中，有一个『调试 GPU 过度绘制』的选项，该选项开启之后，手机显示如下，显示出来的蓝色、绿色的色块就是过度绘制信息。</p>
+<figure data-type="image" tabindex="1"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/c7de9ce128cd8921.png" alt="" loading="lazy"></figure>
+<p>比如上面界面中的『调试 GPU 过度绘制 』的那个文本显示为蓝色，表示其过度绘制了一次，因为背景是白色的，然后文字是黑色的，导致文字所在的区域就会被绘制两次：一次是背景，一次是文字，所以就产生了过度重绘。</p>
+<p>在官网的 <a href="https://developer.android.com/studio/profile/dev-options-overdraw.html">Debug GPU Overdraw Walkthrough</a> 说明中对过度重绘做了简单的介绍，其中屏幕上显示不同色块的具体含义如下所示：</p>
+<figure data-type="image" tabindex="2"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/46397b26da912658.png" alt="" loading="lazy"></figure>
+<p>每个颜色的说明如下：</p>
+<ul>
+<li><strong>原色</strong>：没有过度绘制</li>
+<li><strong>蓝色</strong>：1 次过度绘制</li>
+<li><strong>绿色</strong>：2 次过度绘制</li>
+<li><strong>粉色</strong>：3 次过度绘制</li>
+<li><strong>红色</strong>：4 次及以上过度绘制</li>
+</ul>
+<p>过度绘制的存在会导致界面显示时浪费不必要的资源去渲染看不见的背景，或者对某些像素区域多次绘制，就会导致界面加载或者滑动时的不流畅、掉帧，对于用户体验来说就是 App 特别的卡顿。为了提升用户体验，提升应用的流畅性，优化过度绘制的工作还是很有必要做的。</p>
+<h3 id="优化原则">优化原则</h3>
+<ul>
+<li>一些过度绘制是无法避免的，比如之前说的文字和背景导致的过度绘制，这种是无法避免的。</li>
+<li>应用界面中，应该尽可能地将过度绘制控制为 2 次（绿色）及其以下，原色和蓝色是最理想的。</li>
+<li>粉色和红色应该尽可能避免，在实际项目中避免不了时，应该尽可能减少粉色和红色区域。</li>
+<li>不允许存在面积超过屏幕 1/4 区域的 3 次（淡红色区域）及其以上过度绘制。</li>
+</ul>
+<h3 id="优化方法">优化方法</h3>
+<p>以下部分是根据我在公司项目的实践来整理出来的一些实际的优化步骤和方法，避免像看完大部分性能优化的文章，然后发现『懂得太多道理还是写不好一个 App』的尴尬局面。</p>
+<ol>
+<li>
+<p>移除默认的 Window 背景</p>
+<p>一般应用默认继承的主题都会有一个默认的 <code>windowBackground</code> ，比如默认的 Light 主题：</p>
+<pre><code class="language-xml">&lt;style name=&quot;Theme.Light&quot;&gt;
+    &lt;item name=&quot;isLightTheme&quot;&gt;true&lt;/item&gt;
+    &lt;item name=&quot;windowBackground&quot;&gt;@drawable/screen_background_selector_light&lt;/item&gt;
+    ...
+&lt;/style&gt;
+</code></pre>
+<p>但是一般界面都会自己设置界面的背景颜色或者列表页则由 item 的背景来决定，所以默认的 Window 背景基本用不上，如果不移除就会导致所有界面都多 1 次绘制。</p>
+<p>可以在应用的主题中添加如下的一行属性来移除默认的 Window 背景：</p>
+<pre><code class="language-xml">&lt;item name=&quot;android:windowBackground&quot;&gt;@android:color/transparent&lt;/item&gt;
+&lt;!-- 或者 --&gt;
+&lt;item name=&quot;android:windowBackground&quot;&gt;@null&lt;/item&gt;
+</code></pre>
+<p>或者在 <code>BaseActivity</code> 的 <code>onCreate()</code> 方法中使用下面的代码移除：</p>
+<pre><code class="language-java">getWindow().setBackgroundDrawable(null);
+// 或者
+getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+</code></pre>
+<p>移除默认的 Window 背景的工作在项目初期做最好，因为有可能有的界面未设置背景色，这就会导致该界面显示成黑色的背景，如下所示，如果是后期移除的，就需要检查移除默认 Window 背景之后的界面是否显示正常。</p>
+<figure data-type="image" tabindex="3"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/8bb76d317ff0d5ff.png" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>移除不必要的背景</p>
+<p>还是上面的那个界面，因为移除了默认的 Window 背景，所以在布局中设置背景为白色：</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;LinearLayout
+    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    android:layout_width=&quot;match_parent&quot;
+    android:layout_height=&quot;match_parent&quot;
+    android:background=&quot;@color/white&quot;
+    android:orientation=&quot;vertical&quot;&gt;
+    
+    &lt;android.support.v7.widget.RecyclerView
+        android:id=&quot;@+id/rv_apps&quot;
+        android:layout_width=&quot;match_parent&quot;
+        android:layout_height=&quot;match_parent&quot;
+        android:visibility=&quot;visible&quot;/&gt;
+    
+&lt;/LinearLayout&gt;
+</code></pre>
+<p>然后在列表的 item 的布局如下所示：</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;LinearLayout xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    xmlns:tools=&quot;http://schemas.android.com/tools&quot;
+    android:layout_width=&quot;match_parent&quot;
+    android:layout_height=&quot;wrap_content&quot;
+    android:background=&quot;@color/white&quot;
+    android:orientation=&quot;horizontal&quot;
+    android:padding=&quot;@dimen/mid_dp&quot;&gt;
+
+    &lt;ImageView
+        android:id=&quot;@+id/iv_app_icon&quot;
+        android:layout_width=&quot;40dp&quot;
+        android:layout_height=&quot;40dp&quot;
+        tools:src=&quot;@mipmap/ic_launcher&quot;/&gt;
+
+    &lt;TextView
+        android:id=&quot;@+id/tv_app_label&quot;
+        android:layout_width=&quot;wrap_content&quot;
+        android:layout_height=&quot;wrap_content&quot;
+        android:layout_gravity=&quot;center_vertical&quot;
+        android:layout_marginLeft=&quot;@dimen/mid_dp&quot;
+        android:textColor=&quot;@color/text_gray_main&quot;
+        android:textSize=&quot;@dimen/mid_sp&quot;
+        tools:text=&quot;test&quot;/&gt;
+&lt;/LinearLayout&gt;
+</code></pre>
+<p>看起来是没问题的，但是因为我界面的背景和 item 布局的背景都是白色，所以 item 布局中的背景是不必要的，可以移除。优化前后的过度绘制结果如下：</p>
+<figure data-type="image" tabindex="4"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/eeffd1ea58fd9598.png" alt="" loading="lazy"></figure>
+<p>很明显优化后过度绘制比之前均少了一次，但是这种场景还是比较特殊的，因为界面背景和 item 的背景色一样，假如不一样的话，就无法避免多 1 次过度绘制了。</p>
+<p>还有一个比较常见的可优化场景：ViewPager 加多个 Fragment 组成的首页界面，如果你的每个 Fragment 都设置有背景色的话， 你就可以不用给 Activity 的根布局设置背景，如果你还给 ViewPager 还设置了背景，那个这个背景是没必要的，同样可以移除。</p>
+<p>如果你不知道存在哪些无用的背景，你可以借助 Hierarchy View 来查看，具体的这块可以参照 <a href="http://androidperformance.com/2015/01/13/android-performance-optimization-overdraw-2.html">Android 性能优化之过渡绘制（二）</a> 这篇文章来操作。</p>
+</li>
+<li>
+<p>写合理且高效的布局</p>
+<p>由于 Android 的布局是通过编写 xml 来实现，相对比较简单，这也就导致很多开发者在写布局时很随意，而不会考虑性能、过度重绘等问题。</p>
+<p>比如上面列表布局中的分割线，可以按照如下编写布局来实现：</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;LinearLayout xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    xmlns:tools=&quot;http://schemas.android.com/tools&quot;
+    android:layout_width=&quot;match_parent&quot;
+    android:layout_height=&quot;wrap_content&quot;
+    android:paddingBottom=&quot;8dp&quot;
+    android:background=&quot;@color/divider_gray&quot;&gt;
+
+    &lt;LinearLayout
+        android:padding=&quot;@dimen/mid_dp&quot;
+        android:layout_width=&quot;match_parent&quot;
+        android:layout_height=&quot;wrap_content&quot;
+        android:orientation=&quot;horizontal&quot;
+        android:background=&quot;@color/white&quot;&gt;
+
+        &lt;ImageView
+            android:id=&quot;@+id/iv_app_icon&quot;
+            android:layout_width=&quot;40dp&quot;
+            android:layout_height=&quot;40dp&quot;
+            tools:src=&quot;@mipmap/ic_launcher&quot;/&gt;
+
+        &lt;TextView
+            android:id=&quot;@+id/tv_app_label&quot;
+            android:layout_width=&quot;wrap_content&quot;
+            android:layout_height=&quot;wrap_content&quot;
+            android:layout_gravity=&quot;center_vertical&quot;
+            android:layout_marginLeft=&quot;@dimen/mid_dp&quot;
+            android:textColor=&quot;@color/text_gray_main&quot;
+            android:textSize=&quot;@dimen/mid_sp&quot;
+            tools:text=&quot;test&quot;/&gt;
+    &lt;/LinearLayout&gt;
+
+&lt;/LinearLayout&gt;
+</code></pre>
+<p>这种改变布局实现分割线的方式虽然很快捷方便，但是存在不少问题的：</p>
+<ul>
+<li>
+<p>加深了布局层级，和之前的布局相比多了一级</p>
+<figure data-type="image" tabindex="5"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/2aceb1e5a933352a.jpg" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>多了 2 次过度绘制</p>
+</li>
+</ul>
+<p>解决方式有两种：</p>
+<ol>
+<li>一种是使用 <code>RelativeLayout</code> 将分割线添加在 item 的布局中，但是这样会导致布局复杂度增加，同时因为 <code>RelativeLayout</code> 布局的两次测量，也会延长 View 测量的时间，在解决这种需求时并不是一个好的方式。</li>
+<li>另一种是使用 <code>RecyclerView</code> 的 <code>addItemDecoration(ItemDecoration decor)</code> 方法添加分割线，这种方式在你自定义好一个分割线 <code>ItemDecoration</code> 时是很方便的，网上有很多关于这方面的例子（如果你使用 ListView 的话，则使用 <code>setDivider(Drawable divider)</code> 方法）。</li>
+</ol>
+<p>我们采用第二种解决方法，优化前后的对比如下：</p>
+<figure data-type="image" tabindex="6"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/fad0b600790d3986.png" alt="" loading="lazy"></figure>
+<p>优化后的布局 ImageView 和 item 背景区域均比优化前少了 2 次过度重绘，布局层级也没增加，需求也实现了。</p>
+<blockquote>
+<p>注：很多开发者在开发中一般很少注意这种小细节，一般以完成需求为目的，可能还认为这么点细节优化不优化其实也没什么，但是积少成多，小的细节优化多了，整体性能和体验可能就上升了，相反，这个细节不注意那个细节无所谓，最终就导致应用卡顿，体验糟糕。注重细节的开发者运气一般都不会太差。: )</p>
+</blockquote>
+</li>
+<li>
+<p>自定义控件使用 <code>clipRect()</code> 和 <code>quickReject()</code> 优化</p>
+<p>当某些控件不可见时，如果还继续绘制更新该控件，就会导致过度绘制。但是通过 Canvas  <code>clipRect()</code> 方法可以设置需要绘制的区域，当某个控件或者 View 的部分区域不可见时，就可以减少过度绘制。</p>
+<p>先看一下 <code>clipRect()</code> 方法的说明：</p>
+<blockquote>
+<p>Intersect the current clip with the specified rectangle, which is expressed in local coordinates.</p>
+</blockquote>
+<p>顾名思义就是给 Canvas 设置一个裁剪区，只有在这个裁剪矩形区域内的才会被绘制，区域之外的都不绘制。 <code>DrawerLayout</code> 就是一个很不错的例子，先来看一下使用 DrawerLayout 布局的过度绘制结果：</p>
+<figure data-type="image" tabindex="7"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/3ac552385fa37312.png" alt="" loading="lazy"></figure>
+<p>按道理左边的抽屉布局出来时，应该是和主界面的布局叠加起来的，但是为什么抽屉的背景过度绘制只有一次呢？如果是叠加的话，那最少是主界面过度绘制次数 +1，但是结果并不是这样。直接看源码：</p>
+<pre><code class="language-java">@Override
+protected boolean drawChild(Canvas canvas, View child, long drawingTim
+    final int height = getHeight();
+    final boolean drawingContent = isContentView(child);
+    int clipLeft = 0, clipRight = getWidth();
+    final int restoreCount = canvas.save();
+    if (drawingContent) {
+        final int childCount = getChildCount();
+        for (int i = 0; i &lt; childCount; i++) {
+            final View v = getChildAt(i);
+            if (v == child || v.getVisibility() != VISIBLE
+                    || !hasOpaqueBackground(v) || !isDrawerView(v)
+                    || v.getHeight() &lt; height) {
+                continue;
+            }
+            if (checkDrawerViewAbsoluteGravity(v, Gravity.LEFT)) {
+                final int vright = v.getRight();
+                if (vright &gt; clipLeft) clipLeft = vright;
+            } else {
+                final int vleft = v.getLeft();
+                if (vleft &lt; clipRight) clipRight = vleft;
+            }
+        }
+        canvas.clipRect(clipLeft, 0, clipRight, getHeight());
+    }
+    ......                       
+}
+</code></pre>
+<p>在 DrawerLayout 的 <code>drawChild()</code> 方法一开始会判断是是否是 DrawerLayout 的 ContentView，即非抽屉布局，如果是的话，则遍历 DrawerLayout 的 child view，拿到抽屉布局，如果是左边抽屉，则取抽屉布局的右边边界作为裁剪区的左边界，得到的裁剪矩形就是下图中的红色框部分，然后设置裁剪区域。右边抽屉同理。</p>
+<figure data-type="image" tabindex="8"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/f2bd8c92d4f03a9b.jpg" alt="" loading="lazy"></figure>
+<p>这样一来，只有裁剪矩形内的界面需要绘制，自然就减少了抽屉布局的过度绘制。自定义控件时可以参照这个来优化过度绘制问题。</p>
+<p>除了 <code>clipRect()</code> 以外，还可以使用 <code>canvas.quickreject()</code> 来判断和某个矩形相交，如果相交的话，则可以跳过相交的区域减少过度绘制。</p>
+</li>
+</ol>
+<h3 id="优化实践">优化实践</h3>
+<p>前面其实已经讲了很多了，但是实际去优化过度绘制时，可能还是会比较懵，看着屏幕上的大片大片的红色，不知道从何下手。接下来就以实际项目中的过度绘制优化经历来谈谈，如何进行优化？</p>
+<p>先上图，前面是未开启 『调试 GPU 过度绘制』 的界面图，中间的是优化前的过度绘制结果，后面的是优化后的过度绘制结果，不难看出来，中间那张图过度绘制是很严重的，一眼看过去一片红，很显然不符合优化原则。</p>
+<figure data-type="image" tabindex="9"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/1bed5940cdfa0701.png" alt="" loading="lazy"></figure>
+<p>优化步骤如下：</p>
+<ol>
+<li>
+<p>先分析每个地方最少可以绘制几次，不合理的地方就可以优化。</p>
+<p>例如：中间那张图显示的每个 item 的背景是绿色的，也就是 2 次过度绘制，这肯定是不合理的。因为整个界面大背景是灰色的，item 背景是白色的，按道理应该就 1 次过度绘制。检查下来发现没去掉默认的 Window 背景，移除之后 item 背景就变成了蓝色了，也就是 1 次过度绘制。</p>
+</li>
+<li>
+<p>叠加的布局，过度绘制次数是否合理递增</p>
+<p>还是看中间那张图，item 的背景过度绘制是 2 次，按道理九宫格图片每张图应该是过度绘制 3 次，但是却显示成红色的，显然没有合理递增而出现了跳跃。</p>
+<p>先猜测是不是因为给九宫格图片控件设置了白色背景？但是想一下就排除了，因为图片间隙的过度绘制次数和 item 背景是相同的。</p>
+<p>那就是每个 ImageView 有问题了，后来发现之前设置占位图的时候，给每个 ImageView 设置了一个灰色的背景色：</p>
+<pre><code class="language-java">imageView.setBackgroundColor(Color.parseColor(&quot;#eeeeee&quot;));
+</code></pre>
+<p>这也就导致了每个 ImageView 的过度绘制直接多了 1 次。</p>
+<p>这两步优化后，再看最后一张图中的优化结果，基本是可以的了。</p>
+</li>
+<li>
+<p>在 <strong>优化方法</strong> 中讲到的 ViewPager 布局加 Fragment 实现的首页布局，一个不注意很容易出现过度绘制严重的问题，在移除 ViewPager 和 Activity 根布局的白色背景后，以及默认的 Window 背景，原来红成一片的首页现在基本上是大部分蓝色和小部分绿色了。</p>
+<figure data-type="image" tabindex="10"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/5e3d906c721cc9f3.png" alt="" loading="lazy"></figure>
+</li>
+</ol>
+<h3 id="小插曲">小插曲</h3>
+<p>最后来个小插曲，因为开启 『调试 GPU 过度绘制』比较麻烦，我就想找个比较方便快捷的方式，一开始想着写个桌面插件应用，一键切换。</p>
+<ul>
+<li>
+<p>查文档发现没有相关的设置的 API</p>
+</li>
+<li>
+<p>直接翻源码，发现相关的 API 是隐藏的，集中在 <code>SystemProperties</code> 类中，可以通过如下代码设置：</p>
+<pre><code class="language-java">SystemProperties.set(HardwareRenderer.DEBUG_OVERDRAW_PROPERTY, &quot;show&quot;);
+</code></pre>
+</li>
+<li>
+<p>直接编译源码拿到了没隐藏的 jar 包，暂时能调用到该类，但是运行之后发现需要系统权限才能设置</p>
+</li>
+<li>
+<p>通过一些方式企图让这个 App 获取到系统权限，但是均失败了 : (</p>
+</li>
+</ul>
+<p>如果你对相关的知识有所了解，请联系我和我探讨下，谢谢。</p>
+<p>不过最后也算是找到了一个比较方便的方法，省去了去设置里面一步步点。直接运行 adb 指令：</p>
+<p>开启『调试 GPU 过度绘制』：</p>
+<pre><code class="language-shell">adb shell setprop debug.hwui.overdraw show
+</code></pre>
+<p>关闭『调试 GPU 过度绘制』：</p>
+<pre><code class="language-shell">adb shell setprop debug.hwui.overdraw false
+</code></pre>
+<p>再取个指令别名，使用起来还是很方便的。</p>
+<h3 id="参考资料">参考资料</h3>
+<ul>
+<li><a href="http://hukai.me/android-performance-render/">Android 性能优化之渲染篇 - 胡凯</a></li>
+<li><a href="http://androidperformance.com/2014/10/20/android-performance-optimization-overdraw-1.html">Android 性能优化之过渡绘制(一) | Performance</a></li>
+<li><a href="http://blog.chengyunfeng.com/?p=458#">Android 性能分析案例 - 云在千峰</a></li>
+<li><a href="http://mrpeak.cn/android/2016/01/11/android-performance-ui">Android UI 性能优化详解</a></li>
+<li><a href="http://blog.udinic.com/2015/09/15/speed-up-your-app">Speed up your app</a></li>
+</ul>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

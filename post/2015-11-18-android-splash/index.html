@@ -1,0 +1,344 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>Android 启动页 (Splash) 的实现 | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>Android 启动页 (Splash) 的实现</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+	<a href="https://xudadi.cn/tag/4HTJ8nAl6d/" class="tag">文章</a>
+
+	<a href="https://xudadi.cn/tag/F69yxgDao6/" class="tag">科技</a>
+
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><p>App 启动页 (Splash)，最经典的莫过于微信的启动页了。不过启动页是个好的设计还是不好的设计呢？本文不讨论这个问题，仅从一个开发者的角度来讲解下Android应用启动页的实现，以及一些需要注意的地方。</p>
+<!-- more -->
+<h3 id="基本实现">基本实现</h3>
+<p>先显示一个界面，停留1~2s，然后跳转到另一个界面。<br>
+这里有个延时跳转，可以用 Timer、Handler 实现，我这里用 Handler 来实现。</p>
+<h4 id="1-添加-splashactivity">1. 添加 <code>SplashActivity</code></h4>
+<p>首先假设 App 打开的第一个界面为 <code>MainActivity</code>，新建一个 <code>SplashActivity</code>，在 <code>AndroidManifest</code> 中将 <code>SplashActivity</code> 设置为启动后第一个打开的页面：</p>
+<pre><code class="language-xml">&lt;activity
+      	android:name=&quot;.activity.SplashActivity&quot;
+      	android:label=&quot;@string/app_name&quot;
+      	android:theme=&quot;@style/AppTheme.NoActionBar.FullScreen&quot;&gt;
+      	&lt;intent-filter&gt;
+            	 	&lt;action android:name=&quot;android.intent.action.MAIN&quot; /&gt;
+            	 	&lt;category android:name=&quot;android.intent.category.LAUNCHER&quot; /&gt;
+      	&lt;/intent-filter&gt;
+&lt;/activity&gt;
+</code></pre>
+<p>这里只是将 <code>MainActivity</code> 的 <code>intent-filter</code> 参数剪切给 <code>SplashActivity</code>，此时你打开 App 第一个显示的就是 <code>SplashActivity</code> 了。</p>
+<h4 id="2-添加跳转">2. 添加跳转</h4>
+<p>跳转是用 Handler 的 <code>postDelayed()</code> 方法来设置延时来实现的，在 <code>SplashActivity</code> 的 <code>onCreate()</code> 方法中添加一下的代码，就可以实现在1500毫秒后跳转到 <code>MainActivity</code> 了。<br>
+这里需要注意的是 <code>Handler</code> 是引用自 <code>android.os.Handler</code>，import 的时候不要搞错了。</p>
+<pre><code class="language-java">Handler handler = new Handler();
+handler.postDelayed(new Runnable() {
+       @Override
+       public void run() {
+            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
+}, 1500);
+</code></pre>
+<p><code>postDelayed(Runnable r, long delayMillis)</code> 方法就是设置在设定的时间后执行 <code>Runnable</code> 中的 <code>run()</code>，<code>delayMillis</code> 单位是毫秒。</p>
+<h3 id="注意的问题">注意的问题</h3>
+<p>以上两步操作基本实现了启动页的基本功能，不过还是有一些小的问题需要注意的。</p>
+<h4 id="1-只显示一次启动页-app-没被-kill-的情况下">1. 只显示一次启动页（ App 没被 kill 的情况下）</h4>
+<p>微信打开之后，按下返回键回到桌面，再打开微信，并不会再看到启动页（除非你手动清了微信的后台或者被系统 kill 了），这个是怎么实现的呢？</p>
+<p>其实很简单，只需要重写一下 <code>MainActivity</code> 的 <code>onBackPressed()</code> 方法就行。</p>
+<pre><code class="language-java">@Override
+public void onBackPressed() {
+    // super.onBackPressed(); 	不要调用父类的方法
+    Intent intent = new Intent(Intent.ACTION_MAIN);
+    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    intent.addCategory(Intent.CATEGORY_HOME);
+    startActivity(intent);
+}
+</code></pre>
+<p>以上就实现了和微信一样的效果。</p>
+<h4 id="2-全屏页面切换到非全屏页面的问题">2. 全屏页面切换到非全屏页面的问题</h4>
+<p>由于启动页一般是全屏显示的，而主页则不是，因此从全屏切换到非全屏就存在一个卡顿的问题，这个问题我之前在 CSDN 上写过一篇解决办法，这里就直接贴地址了:<br>
+<a href="http://blog.csdn.net/u013011318/article/details/48296869">Android 全屏界面切换到非全屏界面的问题</a>。</p>
+<p>暂时就写这么多，需要 demo 的话可以看我最新开源的项目<a href="https://github.com/laobie/ListenRain">听雨</a>。</p>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

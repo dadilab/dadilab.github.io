@@ -1,0 +1,424 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>Android 热修复方案对比 | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>Android 热修复方案对比</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><h3 id="概述">概述</h3>
+<p>没有 Bug 的程序几乎是不存在的，加上 App 更新版本过程又很繁琐，热修复技术从一提出，就拥有很大的技术需求市场。从去年下半年开始，热修复技术就在 Android  技术社区火了一阵子，最近阿里百川正式开启了<a href="https://hotfix.taobao.com/hotfix/index.htm">HotFix</a> 产品的公测服务，这也意味着开始有平台专门提供热修复服务，让普通的开发者和一些小公司也有机会使用上热修复技术，让这项技术不再是大公司才折腾得起、用得起的。当然使用效果或者说提供的服务质量具体怎么样还有待验证。</p>
+<!-- more -->
+<h3 id="热修复基本原理">热修复基本原理</h3>
+<p>热修复的基本原理并不多，目前已知可用的热修复实现的原理主要有以下几种：</p>
+<ol>
+<li>基于 Xposed 实现的无侵入的运行时 <a href="http://en.wikipedia.org/wiki/Aspect-oriented_programming">AOP (Aspect-oriented Programming)</a>  框架，可以实现在线修复 Bug，修复粒度方法级别，但是由于对 ART 虚拟机不支持，导致其对 Android 5.0、6.0 均不支持，使用局限性太大。目前基于这一原理实现的解决方案是手淘团队开源的 <a href="https://github.com/alibaba/dexposed">Dexposed</a> 项目。</li>
+<li>native hook 方式，其核心部分在 JNI 层对方法进行替换，替换有问题的方法，修复粒度方法级别，无法在类中新增和删减字段，可以做到即时生效，该原理的实现方案主要是阿里团队开源的 <a href="https://github.com/alibaba/AndFix">AndFix</a> 。</li>
+<li>该原理由 QQ 空间技术团队提出，使用新的 ClassLoader 加载 patch.dex，hack 默认的 ClassLoader，替换有问题的类，修复粒度类级别，一般无法做到即时生效，需要在应用下一次启动时生效。目前基于该原理实现的方案有 <a href="https://github.com/jasonross/Nuwa">Nuwa</a>、<a href="https://github.com/dodola/HotFix">HotFix</a>、<a href="https://github.com/dodola/RocooFix">RocooFix</a> 。</li>
+<li>dex 文件全量替换，基于 DexDiff 技术，对比修复前后的 dex 文件，生成 patch.dex，再根据 patch.dex 更新有问题的 dex 文件。该方案由微信团队提出：<a href="http://bugly.qq.com/bbs/forum.php?mod=viewthread&amp;tid=1264">微信Android热补丁实践演进之路</a> ，暂时还未开源。目前基于这一原理实现的开源方案只有一个：<a href="https://github.com/zzz40500/Tinker_imitator">Tinker_imitator</a> 。</li>
+</ol>
+<p>目前热修复的原理基本就这四种，考虑到使用的兼容性、可实现性以及可操作性，基本上能实际应用到项目中的就剩下了 2、3 两种了，至于第 4 种方式，只能等微信团队开源出比较成熟的方案，方可实际应用。</p>
+<h3 id="开源的热修复方案对比">开源的热修复方案对比</h3>
+<ul>
+<li>
+<p><a href="https://github.com/alibaba/dexposed">Dexposed</a></p>
+<ul>
+<li>作者：手淘团队</li>
+<li>修复粒度：方法级别</li>
+<li>实现原理：基于 Xposed 实现的无侵入的运行时 AOP 框架</li>
+</ul>
+<p>该项目明确表示对 ART 虚拟机的不支持，对于 5.1 和 6.0 系统都没法支持，因此该项目基本没有实际应用到项目的意义，毕竟现在 5.0 以上的份额也挺大了。</p>
+</li>
+<li>
+<p><a href="https://github.com/alibaba/AndFix">AndFix</a></p>
+<ul>
+<li>作者：阿里技术团队</li>
+<li>修复粒度：方法级别</li>
+<li>实现原理：native hook 方式</li>
+<li>优点：运行时即可修复，修复及时</li>
+<li>缺点：
+<ul>
+<li>只能修复方法，无法新加类和字段</li>
+<li>对部分机型不支持</li>
+<li>方法的参数类型有限制</li>
+<li>打补丁限制较多，以上的限制在打补丁时均需要注意</li>
+</ul>
+</li>
+</ul>
+<p>目前阿里百川公测的 <a href="https://hotfix.taobao.com/hotfix/index.htm">阿里百川-HotFix</a> 服务应该就是基于 AndFix 技术，具体的使用细节可以看这篇 <a href="https://baichuan.taobao.com/docs/doc.htm?spm=a3c0d.7629140.0.0.dzpp9X&amp;treeId=234&amp;articleId=105457&amp;docType=1">阿里百川 HotFix Android 接入说明</a> ，可以看到其具体的限制基本和 AndFix 项目类似：</p>
+<blockquote>
+<p>4.4 HotFix 的使用中不被允许的情况</p>
+<ul>
+<li>暂时不支持新增方法、新增类</li>
+<li>不支持新增 Field</li>
+<li>不支持针对同一个方法的多次 patch，如果客户端已经有一个 patch 包在运行，则下一个 patch 不会立即生效。</li>
+<li>三星 note3、S4、S5 的 5.0 设备以及 X8 6设备不支持（<a href="http://baichuan.taobao.com/docs/doc.htm?spm=a3c0d.7629140.0.0.8K3Zr9&amp;treeId=234&amp;articleId=105460&amp;docType=1#s1">点击查看</a>具体支持的机型）</li>
+<li>参数包括：long、double、float 的方法不能被 patch</li>
+<li>被反射调用的方法不能被 patch</li>
+<li>使用 Annotation 的类不能 patch</li>
+<li>参数超过 8 的方法不能被 patch</li>
+<li>泛型参数的方法如果 patch 存在兼容性问题</li>
+</ul>
+</blockquote>
+</li>
+<li>
+<p><a href="https://github.com/jasonross/Nuwa">Nuwa</a></p>
+<ul>
+<li>作者： <a href="https://github.com/jasonross">Jason Ross</a></li>
+<li>修复粒度：类级别</li>
+<li>实现原理：ClassLoader 方式</li>
+<li>优点：兼容性较好，补丁限制较少，类级别的可以增减少字段，补丁自动化做的很完整</li>
+<li>缺点：
+<ul>
+<li>需要在应用重启后才能应用补丁，实现修复</li>
+<li>需要在每个类默认构造方法插入一段代码，防止类打上 <strong>CLASS_ISPREVERIFIED</strong> 标志，对运行效率有影响</li>
+<li>目前 issue 中反馈的兼容性问题较多，源码中确实未对各个 Android 版本做差异化处理，存在兼容性问题</li>
+<li>作者已经停止维护</li>
+</ul>
+</li>
+</ul>
+<p>该项目在去年刚出现时应该算比较火热，但是由于存在的兼容性问题，让作者也渐渐放弃了该项目，目前来说将该方案应用到项目中是有一定风险的。</p>
+</li>
+<li>
+<p><a href="https://github.com/dodola/HotFix">HotFix</a></p>
+<ul>
+<li>作者：<a href="https://github.com/dodola">dodola</a></li>
+<li>修复粒度：类级别</li>
+<li>实现原理：ClassLoader 方式</li>
+</ul>
+<p>基于 ClassLoader 方式实现，实际使用存在兼容问题，基本类似 Nuwa ，作者已弃坑，新开项目 RocooFix，该项目停止维护。</p>
+</li>
+<li>
+<p><a href="https://github.com/dodola/RocooFix">RocooFix</a></p>
+<ul>
+<li>作者：<a href="https://github.com/dodola">dodola</a></li>
+<li>修复粒度：类级别</li>
+<li>实现原理：ClassLoader 方式</li>
+<li>优点：
+<ul>
+<li>兼容性较好，源码中对各 Android 进行了差异化处理，一定程度上解决了兼容性问题</li>
+<li>实现了两种修复方式：静态修复和动态修复，分别是需要重启修复和无需重启即可修复</li>
+<li>简化了补丁制作流程</li>
+</ul>
+</li>
+<li>缺点：
+<ul>
+<li>需要在每个类默认构造方法插入一段代码（也叫做插桩），防止类打上 <strong>CLASS_ISPREVERIFIED</strong> 标志，对运行效率有影响</li>
+<li>目前就项目下的 issue 来看，还是会存在兼容性问题，对于采用了 APT 技术的项目也存在一些问题</li>
+<li>动态修复方式还有待检验，使用的是 <a href="https://github.com/asLody/legend">Legend</a> 项目中的相关技术</li>
+</ul>
+</li>
+</ul>
+<p>总体来说，该开源方案应该是算比较完整的解决方案，作者目前还在维护，对各个 Android 版本的兼容性也做了不少工作，期待作者的后续更新。</p>
+</li>
+<li>
+<p><a href="https://github.com/zzz40500/Tinker_imitator">Tinker_imitator</a></p>
+<ul>
+<li>作者：<a href="https://github.com/zzz40500">zzz40500</a></li>
+<li>修复粒度：dex 级别</li>
+<li>实现原理：dex 文件全量替换</li>
+<li>优点：基于 dex 文件全量替换的实现原理相对于 ClassLoader 方式，在性能上有很大优势</li>
+<li>缺点：
+<ul>
+<li>该方案虽然类似微信提出的热修复解决方案，但是 patch.dex 文件的生成并不是依赖于 DexDiff 算法，而是基于 bsdiff ，所以并不是完整实现了微信提出的方案</li>
+<li>需要重启应用，下次启动时生效</li>
+<li>生成新的 dex 文件时内存占用较大</li>
+</ul>
+</li>
+</ul>
+<p>总体来说，该方案目前还停留在 demo 状态，感觉离实际应用到项目中还需要一段时间，基于 dex 文件全量替换的方式我们更多还是期待微信团队的开源。</p>
+</li>
+</ul>
+<h3 id="对比总结">对比总结</h3>
+<p>就热修复实现的基本原理而言，目前较为成熟的也就 <strong>native hook 方式</strong> 和 <strong>ClassLoader 方式</strong>，在这两个基本原理上实现的开源方案中，AndFix 和 RocooFix 较为成熟，相关的打补丁配套解决方案也比较完备。</p>
+<p>如果你选择 AndFix 方案，比较倾向于推荐使用阿里百川的 <a href="https://hotfix.taobao.com/hotfix/index.htm">HotFix</a>  服务，希望该服务在公测之后有一个比较完整的服务方案给出，提供一个保证质量的服务。</p>
+<p>如果你选择 RocooFix 方案，你可能需要跟进作者的更新，及时反馈相关的问题，帮助作者来完善该项目，使得其在兼容性更加提升一步，同时在配套的生成补丁和下发补丁等方案也保证简单可使用。</p>
+<p>你也可以选择等待微信团队开源 Tinker 项目，毕竟鹅厂这套解决方案看起来很不错，在其实际应用到微信项目的基础上，开源出完整的解决方案，必将是一件有利于开发者的好事。</p>
+<p>感谢各大公司的技术团队和开源作者们的工作，正是他们让热修复得以实现，虽然各大解决方案都不是那么完美，但是已经有很大改进了，我们期待着越来越多的公司和开发者能够加入到这一工作中来，让热修复不再 “烫” 手。</p>
+<h3 id="参考文章">参考文章</h3>
+<ul>
+<li><a href="http://bugly.qq.com/bbs/forum.php?mod=viewthread&amp;tid=1264">微信Android热补丁实践演进之路</a></li>
+<li><a href="http://blog.zhaiyifan.cn/2015/11/20/HotPatchCompare/">各大热补丁方案分析和比较</a></li>
+<li><a href="http://mp.weixin.qq.com/s?__biz=MzI1MTA1MzM2Nw==&amp;mid=400118620&amp;idx=1&amp;sn=b4fdd5055731290eef12ad0d17f39d4a&amp;scene=0">安卓App热补丁动态修复技术介绍</a></li>
+</ul>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>

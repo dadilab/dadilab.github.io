@@ -1,0 +1,389 @@
+<html>
+<head lang="zh">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta name="renderer" content="webkit">
+<title>Android App 多语言切换 | 许大大博客</title>
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/basic.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
+</head>
+<body>
+<div class="header">
+  <div class="logo_title">
+		  
+   <div class="title animated fadeInDown"><img src="https://xudadi.cn/images/avatar.png?v=1618721500280"/>
+
+     <h1 title="许大大博客" class="weaklink"><a href="/">许大大博客</a>
+       </h1>
+
+          <div class="navbar weaklink">
+            <div class="normal_nav">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+		
+      <ul class="mixed_site_nav site_nav sm sm-base">
+ 
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+ 
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+ 
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+            </div>
+
+            <div class="hamberger"><i class="fa fa-bars"></i>
+<i class="fa fa-times"></i>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="hidden_nav animated fadeInDown">
+
+<div class="bitcron_nav_container">
+
+  <div class="bitcron_nav">
+    <div class="mixed_site_nav_wrap site_nav_wrap">
+      <ul class="mixed_site_nav site_nav sm sm-base">
+		  
+	
+  <li><a id="Nav" href="/" class="selected active current nav__item" >首页</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/archives" class="selected active current nav__item" >归档</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/tags" class="selected active current nav__item" >标签</a>
+
+  </li>
+
+
+  <li><a id="Nav" href="/post/about" class="selected active current nav__item" >关于</a>
+
+  </li>
+
+
+
+      </ul>
+
+      <div class="clear clear_nav_inline_end"></div>
+
+    </div>
+
+  </div>
+
+  <div class="clear clear_nav_end"></div>
+
+</div>
+
+      </div>
+
+    </div>
+
+
+    <div class="main">
+      <div class="main-inner">
+
+<div class="content">
+
+  <div class="post_page" >
+
+<div class="post">
+  <div class="post_title sm_margin">
+    <h2><a>Android App 多语言切换</a>
+
+    </h2>
+  </div>
+
+  <div class="post_details">
+    <div class="info"><i class="fa fa-clock-o"></i>
+<span class="date_info">2019-09-19</span>
+<i class="fa fa-eye"></i>
+
+<span class="date_info"><span id="busuanzi_value_page_pv"></span> 查看</span>
+
+<i class="fa fa-bookmark-o"></i>
+<span class="tags_info weaklink">
+	
+
+</span>
+
+    </div>
+
+  </div>
+
+  <div class="post_content markdown"><p class="md_block">
+    <span class="md_line md_line_start md_line_end"><p>前段时间公司 App 需要实现多语言切换功能，接到任务后先 Google 了下，发现搜到的方法都比较老旧，很多都莫名其妙，比如什么 API 欺骗、反射、手动转换语系，感觉不应该这么复杂地实现(也可能是当时的环境下实现确实比较麻烦)。所以花了点时间研究了下，实现了应用内切换语言，且不是那么复杂。</p>
+<!-- more -->
+<h4 id="1-实现的效果">1. 实现的效果</h4>
+<figure data-type="image" tabindex="1"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/e210b5e3d4374be1.png" alt="" loading="lazy"></figure>
+<p>和微信类似，在设置界面打开切换语言的界面，选择语言后重启 HomeActivity，语言切换完成，下次重新打开 App ，也是用户设置的语言。</p>
+<h4 id="2-实现步骤">2. 实现步骤</h4>
+<h5 id="1-添加多语言文件">1. 添加多语言文件</h5>
+<p>在不同的 value 文件夹下（例如 value 、value-en、values-zh-rTW 文件夹）添加不同语言的 <code>string.xml</code> 文件，我们的项目添加了英文、简体中文、繁体中文三种语言，如下图所示：</p>
+<figure data-type="image" tabindex="2"><img src="https://lc-qygvx1cc.cn-n1.lcfile.com/50e346171231a31d.png" alt="" loading="lazy"></figure>
+<p>其中英文需要翻译，繁体如果没有专门翻译的话，可以找个简繁转换网站，直接将简体中文转成繁体中文，我用的这个网站：<a href="http://www.vifo.com.cn/fanti/">在线中文简体转繁体</a>。</p>
+<h5 id="2-更新-configuration-中的-locale-属性">2. 更新 Configuration 中的 locale 属性</h5>
+<p>参照 <a href="http://developer.android.com/reference/android/content/res/Configuration.html">Android 开发者官网</a> 上的描述，Configuration 包含了设备的所有的配置信息，这些配置信息会影响应用获取的资源。例如 string 资源，就是根据 Configuration 的 locale 属性来判断该取哪种语言的 string 资源，默认是 value 文件夹下的。</p>
+<p>主要代码如下：</p>
+<pre><code class="language-java">Resources resources = getContext().getResources();
+DisplayMetrics dm = resources.getDisplayMetrics();
+Configuration config = resources.getConfiguration();
+// 应用用户选择语言
+config.locale = Locale.ENGLISH;
+resources.updateConfiguration(config, dm);
+</code></pre>
+<p>我们用了 <code>Locale</code> 中的预设值 <code>Locale.ENGLISH</code>、<code>Locale.TRADITIONAL_CHINESE</code>和 <code>Locale.SIMPLIFIED_CHINESE</code>，如果你需要设置的语言没有预设值，你可以自己新建一个 <code>Locale</code> 对象，具体自行 Google 吧。</p>
+<p><strong>注：跟随系统设置是 <code>Locale.getDefault()</code></strong></p>
+<h5 id="3-重启-homeactivity">3. 重启 HomeActivity</h5>
+<p>我们的 App 有个启动页 WelcomeActivity，类似微信那个小人启动页，如果从欢迎页重启，并不是一个好的体验，应该和微信的语言设置一样，直接回到 HomeActivity ,而不是从 WelcomeActivity 重新打开。实现其实也很简单，代码如下：</p>
+<pre><code class="language-java">Intent intent = new Intent(this, HomeActivity.class);
+intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+getActivity().startActivity(intent);
+</code></pre>
+<p>正常来说这段代码应该是没问题的，但是假如你的 App 存在某个 activity 和当前设置页 activity 不在一个 task 栈内的话（比如你从某个通知页用 <code>FLAG_ACTIVITY_NEW_TASK</code> 启动的一个 activity），就不会应用语言设置。因此可以直接杀掉当前 App 的进程，保证是“整个”重启了：</p>
+<pre><code class="language-java">Intent intent = new Intent(this, HomeActivity.class);
+intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+startActivity(intent);
+// 杀掉进程
+android.os.Process.killProcess(android.os.Process.myPid());
+System.exit(0);
+</code></pre>
+<p>按道理杀掉进程的两行代码任意一行即可，但是查阅相关资料，还是两个都加上吧，如果有详细了解欢迎沟通。此段代码其实参考自 <a href="https://github.com/Ereza/CustomActivityOnCrash">CustomActivityOnCrash</a> 开源项目，有兴趣的可以研究下这个开源库捕捉崩溃信息，重启应用部分的代码。</p>
+<h5 id="4-持久化存储语言设置">4. 持久化存储语言设置</h5>
+<p>按照上述三个步骤，你应该已经可以看到了改变语言的效果了，但是当你杀掉应用，重新打开，发现设置又失效了。这是因为应用重启后会读取设备默认的 <em>Configuration</em> 信息，其中和语言相关的 locale 属性也会变成默认值，也就是你在系统设置中选择的语言。</p>
+<p>当你的应用需要由用户单独设置语言，而不是仅仅跟随系统语言，你就需要持久化存储用户的设置信息了。你可以选择数据库、或 SharedPreferences 来存储设置信息。</p>
+<p>在应用启动时需要读取存储的设置，并应用该配置，简要代码如下：</p>
+<pre><code class="language-java">public class App extends MultiDexApplication {
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        ...
+        
+        Resources resources = App.getContext().getResources();
+        DisplayMetrics dm = resources.getDisplayMetrics();
+        Configuration config = resources.getConfiguration();
+        config.locale = getSetLocale();
+        resources.updateConfiguration(config, dm);
+        
+    }
+    
+    // 得到设置的语言信息
+    private static Locale getSetLocale() {
+        // 读取储存的语言设置信息
+        ...
+    
+    }
+}
+</code></pre>
+<h5 id="5-改变系统设置的时候需要注意的问题">5. 改变系统设置的时候需要注意的问题</h5>
+<p>做完以上的步骤，我觉得应该是没问题的了，但是事实证明我还是图样。</p>
+<p>在测试中我又发现了一个问题：当从应用中切出去，改变了系统语言的设置，当再切应用的时候，我发现语言也会变成系统语言（而我并没在应用内设置跟随系统）。</p>
+<p>然后打断点调试，发现在设备的配置信息（也就是 Configuration ）发生变化时，会立即影响应用中的 Configuration 信息。</p>
+<p>简单来说，上一步中，我们在 App 启动时，读取了用户的设置信息，并应用到 Configuration 的 locale 属性上，然后通过 <code>resources.updateConfiguration(config, dm)</code> 改变了应用的配置信息（ Configuration ）并生效，保证我们的应用读取的 string 资源都是用户设置语言对应的资源。在我们改变系统的语言之后，再回到我们的应用中，此时的 Configuration 的 locale 属性就会发生变化了，不再是我们刚才自己的在应用启动时设置的了，而是变成了系统的设置了。</p>
+<p>解决办法很简单粗暴，在切回我们的应用时，在显示的 activity 的生命周期中做一些处理就好了，因为该 activity 可能是应用中任一个，因此我们在 <code>BaseActivity</code> 的 <code>onCreate</code> 中处理下(如评论中提到的，在改变了系统设置之后，回到应用会重走 activity 的 <code>onCreate</code> ，这个需要说明下)就好了：</p>
+<pre><code class="language-java">    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (!LanguageUtil.isSetValue()) {
+            LanguageUtil.resetDefaultLanguage();
+        }
+        ...
+    }
+</code></pre>
+<pre><code class="language-java">public class LanguageUtil {
+    
+    ...
+    
+    /**
+     * 是否是设置值
+     *
+     * @return 是否是设置值
+     */
+    public static boolean isSetValue() {
+        Locale currentLocale = App.getContext().getResources().getConfiguration().locale;
+        return currentLocale.equals(getSetLocale());
+    }
+}
+</code></pre>
+<p>这里我就简单说下思路，具体的代码实现自行完成。建议将语言设置相关的代码都封装在一个 <code>LanguageUtil</code> 中，便于后期的维护。</p>
+<h4 id="3-参考资料">3. 参考资料</h4>
+<ul>
+<li><a href="http://wangkuiwu.github.io/2014/06/26/IntentFlag/">Android 之Activity启动模式(二)之 Intent的Flag属性</a></li>
+<li><a href="http://www.vifo.com.cn/fanti/">在线中文简体转繁体</a></li>
+</ul>
+</p>
+
+     <p class="md_block">
+    <div class="reward"><div class="reward-button">赏 <span class="reward-code"> <span class="alipay-code"> <img class="alipay-img" src="https://xudadi.cn/media/images/alipay.png"><b>支付宝扫码打赏</b> </span> <span class="wechat-code"> <img class="wechat-img" src="https://xudadi.cn/media/images/wechat.png"><b>微信打赏</b> </span> </span></div></div>
+</p> 
+</div>
+
+</div>
+
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+<div class="doc_comments">
+
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: '7ba3ee5f75be6ae2ca5a',
+    clientSecret: 'e6d9ffbbb080dc9d9f5aad0d1ca2b445a74bd520',
+    repo: 'dadinet.github.io',
+    owner: 'dadinet',
+    admin: ['dadinet'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+          
+			  
+          
+        
+</div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+
+   <div class="footer">
+<link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/><div class="site_footer_wrap"><div class="site_footer">
+
+      <div class="mysocials"><div class="my_socials">
+		   
+			   
+    
+			   
+    
+			   
+    
+			   
+    
+</div><link href="https://xudadi.cn/styles/main.css" type="text/css" rel="stylesheet"/>
+
+      </div>
+
+      <div class="copyright">
+      </div>
+
+</div></div>
+
+    </div>
+
+<style type="text/css">a.back_to_top {
+    text-decoration: none;
+    position: fixed;
+    bottom: 40px;
+    right: 30px;
+    background: #f0f0f0;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    line-height: 36px;
+    font-size: 18px;
+    text-align: center;
+    transition-duration: .5s;
+    transition-propety: background-color;
+    display: none;
+}
+
+a.back_to_top span {
+    color: #888;
+}
+
+a.back_to_top:hover {
+    cursor: pointer;
+    background: #dfdfdf;
+}
+
+a.back_to_top:hover span {
+    color: #555;
+}
+
+@media print, screen and (max-width: 580px) {
+    .back_to_top {
+        display: none !important;
+    }
+}
+
+</style><a id="back_to_top" href="#" class="back_to_top"><span>△</span>
+</a>
+<script type="text/javascript" src="https://xudadi.cn/media/scripts/jquery.js"></script>
+
+<script>$(document).ready((function(_this) {
+  return function() {
+    var bt;
+    bt = $('#back_to_top');
+    if ($(document).width() > 480) {
+      $(window).scroll(function() {
+        var st;
+        st = $(window).scrollTop();
+        if (st > 30) {
+          return bt.css('display', 'block');
+        } else {
+          return bt.css('display', 'none');
+        }
+      });
+      return bt.click(function() {
+        $('body,html').animate({
+          scrollTop: 0
+        }, 800);
+        return false;
+      });
+    }
+  };
+})(this));
+</script>
+
+</body>
+
+</html>
