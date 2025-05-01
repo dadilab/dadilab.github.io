@@ -11,4 +11,4 @@
 
  6.[日期时间计算机](https://lab.xudadi.cn/time_calc/index.html)
 
-  6.[多功能计时器/倒计时/正计时](https://lab.xudadi.cn/timer/index.html)
+ 7.[多功能计时器/倒计时/正计时](https://lab.xudadi.cn/timer/index.html)
