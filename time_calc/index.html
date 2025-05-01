@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全能日期计算器</title>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .calculator {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        label {
+            display: inline-block;
+            width: 120px;
+            margin-right: 10px;
+        }
+
+        input, select {
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 1.1em;
+        }
+
+        .mode-switch {
+            background-color: #007bff;
+        }
+
+        .mode-switch:hover {
+            background-color: #0056b3;
+        }
+
+        .checkbox-group {
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>全能日期计算器</h2>
+        
+        <button onclick="toggleMode()" class="mode-switch">切换计算模式</button>
+
+        <!-- 间隔天数计算 -->
+        <div id="daysCalculator" class="calculator">
+            <h3>间隔天数计算</h3>
+            <div class="input-group">
+                <label for="startDate">起始日期：</label>
+                <input type="date" id="startDate" required>
+            </div>
+            <div class="input-group">
+                <label for="endDate">截止日期：</label>
+                <input type="date" id="endDate" required>
+            </div>
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" id="includeEndDays" checked>
+                    包含截止当天
+                </label>
+            </div>
+            <button onclick="calculateDays()">计算间隔天数</button>
+        </div>
+
+        <!-- 截止日期计算 -->
+        <div id="dateCalculator" class="calculator" style="display: none;">
+            <h3>截止日期计算</h3>
+            <div class="input-group">
+                <label for="calcStartDate">起始日期：</label>
+                <input type="date" id="calcStartDate" required>
+            </div>
+            <div class="input-group">
+                <label for="interval">时间间隔：</label>
+                <input type="number" id="interval" placeholder="输入正负整数" required>
+                <select id="unit">
+                    <option value="days">天</option>
+                    <option value="weeks">周</option>
+                    <option value="months">月</option>
+                    <option value="years">年</option>
+                </select>
+            </div>
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" id="includeEndDate" checked>
+                    包含起始当天
+                </label>
+            </div>
+            <button onclick="calculateDate()">计算截止日期</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let isDaysCalculator = true;
+
+        function toggleMode() {
+            isDaysCalculator = !isDaysCalculator;
+            document.getElementById('daysCalculator').style.display = isDaysCalculator ? 'block' : 'none';
+            document.getElementById('dateCalculator').style.display = isDaysCalculator ? 'none' : 'block';
+            document.querySelector('h2').textContent = isDaysCalculator ? '间隔天数计算器' : '截止日期计算器';
+            document.getElementById('result').innerHTML = '';
+        }
+
+        // 间隔天数计算逻辑
+        function calculateDays() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const includeEnd = document.getElementById('includeEndDays').checked;
+
+            if (!startDate || !endDate) {
+                alert("请填写所有日期字段");
+                return;
+            }
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            const diffTime = end - start;
+            let days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (includeEnd) days += 1;
+            
+            showResult(`间隔天数：<strong>${days}</strong> 天`);
+        }
+
+        // 截止日期计算逻辑（增强版）
+        function calculateDate() {
+            const startDateStr = document.getElementById('calcStartDate').value;
+            let interval = parseInt(document.getElementById('interval').value, 10);
+            const unit = document.getElementById('unit').value;
+            const includeStart = document.getElementById('includeEndDate').checked;
+
+            if (!startDateStr || isNaN(interval)) {
+                alert("请填写所有字段");
+                return;
+            }
+
+            // 调整包含当天的偏移量
+            if (includeStart) {
+                interval = unit === 'days' ? interval - 1 : interval;
+            }
+
+            const [year, month, day] = startDateStr.split('-').map(Number);
+            const startDate = new Date(year, month - 1, day);
+            const resultDate = new Date(startDate);
+
+            switch(unit) {
+                case 'days':
+                    resultDate.setDate(resultDate.getDate() + interval);
+                    break;
+                case 'weeks':
+                    resultDate.setDate(resultDate.getDate() + (interval * 7));
+                    break;
+                case 'months':
+                    resultDate.setMonth(resultDate.getMonth() + interval);
+                    break;
+                case 'years':
+                    resultDate.setFullYear(resultDate.getFullYear() + interval);
+                    break;
+            }
+
+            showResult(`截止日期：<strong>${formatDate(resultDate)}</strong>`);
+        }
+
+        function showResult(content) {
+            document.getElementById('result').innerHTML = content;
+        }
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // 初始化默认日期
+        document.getElementById('startDate').value = '1993-09-26';
+        document.getElementById('endDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('calcStartDate').value = '1993-09-26';
+    </script>
+</body>
+</html>
