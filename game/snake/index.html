@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>智能贪吃蛇对战</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="score-board">
+            <div class="score" id="playerScore">玩家: 3</div>
+            <div class="score" id="aiScore">AI: 3</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="startScreen" class="start-screen">
+            <h1>智能贪吃蛇对战</h1>
+            <p>使用方向键控制你的蛇</p>
+            <p>避免撞到自己或AI蛇</p>
+            <button id="startButton">开始游戏</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
