@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>包本内容拆分工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        #fileInput {
+            margin: 20px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            min-height: 24px;
+        }
+        .result {
+            margin-top: 30px;
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>包本内容拆分工具</h1>
+    <p>本工具可处理Excel表格中"包本内容"列包含多个书名的情况，将额外书名拆分到新行并复制其他信息。</p>
+    <p>处理以下格式的数据 ['姓名', '性别', '班级', '包本内容', '通过时间']</p>
+    
+    <div class="container">
+        <input type="file" id="fileInput" accept=".xlsx,.xls" />
+        <br>
+        <button onclick="processExcel()">处理文件</button>
+        <div id="status"></div>
+        
+        <div class="result" id="resultSection">
+            <h3>处理结果预览</h3>
+            <div id="preview"></div>
+            <br>
+            <button onclick="downloadResult()">下载处理后的文件</button>
+        </div>
+    </div>
+
+    <!-- 引入处理Excel的库 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <script>
+        let processedData = null;
+        let originalFileName = "";
+
+        function setStatus(message, isError = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.style.color = isError ? 'red' : 'black';
+        }
+
+        function processExcel() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                setStatus("请先选择一个Excel文件", true);
+                return;
+            }
+
+            // 保存原始文件名
+            originalFileName = file.name.replace(/\.(xlsx|xls)$/, '');
+            
+            setStatus("正在处理文件...");
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    // 解析Excel文件
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 获取第一个工作表
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // 转换为JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    // 检查必要的列是否存在
+                    const requiredColumns = ['姓名', '性别', '班级', '包本内容', '通过时间'];
+                    const missingColumns = [];
+                    
+                    if (jsonData.length > 0) {
+                        const firstRow = jsonData[0];
+                        requiredColumns.forEach(col => {
+                            if (!Object.keys(firstRow).includes(col)) {
+                                missingColumns.push(col);
+                            }
+                        });
+                    }
+                    
+                    if (missingColumns.length > 0) {
+                        setStatus(`缺少必要的列: ${missingColumns.join(', ')}`, true);
+                        return;
+                    }
+                    
+                    // 处理数据
+                    const processedRows = [];
+                    let splitCount = 0;
+                    
+                    jsonData.forEach(row => {
+                        // 获取包本内容并确保是字符串
+                        let bookContent = row['包本内容'] ? String(row['包本内容']) : '';
+                        
+                        // 提取所有书名（匹配《...》格式）
+                        const bookRegex = /《.*?》/g;
+                        const books = bookContent.match(bookRegex) || [];
+                        
+                        // 如果有多个书名
+                        if (books.length > 1) {
+                            splitCount++;
+                            // 第一个书名保留在原行
+                            const firstRow = { ...row };
+                            firstRow['包本内容'] = books[0];
+                            processedRows.push(firstRow);
+                            
+                            // 其他书名创建新行
+                            for (let i = 1; i < books.length; i++) {
+                                const newRow = { ...row };
+                                newRow['包本内容'] = books[i];
+                                processedRows.push(newRow);
+                            }
+                        } else {
+                            // 只有一个书名或没有书名，直接添加
+                            processedRows.push(row);
+                        }
+                    });
+                    
+                    processedData = processedRows;
+                    
+                    // 显示处理结果
+                    setStatus(`处理完成！共拆分了 ${splitCount} 行数据，原始数据 ${jsonData.length} 行，处理后 ${processedRows.length} 行`);
+                    
+                    // 显示预览和下载按钮
+                    document.getElementById('resultSection').style.display = 'block';
+                    showPreview(processedRows);
+                    
+                } catch (error) {
+                    setStatus(`处理出错: ${error.message}`, true);
+                    console.error(error);
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function showPreview(data) {
+            const previewEl = document.getElementById('preview');
+            // 只显示前10行预览
+            const previewData = data.slice(0, 10);
+            
+            if (previewData.length === 0) {
+                previewEl.innerHTML = "<p>没有数据可显示</p>";
+                return;
+            }
+            
+            // 创建表格
+            let tableHtml = '<table><thead><tr>';
+            // 添加表头
+            Object.keys(previewData[0]).forEach(key => {
+                tableHtml += `<th>${key}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+            
+            // 添加表内容
+            previewData.forEach(row => {
+                tableHtml += '<tr>';
+                Object.values(row).forEach(value => {
+                    tableHtml += `<td>${value !== undefined ? value : ''}</td>`;
+                });
+                tableHtml += '</tr>';
+            });
+            
+            if (data.length > 10) {
+                tableHtml += `<tr><td colspan="${Object.keys(previewData[0]).length}">...</td></tr>`;
+            }
+            
+            tableHtml += '</tbody></table>';
+            previewEl.innerHTML = tableHtml;
+        }
+
+        function downloadResult() {
+            if (!processedData) {
+                setStatus("没有可下载的处理结果", true);
+                return;
+            }
+            
+            // 创建工作簿和工作表
+            const worksheet = XLSX.utils.json_to_sheet(processedData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "处理后数据");
+            
+            // 下载文件
+            XLSX.writeFile(workbook, `${originalFileName}_处理后.xlsx`);
+        }
+    </script>
+</body>
+</html>
