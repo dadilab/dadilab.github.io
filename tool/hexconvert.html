@@ -1,0 +1,363 @@
+<html lang="zh-CN"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高级进制转换工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            dark: '#1E293B',
+            darker: '#0F172A',
+            light: '#F8FAFC',
+            accent: '#8B5CF6'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .base-card {
+        @apply bg-dark rounded-xl p-5 shadow-lg transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1;
+      }
+      .input-field {
+        @apply w-full bg-darker border border-gray-700 rounded-lg px-4 py-3 text-light text-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-300;
+      }
+      .label-style {
+        @apply block text-gray-300 mb-2 font-medium flex justify-between items-center;
+      }
+      .gradient-border {
+        @apply relative before:absolute before:inset-0 before:p-[1px] before:rounded-xl before:-z-10 before:bg-gradient-to-r before:from-primary before:to-accent before:content-[''];
+      }
+    }
+  </style>
+</head>
+<body class="bg-darker font-inter text-light min-h-screen">
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- 标题区域 -->
+    <header class="text-center mb-12">
+      <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mb-4">
+        进制转换工具
+      </h1>
+      <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+        实时在不同进制间转换数字，支持2-36进制，输入时自动更新所有值
+      </p>
+    </header>
+    
+    <!-- 主要内容区 -->
+    <main>
+      <!-- 固定进制转换区域 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- 二进制 -->
+        <div class="base-card gradient-border">
+          <label class="label-style">
+            <span>二进制 (2)</span>
+            <i class="fa fa-code text-primary"></i>
+          </label>
+          <input type="text" id="base2" class="input-field" data-base="2" placeholder="输入二进制数字" pattern="[01]*">
+        </div>
+        
+        <!-- 四进制 -->
+        <div class="base-card gradient-border">
+          <label class="label-style">
+            <span>四进制 (4)</span>
+            <i class="fa fa-cubes text-primary"></i>
+          </label>
+          <input type="text" id="base4" class="input-field" data-base="4" placeholder="输入四进制数字" pattern="[0-3]*">
+        </div>
+        
+        <!-- 八进制 -->
+        <div class="base-card gradient-border">
+          <label class="label-style">
+            <span>八进制 (8)</span>
+            <i class="fa fa-cube text-primary"></i>
+          </label>
+          <input type="text" id="base8" class="input-field" data-base="8" placeholder="输入八进制数字" pattern="[0-7]*">
+        </div>
+        
+        <!-- 十进制 -->
+        <div class="base-card gradient-border">
+          <label class="label-style">
+            <span>十进制 (10)</span>
+            <i class="fa fa-hashtag text-primary"></i>
+          </label>
+          <input type="text" id="base10" class="input-field" data-base="10" placeholder="输入十进制数字" pattern="[0-9]*">
+        </div>
+        
+        <!-- 十六进制 -->
+        <div class="base-card gradient-border">
+          <label class="label-style">
+            <span>十六进制 (16)</span>
+            <i class="fa fa-hexagon text-primary"></i>
+          </label>
+          <input type="text" id="base16" class="input-field" data-base="16" placeholder="输入十六进制数字" pattern="[0-9A-Fa-f]*">
+        </div>
+        
+        <!-- 自定义进制 -->
+        <div class="base-card gradient-border">
+          <label class="label-style">
+            <span>
+              <select id="customBaseSelect" class="bg-darker border border-gray-700 rounded-lg px-2 py-1 text-light focus:outline-none focus:ring-1 focus:ring-primary">
+                <!-- 动态生成2-36进制选项 -->
+              </select>
+            </span>
+            <i class="fa fa-sliders text-primary"></i>
+          </label>
+          <input type="text" id="customBase" class="input-field" placeholder="输入自定义进制数字">
+        </div>
+      </div>
+      
+      <!-- 信息和帮助区域 -->
+      <div class="bg-dark/50 rounded-xl p-6 border border-gray-800 mb-8">
+        <h2 class="text-xl font-semibold mb-3 text-primary">使用说明</h2>
+        <ul class="list-disc pl-5 text-gray-300 space-y-2">
+          <li>在任何输入框中输入数字，其他所有进制的输入框将自动更新</li>
+          <li>二进制只能包含数字 0 和 1</li>
+          <li>八进制只能包含数字 0-7</li>
+          <li>十六进制可以包含数字 0-9 和字母 A-F（不区分大小写）</li>
+          <li>最高支持36进制，包含数字 0-9 和字母 A-Z（不区分大小写）</li>
+        </ul>
+      </div>
+      
+      <!-- 进制表 -->
+      <div class="bg-dark/50 rounded-xl p-6 border border-gray-800 overflow-x-auto">
+        <h2 class="text-xl font-semibold mb-4 text-primary">数值对应表</h2>
+        <table class="w-full text-sm text-left">
+          <thead class="text-gray-400 uppercase bg-darker/70">
+            <tr>
+              <th scope="col" class="px-6 py-3 rounded-l-lg">十进制</th>
+              <th scope="col" class="px-6 py-3">二进制</th>
+              <th scope="col" class="px-6 py-3">八进制</th>
+              <th scope="col" class="px-6 py-3">十六进制</th>
+              <th scope="col" class="px-6 py-3 rounded-r-lg">字符表示</th>
+            </tr>
+          </thead>
+          <tbody id="valueTable">
+            <!-- 动态生成数值对应表 -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer class="mt-12 text-center text-gray-500 text-sm">
+      <p>高级进制转换工具 © 2023</p>
+    </footer>
+  </div>
+
+  <script>
+    // 生成自定义进制选择下拉框
+    const baseSelect = document.getElementById('customBaseSelect');
+    const customBaseInput = document.getElementById('customBase');
+    let currentCustomBase = 36; // 默认自定义进制为10进制
+    
+    // 生成2-36的进制选项
+    for (let i = 2; i <= 36; i++) {
+      const option = document.createElement('option');
+      option.value = i;
+      option.textContent = `${i}进制`;
+      if (i === 36) option.selected = true; // 默认选中10进制
+      baseSelect.appendChild(option);
+    }
+    
+    // 当选择不同的自定义进制时更新
+    baseSelect.addEventListener('change', function() {
+      currentCustomBase = parseInt(this.value);
+      customBaseInput.dataset.base = currentCustomBase;
+      // 更新自定义输入框的模式验证
+      updateCustomBasePattern();
+      // 从当前活跃的输入框重新计算
+      updateFromActiveInput();
+    });
+    
+    // 更新自定义进制输入框的验证模式
+    function updateCustomBasePattern() {
+      if (currentCustomBase <= 10) {
+        // 对于10及以下进制，只允许0到(base-1)的数字
+        customBaseInput.pattern = `[0-${currentCustomBase - 1}]*`;
+      } else {
+        // 对于11及以上进制，允许数字和字母
+        const letterCode = 65 + (currentCustomBase - 11); // A的ASCII码是65
+        const letter = String.fromCharCode(letterCode);
+        customBaseInput.pattern = `[0-9A-${letter}a-${letter.toLowerCase()}]*`;
+      }
+      customBaseInput.placeholder = `输入${currentCustomBase}进制数字`;
+    }
+    
+    // 初始化自定义进制的模式
+    updateCustomBasePattern();
+    
+    // 生成数值对应表
+    const valueTable = document.getElementById('valueTable');
+    for (let i = 0; i <= 36; i++) {
+      const row = document.createElement('tr');
+      row.className = i % 2 === 0 ? 'bg-darker/30' : 'bg-darker/50';
+      
+      // 十进制
+      const decCell = document.createElement('td');
+      decCell.className = 'px-6 py-3 font-medium';
+      decCell.textContent = i;
+      
+      // 二进制
+      const binCell = document.createElement('td');
+      binCell.className = 'px-6 py-3';
+      binCell.textContent = i.toString(2);
+      
+      // 八进制
+      const octCell = document.createElement('td');
+      octCell.className = 'px-6 py-3';
+      octCell.textContent = i.toString(8);
+      
+      // 十六进制
+      const hexCell = document.createElement('td');
+      hexCell.className = 'px-6 py-3';
+      hexCell.textContent = i.toString(16).toUpperCase();
+      
+      // 字符表示
+      const charCell = document.createElement('td');
+      charCell.className = 'px-6 py-3';
+      charCell.textContent = i < 10 ? i : String.fromCharCode(65 + i - 10);
+      
+      row.appendChild(decCell);
+      row.appendChild(binCell);
+      row.appendChild(octCell);
+      row.appendChild(hexCell);
+      row.appendChild(charCell);
+      valueTable.appendChild(row);
+    }
+    
+    // 所有输入框的引用
+    const inputs = {
+      2: document.getElementById('base2'),
+      4: document.getElementById('base4'),
+      8: document.getElementById('base8'),
+      10: document.getElementById('base10'),
+      16: document.getElementById('base16'),
+      custom: customBaseInput
+    };
+    
+    // 记录当前正在输入的输入框，避免循环更新
+    let activeInput = null;
+    
+    // 为所有输入框添加事件监听
+    Object.values(inputs).forEach(input => {
+      input.addEventListener('input', handleInput);
+      input.addEventListener('focus', function() {
+        activeInput = this;
+      });
+    });
+    
+    // 处理输入事件
+    function handleInput(e) {
+      const input = e.target;
+      const base = parseInt(input.dataset.base || currentCustomBase);
+      const value = input.value.trim().toUpperCase();
+      
+      // 验证输入是否符合当前进制
+      if (!isValidInput(value, base)) {
+        input.classList.add('border-red-500');
+        return;
+      } else {
+        input.classList.remove('border-red-500');
+      }
+      
+      // 如果输入为空，清空所有输入框
+      if (value === '') {
+        clearAllInputs(input);
+        return;
+      }
+      
+      // 转换为十进制数值
+      const decimalValue = parseInt(value, base);
+      
+      // 如果转换失败（例如输入不合法）
+      if (isNaN(decimalValue)) return;
+      
+      // 更新所有其他输入框
+      updateAllInputs(decimalValue, input);
+      
+      // 添加输入反馈动画
+      input.classList.add('ring-2', 'ring-secondary/50');
+      setTimeout(() => {
+        input.classList.remove('ring-2', 'ring-secondary/50');
+      }, 300);
+    }
+    
+    // 验证输入是否符合指定进制
+    function isValidInput(value, base) {
+      if (value === '') return true;
+      
+      // 定义每个进制的有效字符集
+      let validChars;
+      
+      if (base <= 10) {
+        validChars = new RegExp(`^[0-${base - 1}]*$`);
+      } else {
+        const lastCharCode = 65 + (base - 11); // 'A' 是65
+        const lastChar = String.fromCharCode(lastCharCode);
+        validChars = new RegExp(`^[0-9A-${lastChar}]*$`, 'i');
+      }
+      
+      return validChars.test(value);
+    }
+    
+    // 清空所有输入框（除了当前输入的）
+    function clearAllInputs(excludeInput) {
+      Object.values(inputs).forEach(input => {
+        if (input !== excludeInput) {
+          input.value = '';
+        }
+      });
+    }
+    
+    // 更新所有输入框的值
+    function updateAllInputs(decimalValue, excludeInput) {
+      // 更新固定进制输入框
+      for (const baseStr in inputs) {
+        if (baseStr === 'custom') continue;
+        
+        const base = parseInt(baseStr);
+        const input = inputs[baseStr];
+        
+        if (input !== excludeInput) {
+          input.value = decimalValue.toString(base).toUpperCase();
+        }
+      }
+      
+      // 更新自定义进制输入框
+      if (inputs.custom !== excludeInput) {
+        inputs.custom.value = decimalValue.toString(currentCustomBase).toUpperCase();
+      }
+    }
+    
+    // 从当前活跃的输入框更新所有值
+    function updateFromActiveInput() {
+      if (activeInput && activeInput.value.trim() !== '') {
+        const event = new Event('input', { bubbles: true });
+        activeInput.dispatchEvent(event);
+      }
+    }
+    
+    // 初始化 - 给各进制添加提示文本示例
+    inputs[16].placeholder = "例如: A3F 或 a3f";
+    inputs[8].placeholder = "例如: 127 或 755";
+  </script>
+
+
+</body>
+</html>
