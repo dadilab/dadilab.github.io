@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通用Excel列内容拆分工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        neutral: '#64748b',
+                        light: '#f1f5f9',
+                        dark: '#1e293b'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-height {
+                transition: max-height 0.3s ease;
+            }
+            .shadow-soft {
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark">
+    <div class="max-w-5xl mx-auto px-4 py-8 md:py-12">
+        <!-- 标题区域 -->
+        <header class="text-center mb-10">
+            <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-3">通用Excel列内容拆分工具</h1>
+            <p class="text-neutral max-w-2xl mx-auto">
+                上传Excel文件，选择需要处理的列和分割符，工具将自动拆分内容并复制其他列信息到新行
+            </p>
+        </header>
+        
+        <!-- 主内容区域 -->
+        <main class="bg-white rounded-xl shadow-soft p-6 md:p-8 mb-10">
+            <!-- 文件上传区域 -->
+            <div class="mb-8">
+                <label class="block text-sm font-medium text-neutral mb-2">上传Excel文件</label>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <label class="flex-1 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden" />
+                        <i class="fa fa-upload text-3xl text-neutral mb-2"></i>
+                        <p class="text-sm text-neutral" id="fileInfo">点击或拖拽文件到此处</p>
+                    </label>
+                    <button id="processButton" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                        <i class="fa fa-cog mr-2"></i> 处理文件
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 处理选项区域 -->
+            <div id="optionsSection" class="mb-8 hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="targetColumn" class="block text-sm font-medium text-neutral mb-2">选择要处理的列</label>
+                        <select id="targetColumn" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                            <option value="">-- 请选择列 --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="delimiter" class="block text-sm font-medium text-neutral mb-2">
+                            分割符 <span class="text-xs text-gray-400">(可输入多个字符，如《》、,、;等)</span>
+                        </label>
+                        <div class="flex">
+                            <input type="text" id="delimiter" placeholder="例如：《》或,或、" 
+                                class="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none" />
+                            <button id="addCommonDelimiter" class="bg-light hover:bg-gray-200 text-neutral px-4 py-2 rounded-r-lg transition-colors text-sm">
+                                常用符号
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 常用分割符下拉菜单 -->
+                <div id="delimiterDropdown" class="hidden absolute bg-white shadow-lg rounded-lg mt-2 py-2 z-10 w-48">
+                    <button class="delimiter-option w-full text-left px-4 py-2 hover:bg-light text-sm" data-value="《》">《》（书名号）</button>
+                    <button class="delimiter-option w-full text-left px-4 py-2 hover:bg-light text-sm" data-value=",">,（逗号）</button>
+                    <button class="delimiter-option w-full text-left px-4 py-2 hover:bg-light text-sm" data-value="、">、（顿号）</button>
+                    <button class="delimiter-option w-full text-left px-4 py-2 hover:bg-light text-sm" data-value=";">;（分号）</button>
+                    <button class="delimiter-option w-full text-left px-4 py-2 hover:bg-light text-sm" data-value="|">|（竖线）</button>
+                    <button class="delimiter-option w-full text-left px-4 py-2 hover:bg-light text-sm" data-value=" ">（空格）</button>
+                </div>
+            </div>
+            
+            <!-- 状态和结果区域 -->
+            <div id="statusSection" class="mb-6 hidden">
+                <div id="status" class="p-4 rounded-lg border"></div>
+            </div>
+            
+            <!-- 预览区域 -->
+            <div id="previewSection" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-lg">处理结果预览</h3>
+                    <div class="text-sm text-neutral">
+                        显示前 <span id="previewRowCount">10</span> 行
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 原始数据预览 -->
+                    <div>
+                        <h4 class="font-medium text-neutral mb-2 flex items-center">
+                            <i class="fa fa-file-text-o mr-2"></i> 原始数据
+                        </h4>
+                        <div class="overflow-auto max-h-64 border border-gray-200 rounded-lg" id="originalPreview">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr id="originalPreviewHeader"></tr>
+                                </thead>
+                                <tbody id="originalPreviewBody" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- 处理后数据预览 -->
+                    <div>
+                        <h4 class="font-medium text-neutral mb-2 flex items-center">
+                            <i class="fa fa-check-circle-o mr-2"></i> 处理后数据
+                        </h4>
+                        <div class="overflow-auto max-h-64 border border-gray-200 rounded-lg" id="processedPreview">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr id="processedPreviewHeader"></tr>
+                                </thead>
+                                <tbody id="processedPreviewBody" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 下载按钮 -->
+                <div class="mt-6 text-center">
+                    <button id="downloadButton" class="bg-secondary hover:bg-secondary/90 text-white px-8 py-3 rounded-lg transition-colors inline-flex items-center">
+                        <i class="fa fa-download mr-2"></i> 下载处理后的文件
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <!-- 说明区域 -->
+        <section class="bg-white rounded-xl shadow-soft p-6 md:p-8 mb-10">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fa fa-info-circle text-primary mr-2"></i> 使用说明
+            </h3>
+            <ul class="space-y-2 text-neutral">
+                <li class="flex items-start">
+                    <i class="fa fa-check text-secondary mt-1 mr-2"></i>
+                    <span>上传包含需要处理数据的Excel文件（.xlsx或.xls格式）</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fa fa-check text-secondary mt-1 mr-2"></i>
+                    <span>选择需要拆分内容的目标列（例如"包本内容"）</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fa fa-check text-secondary mt-1 mr-2"></i>
+                    <span>输入用于分割内容的字符（可输入多个字符，如《》、逗号等）</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fa fa-check text-secondary mt-1 mr-2"></i>
+                    <span>点击"处理文件"按钮，系统会自动拆分内容并复制其他列信息</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fa fa-check text-secondary mt-1 mr-2"></i>
+                    <span>处理完成后，可预览结果并下载处理后的Excel文件</span>
+                </li>
+            </ul>
+        </section>
+        
+        <!-- 页脚 -->
+        <footer class="text-center text-neutral text-sm">
+            <p>通用Excel列内容拆分工具 &copy; 2023 | 所有操作均在本地完成，您的数据不会被上传</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局变量
+        let originalData = null;
+        let processedData = null;
+        let originalFileName = "";
+        let workbook = null;
+        let activeSheetName = "";
+        
+        // DOM元素
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const processButton = document.getElementById('processButton');
+        const optionsSection = document.getElementById('optionsSection');
+        const targetColumn = document.getElementById('targetColumn');
+        const delimiter = document.getElementById('delimiter');
+        const addCommonDelimiter = document.getElementById('addCommonDelimiter');
+        const delimiterDropdown = document.getElementById('delimiterDropdown');
+        const statusSection = document.getElementById('statusSection');
+        const status = document.getElementById('status');
+        const previewSection = document.getElementById('previewSection');
+        const originalPreviewHeader = document.getElementById('originalPreviewHeader');
+        const originalPreviewBody = document.getElementById('originalPreviewBody');
+        const processedPreviewHeader = document.getElementById('processedPreviewHeader');
+        const processedPreviewBody = document.getElementById('processedPreviewBody');
+        const downloadButton = document.getElementById('downloadButton');
+        
+        // 初始化
+        processButton.disabled = true;
+        
+        // 文件选择事件
+        fileInput.addEventListener('change', handleFileSelection);
+        
+        // 处理文件按钮点击事件
+        processButton.addEventListener('click', processExcel);
+        
+        // 下载按钮点击事件
+        downloadButton.addEventListener('click', downloadResult);
+        
+        // 常用分割符按钮点击事件
+        addCommonDelimiter.addEventListener('click', (e) => {
+            e.stopPropagation();
+            delimiterDropdown.classList.toggle('hidden');
+            // 定位下拉菜单
+            const rect = addCommonDelimiter.getBoundingClientRect();
+            delimiterDropdown.style.top = `${rect.bottom + window.scrollY}px`;
+            delimiterDropdown.style.left = `${rect.left + window.scrollX}px`;
+        });
+        
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', (e) => {
+            if (!addCommonDelimiter.contains(e.target) && !delimiterDropdown.contains(e.target)) {
+                delimiterDropdown.classList.add('hidden');
+            }
+        });
+        
+        // 选择分割符
+        document.querySelectorAll('.delimiter-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                delimiter.value = e.target.dataset.value;
+                delimiterDropdown.classList.add('hidden');
+            });
+        });
+        
+        // 处理文件选择
+        function handleFileSelection(e) {
+            const file = e.target.files[0];
+            if (!file) {
+                fileInfo.textContent = "点击或拖拽文件到此处";
+                processButton.disabled = true;
+                optionsSection.classList.add('hidden');
+                return;
+            }
+            
+            // 显示文件名
+            fileInfo.textContent = file.name;
+            originalFileName = file.name.replace(/\.(xlsx|xls)$/, '');
+            
+            // 读取文件
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    // 解析Excel文件
+                    const data = new Uint8Array(e.target.result);
+                    workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 获取第一个工作表
+                    activeSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[activeSheetName];
+                    
+                    // 转换为JSON
+                    originalData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    if (originalData.length === 0) {
+                        showStatus("文件中没有数据", "error");
+                        return;
+                    }
+                    
+                    // 填充列选择下拉框
+                    populateColumnOptions(originalData[0]);
+                    
+                    // 显示选项区域
+                    optionsSection.classList.remove('hidden');
+                    processButton.disabled = false;
+                    
+                    showStatus("文件已加载，请选择处理选项", "success");
+                } catch (error) {
+                    showStatus(`文件解析错误: ${error.message}`, "error");
+                    console.error(error);
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // 填充列选择下拉框
+        function populateColumnOptions(firstRow) {
+            // 清空现有选项
+            targetColumn.innerHTML = '<option value="">-- 请选择列 --</option>';
+            
+            // 添加所有列
+            Object.keys(firstRow).forEach(column => {
+                const option = document.createElement('option');
+                option.value = column;
+                option.textContent = column;
+                targetColumn.appendChild(option);
+            });
+        }
+        
+        // 显示状态信息
+        function showStatus(message, type = "info") {
+            statusSection.classList.remove('hidden');
+            
+            // 设置状态样式
+            if (type === "success") {
+                status.className = "p-4 rounded-lg border border-green-200 bg-green-50 text-green-800";
+                status.innerHTML = `<i class="fa fa-check-circle mr-2"></i> ${message}`;
+            } else if (type === "error") {
+                status.className = "p-4 rounded-lg border border-red-200 bg-red-50 text-red-800";
+                status.innerHTML = `<i class="fa fa-exclamation-circle mr-2"></i> ${message}`;
+            } else {
+                status.className = "p-4 rounded-lg border border-blue-200 bg-blue-50 text-blue-800";
+                status.innerHTML = `<i class="fa fa-info-circle mr-2"></i> ${message}`;
+            }
+        }
+        
+        // 处理Excel数据
+        function processExcel() {
+            // 验证输入
+            const targetCol = targetColumn.value;
+            const delim = delimiter.value.trim();
+            
+            if (!targetCol) {
+                showStatus("请选择要处理的列", "error");
+                return;
+            }
+            
+            if (!delim) {
+                showStatus("请输入分割符", "error");
+                return;
+            }
+            
+            showStatus("正在处理数据...");
+            
+            try {
+                // 处理数据
+                const processedRows = [];
+                let splitCount = 0;
+                
+                originalData.forEach(row => {
+                    // 获取目标列内容并确保是字符串
+                    let cellContent = row[targetCol] ? String(row[targetCol]) : '';
+                    
+                    // 使用分割符拆分内容
+                    // 如果是书名号《》这种成对的符号，我们需要特殊处理
+                    let items = [];
+                    
+                    if (delim === '《》') {
+                        // 提取所有《...》格式的内容
+                        const regex = /《.*?》/g;
+                        items = cellContent.match(regex) || [];
+                    } else {
+                        // 使用指定的分割符拆分
+                        items = cellContent.split(delim)
+                            .map(item => item.trim())
+                            .filter(item => item); // 过滤空字符串
+                    }
+                    
+                    // 如果有多个项目
+                    if (items.length > 1) {
+                        splitCount++;
+                        // 第一个项目保留在原行
+                        const firstRow = { ...row };
+                        firstRow[targetCol] = items[0];
+                        processedRows.push(firstRow);
+                        
+                        // 其他项目创建新行
+                        for (let i = 1; i < items.length; i++) {
+                            const newRow = { ...row };
+                            newRow[targetCol] = items[i];
+                            processedRows.push(newRow);
+                        }
+                    } else {
+                        // 只有一个项目或没有项目，直接添加
+                        processedRows.push(row);
+                    }
+                });
+                
+                processedData = processedRows;
+                
+                // 显示处理结果
+                showStatus(
+                    `处理完成！共拆分了 ${splitCount} 行数据，原始数据 ${originalData.length} 行，处理后 ${processedRows.length} 行`, 
+                    "success"
+                );
+                
+                // 显示预览
+                showPreviews(originalData, processedData);
+                previewSection.classList.remove('hidden');
+                
+            } catch (error) {
+                showStatus(`处理出错: ${error.message}`, "error");
+                console.error(error);
+            }
+        }
+        
+        // 显示预览
+        function showPreviews(original, processed) {
+            // 只显示前10行预览
+            const previewRows = 10;
+            const originalPreviewData = original.slice(0, previewRows);
+            const processedPreviewData = processed.slice(0, previewRows);
+            
+            // 显示列数
+            document.getElementById('previewRowCount').textContent = Math.min(previewRows, original.length);
+            
+            // 生成表头
+            if (originalPreviewData.length > 0) {
+                const columns = Object.keys(originalPreviewData[0]);
+                
+                // 原始数据表头
+                originalPreviewHeader.innerHTML = '';
+                columns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.className = 'px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    th.textContent = col;
+                    // 高亮目标列
+                    if (col === targetColumn.value) {
+                        th.className += ' bg-yellow-50 font-semibold text-yellow-800';
+                    }
+                    originalPreviewHeader.appendChild(th);
+                });
+                
+                // 处理后数据表头
+                processedPreviewHeader.innerHTML = '';
+                columns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.className = 'px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    th.textContent = col;
+                    // 高亮目标列
+                    if (col === targetColumn.value) {
+                        th.className += ' bg-yellow-50 font-semibold text-yellow-800';
+                    }
+                    processedPreviewHeader.appendChild(th);
+                });
+            }
+            
+            // 生成表格内容
+            originalPreviewBody.innerHTML = '';
+            originalPreviewData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                
+                Object.values(row).forEach((value, colIndex) => {
+                    const td = document.createElement('td');
+                    td.className = 'px-3 py-2 text-sm text-gray-900';
+                    td.textContent = value !== undefined ? value : '';
+                    tr.appendChild(td);
+                });
+                
+                originalPreviewBody.appendChild(tr);
+            });
+            
+            processedPreviewBody.innerHTML = '';
+            processedPreviewData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                
+                Object.values(row).forEach((value, colIndex) => {
+                    const td = document.createElement('td');
+                    td.className = 'px-3 py-2 text-sm text-gray-900';
+                    td.textContent = value !== undefined ? value : '';
+                    tr.appendChild(td);
+                });
+                
+                processedPreviewBody.appendChild(tr);
+            });
+        }
+        
+        // 下载处理后的文件
+        function downloadResult() {
+            if (!processedData) {
+                showStatus("没有可下载的处理结果", "error");
+                return;
+            }
+            
+            try {
+                // 创建新工作表
+                const newWorksheet = XLSX.utils.json_to_sheet(processedData);
+                
+                // 创建新工作簿并添加工作表
+                const newWorkbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "处理后数据");
+                
+                // 复制原工作簿中的其他工作表（如果有）
+                workbook.SheetNames.forEach(sheetName => {
+                    if (sheetName !== activeSheetName) {
+                        XLSX.utils.book_append_sheet(newWorkbook, workbook.Sheets[sheetName], sheetName);
+                    }
+                });
+                
+                // 下载文件
+                XLSX.writeFile(newWorkbook, `${originalFileName}_处理后.xlsx`);
+                showStatus("文件已成功下载", "success");
+            } catch (error) {
+                showStatus(`下载失败: ${error.message}`, "error");
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
