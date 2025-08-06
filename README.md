@@ -18,3 +18,5 @@
  9.[通用Excel列内容拆分工具](https://lab.xudadi.cn/tool/excel_splitter.html)
 
  10.[高级进制转换工具](https://lab.xudadi.cn/tool/hexconvert.html)
+
+ 11.[高级进制转换工具](https://lab.xudadi.cn/tool/zizeng.html)
