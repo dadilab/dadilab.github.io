@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自增数字插入工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        neutral: '#1F2937',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-height {
+                transition: max-height 0.3s ease-in-out;
+            }
+            .shadow-soft {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-neutral min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 标题区域 -->
+        <header class="text-center mb-10">
+            <h1 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-neutral mb-3">
+                <i class="fa fa-magic text-primary mr-2"></i>自增数字插入工具
+            </h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                在文本中插入自增数字标记，设置起始值和步长，一键生成带有序号的文本内容
+            </p>
+        </header>
+        
+        <div class="grid md:grid-cols-12 gap-6">
+            <!-- 左侧：输入区域 -->
+            <div class="md:col-span-6 bg-white rounded-xl shadow-soft p-6 transform hover:scale-[1.01] transition-all duration-300">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fa fa-pencil-square-o text-primary mr-2"></i>输入设置
+                </h2>
+                
+                <!-- 原始文本输入 -->
+                <div class="mb-6">
+                    <label for="sourceText" class="block text-sm font-medium text-gray-700 mb-2">
+                        原始文本（使用 [标记名] 作为自增位置，例如：我是[num]豆包）
+                    </label>
+                    <textarea 
+                        id="sourceText" 
+                        rows="6" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none"
+                        placeholder="请输入需要添加自增数字的文本...&#10;例如：第[num]个任务，优先级[level]级"
+                    ></textarea>
+                </div>
+                
+                <!-- 自增标记设置 -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-medium text-gray-700">自增标记设置</label>
+                        <button 
+                            id="addMarkerBtn" 
+                            class="text-sm bg-primary/10 text-primary px-3 py-1 rounded-md hover:bg-primary/20 transition-colors flex items-center"
+                        >
+                            <i class="fa fa-plus-circle mr-1"></i> 添加标记
+                        </button>
+                    </div>
+                    
+                    <div id="markersContainer" class="space-y-4">
+                        <!-- 初始标记 -->
+                        <div class="marker-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="text-sm font-medium text-gray-700">标记设置</div>
+                                <button type="button" class="remove-marker text-gray-400 hover:text-red-500 transition-colors">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">标记名称（在文本中使用 [名称]）</label>
+                                    <input type="text" class="marker-name w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" value="num">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">起始值</label>
+                                    <input type="number" class="start-value w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" value="1">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">步长</label>
+                                    <input type="number" class="step-value w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" value="1">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">格式（例如：00 表示两位数字）</label>
+                                    <input type="text" class="format-pattern w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" placeholder="留空表示不格式化">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 生成数量 -->
+                <div class="mb-6">
+                    <label for="generateCount" class="block text-sm font-medium text-gray-700 mb-2">
+                        生成数量
+                    </label>
+                    <input 
+                        type="number" 
+                        id="generateCount" 
+                        min="1" 
+                        value="5" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none"
+                    >
+                </div>
+                
+                <!-- 生成按钮 -->
+                <button 
+                    id="generateBtn" 
+                    class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:translate-y-[-2px] active:translate-y-0 flex items-center justify-center"
+                >
+                    <i class="fa fa-cogs mr-2"></i> 生成文本
+                </button>
+            </div>
+            
+            <!-- 右侧：输出区域 -->
+            <div class="md:col-span-6 bg-white rounded-xl shadow-soft p-6 transform hover:scale-[1.01] transition-all duration-300">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fa fa-file-text-o text-secondary mr-2"></i>生成结果
+                </h2>
+                
+                <div id="resultContainer" class="mb-6">
+                    <div class="min-h-[300px] bg-gray-50 rounded-lg p-4 border border-gray-200 overflow-auto text-gray-800 font-mono text-sm leading-relaxed">
+                        <div class="text-gray-400 italic text-center py-12" id="emptyResult">
+                            生成的文本将显示在这里...
+                        </div>
+                        <pre id="resultText" class="hidden whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="flex gap-3">
+                    <button 
+                        id="copyBtn" 
+                        class="flex-1 bg-secondary/10 hover:bg-secondary/20 text-secondary font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center"
+                        disabled
+                    >
+                        <i class="fa fa-copy mr-2"></i> 复制结果
+                    </button>
+                    
+                    <button 
+                        id="clearBtn" 
+                        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center"
+                    >
+                        <i class="fa fa-eraser mr-2"></i> 清空
+                    </button>
+                </div>
+                
+                <!-- 复制成功提示 -->
+                <div id="copySuccess" class="hidden mt-3 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-md text-sm flex items-center">
+                    <i class="fa fa-check-circle mr-2"></i> 已成功复制到剪贴板
+                </div>
+            </div>
+        </div>
+        
+        <!-- 使用说明 -->
+        <div class="mt-10 bg-white rounded-xl shadow-soft p-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fa fa-info-circle text-accent mr-2"></i>使用说明
+            </h2>
+            
+            <div class="text-gray-700 space-y-3">
+                <p>1. 在原始文本框中输入您需要添加自增数字的文本，使用 <code class="bg-gray-100 px-1 py-0.5 rounded text-primary">[标记名]</code> 表示自增数字的位置</p>
+                <p>2. 设置自增标记的参数：
+                    <ul class="list-disc pl-6 mt-1">
+                        <li><strong>标记名称</strong>：与文本中的 [标记名] 对应</li>
+                        <li><strong>起始值</strong>：自增数字的开始值</li>
+                        <li><strong>步长</strong>：每次增加的数值</li>
+                        <li><strong>格式</strong>：可选，例如 "00" 表示两位数字（1 会显示为 01）</li>
+                    </ul>
+                </p>
+                <p>3. 设置需要生成的行数</p>
+                <p>4. 点击"生成文本"按钮，查看结果</p>
+                <p>5. 可以复制生成的结果到剪贴板</p>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>自增数字插入工具 &copy; 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM元素
+        const sourceTextEl = document.getElementById('sourceText');
+        const generateCountEl = document.getElementById('generateCount');
+        const markersContainerEl = document.getElementById('markersContainer');
+        const addMarkerBtn = document.getElementById('addMarkerBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultTextEl = document.getElementById('resultText');
+        const emptyResultEl = document.getElementById('emptyResult');
+        const copyBtn = document.getElementById('copyBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copySuccessEl = document.getElementById('copySuccess');
+        
+        // 添加新的标记设置
+        addMarkerBtn.addEventListener('click', () => {
+            const markerCount = markersContainerEl.querySelectorAll('.marker-item').length;
+            const newMarkerName = `mark${markerCount + 1}`;
+            
+            const markerHtml = `
+                <div class="marker-item bg-gray-50 p-4 rounded-lg border border-gray-200 animate-fadeIn">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="text-sm font-medium text-gray-700">标记设置</div>
+                        <button type="button" class="remove-marker text-gray-400 hover:text-red-500 transition-colors">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">标记名称（在文本中使用 [名称]）</label>
+                            <input type="text" class="marker-name w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" value="${newMarkerName}">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">起始值</label>
+                            <input type="number" class="start-value w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" value="1">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">步长</label>
+                            <input type="number" class="step-value w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" value="1">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">格式（例如：00 表示两位数字）</label>
+                            <input type="text" class="format-pattern w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" placeholder="留空表示不格式化">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            markersContainerEl.insertAdjacentHTML('beforeend', markerHtml);
+            
+            // 为新添加的删除按钮绑定事件
+            bindRemoveMarkerEvents();
+        });
+        
+        // 绑定删除标记事件
+        function bindRemoveMarkerEvents() {
+            const removeButtons = document.querySelectorAll('.remove-marker');
+            removeButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const markerItem = e.target.closest('.marker-item');
+                    // 确保至少保留一个标记
+                    if (markersContainerEl.querySelectorAll('.marker-item').length > 1) {
+                        markerItem.classList.add('opacity-0', 'scale-95');
+                        markerItem.style.transition = 'all 0.2s ease-out';
+                        setTimeout(() => {
+                            markerItem.remove();
+                        }, 200);
+                    } else {
+                        // 显示提示，不能删除最后一个标记
+                        alert('至少需要保留一个标记设置');
+                    }
+                });
+            });
+        }
+        
+        // 格式化数字（例如：00 格式将 1 转换为 01）
+        function formatNumber(num, pattern) {
+            if (!pattern) return num.toString();
+            
+            let numStr = num.toString();
+            const patternLength = pattern.length;
+            
+            if (numStr.length >= patternLength) {
+                return numStr;
+            }
+            
+            // 计算需要补充的前导零数量
+            const zerosToAdd = patternLength - numStr.length;
+            return '0'.repeat(zerosToAdd) + numStr;
+        }
+        
+        // 生成文本
+        generateBtn.addEventListener('click', () => {
+            const sourceText = sourceTextEl.value.trim();
+            const generateCount = parseInt(generateCountEl.value) || 1;
+            
+            if (!sourceText) {
+                alert('请输入原始文本');
+                return;
+            }
+            
+            // 获取所有标记设置
+            const markerItems = markersContainerEl.querySelectorAll('.marker-item');
+            const markers = Array.from(markerItems).map(item => {
+                return {
+                    name: item.querySelector('.marker-name').value.trim(),
+                    start: parseInt(item.querySelector('.start-value').value) || 1,
+                    step: parseInt(item.querySelector('.step-value').value) || 1,
+                    format: item.querySelector('.format-pattern').value.trim()
+                };
+            }).filter(marker => marker.name); // 过滤掉空名称的标记
+            
+            if (markers.length === 0) {
+                alert('请设置至少一个有效的标记');
+                return;
+            }
+            
+            // 检查文本中是否包含所有标记
+            const missingMarkers = markers.filter(marker => 
+                !sourceText.includes(`[${marker.name}]`)
+            );
+            
+            if (missingMarkers.length > 0 && confirm(`注意：文本中未找到标记 ${missingMarkers.map(m => `[${m.name}]`).join('、')}，仍要继续生成吗？`)) {
+                // 用户确认继续
+            } else if (missingMarkers.length > 0) {
+                // 用户取消
+                return;
+            }
+            
+            // 生成结果
+            let result = '';
+            const currentValues = {};
+            
+            // 初始化当前值
+            markers.forEach(marker => {
+                currentValues[marker.name] = marker.start;
+            });
+            
+            // 生成每一行
+            for (let i = 0; i < generateCount; i++) {
+                let line = sourceText;
+                
+                // 替换每个标记
+                markers.forEach(marker => {
+                    const value = currentValues[marker.name];
+                    const formattedValue = formatNumber(value, marker.format);
+                    line = line.replace(new RegExp(`\\[${marker.name}\\]`, 'g'), formattedValue);
+                    
+                    // 更新当前值
+                    currentValues[marker.name] += marker.step;
+                });
+                
+                result += line + '\n';
+            }
+            
+            // 显示结果
+            resultTextEl.textContent = result.trim();
+            resultTextEl.classList.remove('hidden');
+            emptyResultEl.classList.add('hidden');
+            
+            // 启用复制按钮
+            copyBtn.disabled = false;
+            copyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        });
+        
+        // 复制结果
+        copyBtn.addEventListener('click', () => {
+            const textToCopy = resultTextEl.textContent;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // 显示复制成功提示
+                copySuccessEl.classList.remove('hidden');
+                setTimeout(() => {
+                    copySuccessEl.classList.add('hidden');
+                }, 2000);
+            }).catch(err => {
+                console.error('无法复制文本: ', err);
+                alert('复制失败，请手动复制');
+            });
+        });
+        
+        // 清空
+        clearBtn.addEventListener('click', () => {
+            sourceTextEl.value = '';
+            generateCountEl.value = '5';
+            resultTextEl.classList.add('hidden');
+            resultTextEl.textContent = '';
+            emptyResultEl.classList.remove('hidden');
+            copyBtn.disabled = true;
+        });
+        
+        // 初始化
+        bindRemoveMarkerEvents();
+        
+        // 添加示例文本
+        sourceTextEl.value = "我是[num]号选手，我的成绩是[score]分，排名第[rank]位";
+    </script>
+</body>
+</html>
