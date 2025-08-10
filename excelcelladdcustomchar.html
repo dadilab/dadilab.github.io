@@ -1,0 +1,593 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel单元格添加自定义字符处理器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        /* 表格滚动相关样式 */
+        .table-container {
+            overflow-x: auto !important;
+            width: 100% !important;
+        }
+        
+        .vertical-scroll-container {
+            max-height: 400px; /* 设置最大高度，超出将出现垂直滚动 */
+            overflow-y: auto;
+        }
+        
+        .horizontal-table {
+            width: auto !important;
+            min-width: 100% !important;
+            border-collapse: collapse !important;
+            white-space: nowrap !important;
+        }
+        
+        .horizontal-table th,
+        .horizontal-table td {
+            min-width: 120px !important;
+            height: auto !important;
+            white-space: nowrap !important;
+            word-wrap: normal !important;
+            display: table-cell !important;
+        }
+        
+        /* 表格边框样式 */
+        .bordered-table th,
+        .bordered-table td {
+            border: 1px solid #e2e8f0 !important;
+        }
+        
+        /* 表头固定样式 */
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: #f9fafb;
+        }
+
+        /* 删除按钮样式 */
+        .delete-column-btn {
+            transition: all 0.2s;
+        }
+        
+        .delete-column-btn:hover {
+            background-color: #ef4444;
+            transform: scale(1.1);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        neutral: '#64748B',
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow-md py-6 px-4">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fa fa-table text-primary mr-3"></i>
+                Excel表格自定义字符处理器
+            </h1>
+            <p class="text-gray-600 mt-2">为Excel表格中的数据添加自定义字符，支持按列设置和删除</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- 文件上传区域 -->
+        <section class="mb-10 bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fa fa-upload text-primary mr-2"></i>上传Excel文件
+            </h2>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-all duration-300">
+                <input type="file" id="fileInput" accept=".xlsx, .xls" class="hidden" />
+                <label for="fileInput" class="cursor-pointer">
+                    <i class="fa fa-file-excel-o text-5xl text-primary mb-4"></i>
+                    <p class="text-gray-600 mb-2">点击或拖拽Excel文件到此处上传</p>
+                    <p class="text-sm text-gray-400">支持 .xlsx 和 .xls 格式</p>
+                </label>
+            </div>
+            <div id="fileInfo" class="mt-4 hidden">
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <i class="fa fa-check-circle text-secondary mr-2"></i>
+                    <span id="fileName" class="text-gray-800"></span>
+                    <button id="removeFile" class="ml-auto text-red-500 hover:text-red-700 transition-colors">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 表格处理区域 -->
+        <section id="tableSection" class="mb-10 hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <i class="fa fa-cogs text-primary mr-2"></i>表格处理
+                </h2>
+                
+                <!-- 处理选项 -->
+                <div class="mb-6">
+                    <div class="flex flex-wrap gap-4">
+                        <button id="applyAll" class="bg-secondary hover:bg-secondary/90 text-white px-6 py-2 rounded-lg flex items-center transition-colors">
+                            <i class="fa fa-check mr-2"></i>应用所有设置
+                        </button>
+                        <button id="resetAll" class="bg-neutral hover:bg-neutral/90 text-white px-6 py-2 rounded-lg flex items-center transition-colors">
+                            <i class="fa fa-refresh mr-2"></i>重置所有设置
+                        </button>
+                        <button id="downloadResult" class="bg-accent hover:bg-accent/90 text-white px-6 py-2 rounded-lg flex items-center transition-colors">
+                            <i class="fa fa-download mr-2"></i>下载处理后的文件
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 表格容器 - 同时支持横向和纵向滚动 -->
+                <div class="table-container border rounded-lg">
+                    <div class="vertical-scroll-container">
+                        <table id="excelTable" class="horizontal-table bordered-table sticky-header w-full">
+                            <thead>
+                                <tr id="tableHeader" class="bg-gray-50 text-gray-800">
+                                    <!-- 表头将由JS动态生成 -->
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- 表格内容将由JS动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-500 mt-2">
+                    <i class="fa fa-info-circle mr-1"></i> 表格支持横向和纵向滚动，表头固定。点击列中的删除按钮可移除该列
+                </div>
+            </div>
+        </section>
+
+        <!-- 结果预览区域 -->
+        <section id="resultSection" class="mb-10 hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fa fa-eye text-primary mr-2"></i>处理结果预览
+                </h2>
+                
+                <div class="table-container border rounded-lg">
+                    <div class="vertical-scroll-container">
+                        <table id="resultTable" class="horizontal-table bordered-table sticky-header w-full">
+                            <thead>
+                                <tr id="resultHeader" class="bg-gray-50 text-gray-800">
+                                    <!-- 结果表头将由JS动态生成 -->
+                                </tr>
+                            </thead>
+                            <tbody id="resultBody">
+                                <!-- 结果内容将由JS动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4 text-center">
+            <p>Excel表格自定义字符处理器</p>
+            <p class="text-sm text-gray-400 mt-2">所有操作均在本地完成，保护您的数据安全</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局变量
+        let workbook = null;
+        let originalData = [];
+        let processedData = [];
+        let columnSettings = [];
+
+        // DOM元素
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const removeFile = document.getElementById('removeFile');
+        const tableSection = document.getElementById('tableSection');
+        const resultSection = document.getElementById('resultSection');
+        const tableHeader = document.getElementById('tableHeader');
+        const tableBody = document.getElementById('tableBody');
+        const resultHeader = document.getElementById('resultHeader');
+        const resultBody = document.getElementById('resultBody');
+        const applyAllBtn = document.getElementById('applyAll');
+        const resetAllBtn = document.getElementById('resetAll');
+        const downloadResultBtn = document.getElementById('downloadResult');
+
+        // 事件监听
+        fileInput.addEventListener('change', handleFileUpload);
+        removeFile.addEventListener('click', removeFileHandler);
+        applyAllBtn.addEventListener('click', applyAllSettings);
+        resetAllBtn.addEventListener('click', resetAllSettings);
+        downloadResultBtn.addEventListener('click', downloadProcessedFile);
+
+        // 处理文件上传
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 显示文件信息
+            fileName.textContent = file.name;
+            fileInfo.classList.remove('hidden');
+
+            // 解析Excel文件
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 获取第一个工作表
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // 转换为JSON
+                    originalData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    processedData = JSON.parse(JSON.stringify(originalData));
+                    
+                    // 初始化列设置
+                    initColumnSettings();
+                    
+                    // 显示表格
+                    renderTable();
+                    renderResultTable();
+                    
+                    tableSection.classList.remove('hidden');
+                    resultSection.classList.remove('hidden');
+                } catch (error) {
+                    alert('解析文件时出错: ' + error.message);
+                    console.error(error);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 移除文件
+        function removeFileHandler() {
+            fileInput.value = '';
+            fileInfo.classList.add('hidden');
+            tableSection.classList.add('hidden');
+            resultSection.classList.add('hidden');
+            workbook = null;
+            originalData = [];
+            processedData = [];
+            columnSettings = [];
+            tableHeader.innerHTML = '';
+            tableBody.innerHTML = '';
+            resultHeader.innerHTML = '';
+            resultBody.innerHTML = '';
+        }
+
+        // 初始化列设置
+        function initColumnSettings() {
+            if (originalData.length === 0) return;
+            
+            const columnCount = originalData[0].length;
+            columnSettings = [];
+            
+            for (let i = 0; i < columnCount; i++) {
+                columnSettings.push({
+                    customChar: '',
+                    position: 'before' // 'before' 或 'after'
+                });
+            }
+        }
+
+        // 删除列
+        function deleteColumn(colIndex) {
+            if (confirm(`确定要删除第 ${colIndex + 1} 列吗？此操作不可恢复。`)) {
+                // 从原始数据中删除列
+                for (let i = 0; i < originalData.length; i++) {
+                    originalData[i].splice(colIndex, 1);
+                }
+                
+                // 从处理后的数据中删除列
+                for (let i = 0; i < processedData.length; i++) {
+                    processedData[i].splice(colIndex, 1);
+                }
+                
+                // 从列设置中删除
+                columnSettings.splice(colIndex, 1);
+                
+                // 重新渲染表格
+                renderTable();
+                renderResultTable();
+                
+                showNotification(`第 ${colIndex + 1} 列已删除`, 'success');
+            }
+        }
+
+        // 渲染原始表格
+        function renderTable() {
+            if (originalData.length === 0) return;
+            
+            // 清空表格
+            tableHeader.innerHTML = '';
+            tableBody.innerHTML = '';
+            
+            // 创建表头
+            const headerRow = originalData[0];
+            headerRow.forEach((header, colIndex) => {
+                const th = document.createElement('th');
+                th.className = 'px-4 py-3 text-left';
+                
+                // 创建列设置区域
+                const settingDiv = document.createElement('div');
+                settingDiv.className = 'space-y-2';
+                
+                // 列标题和删除按钮
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'font-medium flex items-center justify-between';
+                
+                const titleSpan = document.createElement('span');
+                titleSpan.textContent = header || `列 ${colIndex + 1}`;
+                
+                // 删除列按钮
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '<i class="fa fa-trash-o"></i>';
+                deleteBtn.className = 'delete-column-btn text-red-500 hover:text-white hover:bg-red-500 p-1 rounded';
+                deleteBtn.title = '删除此列';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteColumn(colIndex);
+                });
+                
+                titleDiv.appendChild(titleSpan);
+                titleDiv.appendChild(deleteBtn);
+                settingDiv.appendChild(titleDiv);
+                
+                // 自定义字符输入
+                const inputDiv = document.createElement('div');
+                inputDiv.className = 'flex items-center gap-2';
+                
+                const charInput = document.createElement('input');
+                charInput.type = 'text';
+                charInput.placeholder = '自定义字符';
+                charInput.value = columnSettings[colIndex]?.customChar || '';
+                charInput.className = 'px-2 py-1 border border-gray-300 rounded text-sm flex-grow';
+                charInput.addEventListener('input', (e) => {
+                    if (!columnSettings[colIndex]) return;
+                    columnSettings[colIndex].customChar = e.target.value;
+                });
+                
+                // 位置选择
+                const positionSelect = document.createElement('select');
+                positionSelect.className = 'px-2 py-1 border border-gray-300 rounded text-sm';
+                positionSelect.innerHTML = `
+                    <option value="before" ${columnSettings[colIndex]?.position === 'before' ? 'selected' : ''}>前</option>
+                    <option value="after" ${columnSettings[colIndex]?.position === 'after' ? 'selected' : ''}>后</option>
+                `;
+                positionSelect.addEventListener('change', (e) => {
+                    if (!columnSettings[colIndex]) return;
+                    columnSettings[colIndex].position = e.target.value;
+                });
+                
+                // 应用按钮
+                const applyBtn = document.createElement('button');
+                applyBtn.innerHTML = '<i class="fa fa-check"></i>';
+                applyBtn.className = 'bg-primary hover:bg-primary/90 text-white px-2 py-1 rounded text-sm transition-colors';
+                applyBtn.addEventListener('click', () => {
+                    applyColumnSetting(colIndex);
+                    renderResultTable();
+                });
+                
+                inputDiv.appendChild(charInput);
+                inputDiv.appendChild(positionSelect);
+                inputDiv.appendChild(applyBtn);
+                settingDiv.appendChild(inputDiv);
+                
+                th.appendChild(settingDiv);
+                tableHeader.appendChild(th);
+            });
+            
+            // 创建表格内容
+            for (let rowIndex = 1; rowIndex < originalData.length; rowIndex++) {
+                const row = originalData[rowIndex];
+                const tr = document.createElement('tr');
+                tr.className = rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                
+                row.forEach((cell, colIndex) => {
+                    const td = document.createElement('td');
+                    td.className = 'px-4 py-3';
+                    td.textContent = cell || '';
+                    tr.appendChild(td);
+                });
+                
+                tableBody.appendChild(tr);
+            }
+        }
+
+        // 渲染结果表格
+        function renderResultTable() {
+            if (processedData.length === 0) return;
+            
+            // 清空表格
+            resultHeader.innerHTML = '';
+            resultBody.innerHTML = '';
+            
+            // 创建表头
+            const headerRow = processedData[0];
+            headerRow.forEach((header, colIndex) => {
+                const th = document.createElement('th');
+                th.className = 'px-4 py-3 text-left font-medium';
+                th.textContent = header || `列 ${colIndex + 1}`;
+                resultHeader.appendChild(th);
+            });
+            
+            // 创建表格内容
+            for (let rowIndex = 1; rowIndex < processedData.length; rowIndex++) {
+                const row = processedData[rowIndex];
+                const tr = document.createElement('tr');
+                tr.className = rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                
+                row.forEach((cell, colIndex) => {
+                    const td = document.createElement('td');
+                    td.className = 'px-4 py-3';
+                    
+                    // 检查是否是处理过的单元格
+                    const originalCell = originalData[rowIndex][colIndex];
+                    const isModified = originalCell && 
+                                      (columnSettings[colIndex]?.customChar && 
+                                       cell !== originalCell.toString());
+                    
+                    if (isModified) {
+                        td.innerHTML = `<span class="text-primary font-medium">${cell}</span>`;
+                    } else {
+                        td.textContent = cell || '';
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                
+                resultBody.appendChild(tr);
+            }
+        }
+
+        // 应用列设置
+        function applyColumnSetting(colIndex) {
+            if (!columnSettings[colIndex]) return;
+            
+            const { customChar, position } = columnSettings[colIndex];
+            if (!customChar) return;
+            
+            // 重置此列的处理结果
+            resetColumnSetting(colIndex);
+            
+            // 应用设置到每一行
+            for (let rowIndex = 1; rowIndex < originalData.length; rowIndex++) {
+                const cellValue = originalData[rowIndex][colIndex];
+                if (cellValue !== undefined && cellValue !== null && cellValue !== '') {
+                    if (position === 'before') {
+                        processedData[rowIndex][colIndex] = customChar + cellValue.toString();
+                    } else {
+                        processedData[rowIndex][colIndex] = cellValue.toString() + customChar;
+                    }
+                }
+            }
+        }
+
+        // 重置列设置
+        function resetColumnSetting(colIndex) {
+            for (let rowIndex = 1; rowIndex < originalData.length; rowIndex++) {
+                processedData[rowIndex][colIndex] = originalData[rowIndex][colIndex];
+            }
+        }
+
+        // 应用所有设置
+        function applyAllSettings() {
+            for (let colIndex = 0; colIndex < columnSettings.length; colIndex++) {
+                applyColumnSetting(colIndex);
+            }
+            renderResultTable();
+            showNotification('所有设置已应用', 'success');
+        }
+
+        // 重置所有设置
+        function resetAllSettings() {
+            // 重置列设置
+            columnSettings.forEach(setting => {
+                setting.customChar = '';
+                setting.position = 'before';
+            });
+            
+            // 重置处理后的数据
+            processedData = JSON.parse(JSON.stringify(originalData));
+            
+            // 重新渲染表格
+            renderTable();
+            renderResultTable();
+            showNotification('所有设置已重置', 'info');
+        }
+
+        // 下载处理后的文件
+        function downloadProcessedFile() {
+            if (!workbook || processedData.length === 0) return;
+            
+            try {
+                // 创建新的工作表
+                const newWorksheet = XLSX.utils.aoa_to_sheet(processedData);
+                
+                // 替换原工作表
+                const firstSheetName = workbook.SheetNames[0];
+                workbook.Sheets[firstSheetName] = newWorksheet;
+                
+                // 生成文件并下载
+                const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+                saveExcelFile(excelBuffer, 'processed_file.xlsx');
+                showNotification('文件已成功下载', 'success');
+            } catch (error) {
+                alert('生成文件时出错: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        // 保存Excel文件
+        function saveExcelFile(buffer, fileName) {
+            const blob = new Blob([buffer], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-y-10 opacity-0`;
+            
+            // 根据类型设置样式
+            switch (type) {
+                case 'success':
+                    notification.classList.add('bg-green-500', 'text-white');
+                    notification.innerHTML = `<i class="fa fa-check-circle mr-2"></i>${message}`;
+                    break;
+                case 'error':
+                    notification.classList.add('bg-red-500', 'text-white');
+                    notification.innerHTML = `<i class="fa fa-times-circle mr-2"></i>${message}`;
+                    break;
+                default:
+                    notification.classList.add('bg-blue-500', 'text-white');
+                    notification.innerHTML = `<i class="fa fa-info-circle mr-2"></i>${message}`;
+            }
+            
+            // 添加到页面
+            document.body.appendChild(notification);
+            
+            // 显示动画
+            setTimeout(() => {
+                notification.classList.remove('translate-y-10', 'opacity-0');
+            }, 10);
+            
+            // 3秒后隐藏
+            setTimeout(() => {
+                notification.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+    
