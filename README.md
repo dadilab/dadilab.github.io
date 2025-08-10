@@ -20,3 +20,5 @@
  10.[高级进制转换工具](https://lab.xudadi.cn/tool/hexconvert.html)
 
  11.[自增数字插入工具](https://lab.xudadi.cn/tool/zizeng.html)
+
+ 12.[Excel表格处理器-把B列及以后的数据移动到A列](https://lab.xudadi.cn/tool/excel-processor.html)
