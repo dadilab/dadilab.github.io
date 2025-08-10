@@ -1,0 +1,473 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel表格处理器-把B列及以后的数据移动到A列</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        dark: '#1e293b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+            .shadow-custom {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 标题区域 -->
+        <header class="text-center mb-10">
+            <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-dark mb-2">Excel表格处理器</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">上传Excel文件，将B列及以后的非空数据移动到A列，自动忽略空单元格</p>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="space-y-8">
+            <!-- 文件上传区域 -->
+            <section id="upload-section" class="bg-white rounded-xl p-6 shadow-custom transition-custom hover:shadow-lg">
+                <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer transition-custom hover:border-primary">
+                    <i class="fa fa-file-excel-o text-5xl text-primary mb-4"></i>
+                    <h2 class="text-xl font-semibold mb-2">上传Excel文件</h2>
+                    <p class="text-gray-500 mb-4">支持 .xlsx 和 .xls 格式</p>
+                    <label class="bg-primary text-white py-2 px-6 rounded-lg inline-block transition-custom hover:bg-primary/90">
+                        <i class="fa fa-upload mr-2"></i>选择文件
+                        <input type="file" id="file-input" accept=".xlsx, .xls" class="hidden">
+                    </label>
+                    <p class="text-sm text-gray-400 mt-4">或直接将文件拖放到此处</p>
+                </div>
+                <div id="file-info" class="hidden mt-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fa fa-file-text-o text-primary mr-3"></i>
+                            <span id="file-name" class="font-medium"></span>
+                        </div>
+                        <button id="remove-file" class="text-gray-500 hover:text-danger transition-custom">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 工作表选择区域 -->
+            <section id="sheet-section" class="hidden bg-white rounded-xl p-6 shadow-custom">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fa fa-table text-primary mr-2"></i>选择工作表
+                </h2>
+                <div class="space-y-3">
+                    <select id="sheet-select" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-custom">
+                        <!-- 工作表选项将通过JS动态添加 -->
+                    </select>
+                    <button id="load-sheet" class="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90 transition-custom">
+                        <i class="fa fa-eye mr-2"></i>加载工作表
+                    </button>
+                </div>
+            </section>
+
+            <!-- 数据预览和处理区域 -->
+            <section id="data-section" class="hidden bg-white rounded-xl p-6 shadow-custom overflow-x-auto">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fa fa-database text-primary mr-2"></i>数据预览
+                </h2>
+                
+                <div class="mb-4 flex flex-wrap gap-3 items-center">
+                    <div class="flex items-center">
+                        <label for="start-row" class="mr-2 text-gray-700">起始行:</label>
+                        <input type="number" id="start-row" min="1" value="1" class="w-16 p-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary">
+                    </div>
+                    <div class="flex items-center">
+                        <label for="end-row" class="mr-2 text-gray-700">结束行:</label>
+                        <input type="number" id="end-row" min="1" value="1" class="w-16 p-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary">
+                    </div>
+                    <button id="check-data" class="bg-warning text-white py-2 px-4 rounded-lg hover:bg-warning/90 transition-custom ml-auto">
+                        <i class="fa fa-search mr-2"></i>检查A列数据
+                    </button>
+                </div>
+                
+                <div id="data-preview" class="border border-gray-200 rounded-lg overflow-hidden">
+                    <!-- 数据表格将通过JS动态生成 -->
+                </div>
+                
+                <div id="check-result" class="mt-4 hidden p-4 rounded-lg">
+                    <!-- 检查结果将通过JS动态生成 -->
+                </div>
+                
+                <div class="mt-6 flex justify-end gap-3">
+                    <button id="back-to-sheets" class="border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-custom">
+                        <i class="fa fa-arrow-left mr-2"></i>返回工作表选择
+                    </button>
+                    <button id="process-data" class="bg-secondary text-white py-2 px-6 rounded-lg hover:bg-secondary/90 transition-custom disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i class="fa fa-magic mr-2"></i>移动数据到A列
+                    </button>
+                </div>
+            </section>
+
+            <!-- 下载区域 -->
+            <section id="download-section" class="hidden bg-white rounded-xl p-6 shadow-custom text-center">
+                <div class="mb-6 inline-block p-4 rounded-full bg-green-100 text-secondary">
+                    <i class="fa fa-check-circle text-5xl"></i>
+                </div>
+                <h2 class="text-xl font-semibold mb-2">操作完成！</h2>
+                <p class="text-gray-600 mb-6">数据已成功处理，B列及以后的非空数据已移动到A列</p>
+                <button id="download-file" class="bg-primary text-white py-3 px-8 rounded-lg hover:bg-primary/90 transition-custom text-lg">
+                    <i class="fa fa-download mr-2"></i>下载处理后的Excel文件
+                </button>
+            </section>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="mt-16 text-center text-gray-500 text-sm">
+            <p>Excel表格处理器 &copy; 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局变量
+        let workbook = null;
+        let currentSheet = null;
+        let processedWorkbook = null;
+        let rowsWithDataInA = [];
+
+        // DOM元素
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const removeFile = document.getElementById('remove-file');
+        const sheetSection = document.getElementById('sheet-section');
+        const sheetSelect = document.getElementById('sheet-select');
+        const loadSheet = document.getElementById('load-sheet');
+        const dataSection = document.getElementById('data-section');
+        const dataPreview = document.getElementById('data-preview');
+        const startRowInput = document.getElementById('start-row');
+        const endRowInput = document.getElementById('end-row');
+        const checkDataBtn = document.getElementById('check-data');
+        const checkResult = document.getElementById('check-result');
+        const processDataBtn = document.getElementById('process-data');
+        const backToSheetsBtn = document.getElementById('back-to-sheets');
+        const downloadSection = document.getElementById('download-section');
+        const downloadFileBtn = document.getElementById('download-file');
+
+        // 初始化事件监听
+        function initEventListeners() {
+            // 文件上传相关
+            fileInput.addEventListener('change', handleFileSelect);
+            dropArea.addEventListener('dragover', handleDragOver);
+            dropArea.addEventListener('dragleave', handleDragLeave);
+            dropArea.addEventListener('drop', handleDrop);
+            removeFile.addEventListener('click', removeSelectedFile);
+
+            // 工作表相关
+            loadSheet.addEventListener('click', loadSelectedSheet);
+            backToSheetsBtn.addEventListener('click', backToSheets);
+
+            // 数据处理相关
+            checkDataBtn.addEventListener('click', checkA列Data);
+            processDataBtn.addEventListener('click', processData);
+            
+            // 下载相关
+            downloadFileBtn.addEventListener('click', downloadFile);
+        }
+
+        // 文件处理函数
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            dropArea.classList.add('border-primary', 'bg-blue-50');
+        }
+
+        function handleDragLeave() {
+            dropArea.classList.remove('border-primary', 'bg-blue-50');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            dropArea.classList.remove('border-primary', 'bg-blue-50');
+            
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function processFile(file) {
+            // 显示文件信息
+            fileName.textContent = file.name;
+            fileInfo.classList.remove('hidden');
+            
+            // 读取文件
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 填充工作表选择下拉框
+                    sheetSelect.innerHTML = '';
+                    workbook.SheetNames.forEach(sheetName => {
+                        const option = document.createElement('option');
+                        option.value = sheetName;
+                        option.textContent = sheetName;
+                        sheetSelect.appendChild(option);
+                    });
+                    
+                    // 显示工作表选择区域
+                    sheetSection.classList.remove('hidden');
+                    sheetSection.scrollIntoView({ behavior: 'smooth' });
+                } catch (error) {
+                    alert('无法解析文件，请确保上传的是有效的Excel文件');
+                    console.error(error);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function removeSelectedFile() {
+            fileInput.value = '';
+            fileInfo.classList.add('hidden');
+            sheetSection.classList.add('hidden');
+            dataSection.classList.add('hidden');
+            downloadSection.classList.add('hidden');
+            workbook = null;
+            currentSheet = null;
+        }
+
+        // 工作表处理函数
+        function loadSelectedSheet() {
+            const sheetName = sheetSelect.value;
+            currentSheet = workbook.Sheets[sheetName];
+            
+            // 转换为JSON以便处理
+            const jsonData = XLSX.utils.sheet_to_json(currentSheet, { header: 1 });
+            
+            // 显示数据预览
+            renderDataPreview(jsonData);
+            
+            // 设置行范围默认值
+            startRowInput.value = 1;
+            endRowInput.value = jsonData.length;
+            
+            // 显示数据处理区域
+            dataSection.classList.remove('hidden');
+            dataSection.scrollIntoView({ behavior: 'smooth' });
+            
+            // 重置检查结果和处理按钮
+            checkResult.classList.add('hidden');
+            processDataBtn.disabled = true;
+        }
+
+        function backToSheets() {
+            dataSection.classList.add('hidden');
+            sheetSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 数据预览和处理函数
+        function renderDataPreview(data) {
+            if (!data || data.length === 0) {
+                dataPreview.innerHTML = '<p class="p-4 text-gray-500 text-center">工作表中没有数据</p>';
+                return;
+            }
+            
+            // 创建表格
+            let tableHtml = '<table class="w-full border-collapse">';
+            
+            // 表头行（显示列字母）
+            tableHtml += '<tr class="bg-gray-100">';
+            tableHtml += '<th class="border border-gray-200 px-3 py-2 text-gray-600 text-sm font-semibold">行号</th>';
+            
+            const maxColumns = data.reduce((max, row) => Math.max(max, row.length), 0);
+            for (let i = 0; i < maxColumns; i++) {
+                tableHtml += `<th class="border border-gray-200 px-3 py-2 text-gray-600 text-sm font-semibold">${String.fromCharCode(65 + i)}</th>`;
+            }
+            tableHtml += '</tr>';
+            
+            // 数据行
+            data.forEach((row, rowIndex) => {
+                const rowNumber = rowIndex + 1;
+                tableHtml += `<tr class="${rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-custom">`;
+                tableHtml += `<td class="border border-gray-200 px-3 py-2 text-gray-600 text-sm font-medium">${rowNumber}</td>`;
+                
+                for (let colIndex = 0; colIndex < maxColumns; colIndex++) {
+                    const value = row[colIndex] !== undefined ? row[colIndex] : '';
+                    // 突出显示A列和空单元格
+                    const isAColumn = colIndex === 0;
+                    const isEmpty = value === '';
+                    tableHtml += `<td class="border border-gray-200 px-3 py-2 text-sm ${
+                        isAColumn ? 'font-medium bg-blue-50' : ''
+                    } ${
+                        isEmpty ? 'text-gray-300' : ''
+                    }">${isEmpty ? '<span class="italic">空</span>' : value}</td>`;
+                }
+                tableHtml += '</tr>';
+            });
+            
+            tableHtml += '</table>';
+            dataPreview.innerHTML = tableHtml;
+        }
+
+        function checkA列Data() {
+            const startRow = parseInt(startRowInput.value);
+            const endRow = parseInt(endRowInput.value);
+            
+            // 验证输入
+            if (isNaN(startRow) || isNaN(endRow) || startRow < 1 || endRow < startRow) {
+                alert('请输入有效的行范围');
+                return;
+            }
+            
+            // 转换为JSON以便处理
+            const jsonData = XLSX.utils.sheet_to_json(currentSheet, { header: 1 });
+            
+            // 检查行范围是否有效
+            if (endRow > jsonData.length) {
+                alert(`结束行不能大于表格的总行数(${jsonData.length})`);
+                endRowInput.value = jsonData.length;
+                return;
+            }
+            
+            // 检查A列（索引0）是否有数据
+            rowsWithDataInA = [];
+            for (let i = startRow - 1; i < endRow; i++) {
+                const row = jsonData[i];
+                if (row && row[0] !== undefined && row[0] !== null && row[0] !== '') {
+                    rowsWithDataInA.push(i + 1); // 行号是索引+1
+                }
+            }
+            
+            // 显示检查结果
+            if (rowsWithDataInA.length > 0) {
+                checkResult.classList.remove('hidden', 'bg-green-50', 'text-green-700');
+                checkResult.classList.add('bg-yellow-50', 'text-yellow-800', 'border', 'border-yellow-200');
+                
+                let resultHtml = '<div class="flex items-start">';
+                resultHtml += '<i class="fa fa-exclamation-triangle text-warning mt-1 mr-3 text-xl"></i>';
+                resultHtml += '<div>';
+                resultHtml += '<h3 class="font-semibold mb-1">发现以下行的A列已有数据：</h3>';
+                resultHtml += `<p class="mb-2">${rowsWithDataInA.join(', ')}</p>`;
+                resultHtml += '<p class="text-sm">执行操作将会覆盖这些数据，是否继续？</p>';
+                resultHtml += '</div>';
+                resultHtml += '</div>';
+                
+                checkResult.innerHTML = resultHtml;
+            } else {
+                checkResult.classList.remove('hidden', 'bg-yellow-50', 'text-yellow-800');
+                checkResult.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
+                
+                let resultHtml = '<div class="flex items-start">';
+                resultHtml += '<i class="fa fa-check-circle text-green-500 mt-1 mr-3 text-xl"></i>';
+                resultHtml += '<div>';
+                resultHtml += '<h3 class="font-semibold">检查完成</h3>';
+                resultHtml += '<p>所选范围内的A列没有数据，可以安全执行操作</p>';
+                resultHtml += '</div>';
+                resultHtml += '</div>';
+                
+                checkResult.innerHTML = resultHtml;
+            }
+            
+            // 启用处理按钮
+            processDataBtn.disabled = false;
+            checkResult.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function processData() {
+            const startRow = parseInt(startRowInput.value);
+            const endRow = parseInt(endRowInput.value);
+            
+            // 创建工作簿副本，避免修改原始数据
+            processedWorkbook = JSON.parse(JSON.stringify(workbook));
+            const sheetName = sheetSelect.value;
+            const sheet = processedWorkbook.Sheets[sheetName];
+            
+            // 转换为JSON以便处理
+            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            
+            // 处理每一行：将B列及以后的非空数据移动到A列开始的位置，忽略空单元格
+            for (let i = startRow - 1; i < endRow; i++) {
+                let row = jsonData[i] || [];
+                
+                // 收集B列（索引1）及以后的所有非空数据
+                const nonEmptyData = [];
+                for (let j = 1; j < row.length; j++) {  // 从索引1开始，即B列
+                    const value = row[j];
+                    // 检查值是否非空（不为null、undefined或空字符串）
+                    if (value !== undefined && value !== null && value !== '') {
+                        nonEmptyData.push(value);
+                    }
+                }
+                
+                // 将收集的非空数据作为新行（从A列开始）
+                jsonData[i] = nonEmptyData;
+            }
+            
+            // 将处理后的JSON转换回工作表
+            const newSheet = XLSX.utils.aoa_to_sheet(jsonData);
+            processedWorkbook.Sheets[sheetName] = newSheet;
+            
+            // 显示下载区域
+            dataSection.classList.add('hidden');
+            downloadSection.classList.remove('hidden');
+            downloadSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function downloadFile() {
+            if (processedWorkbook) {
+                // 创建下载文件
+                const excelBuffer = XLSX.write(processedWorkbook, { bookType: 'xlsx', type: 'array' });
+                saveExcelFile(excelBuffer, 'processed_file.xlsx');
+            }
+        }
+
+        function saveExcelFile(buffer, fileName) {
+            const blob = new Blob([buffer], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 0);
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', initEventListeners);
+    </script>
+</body>
+</html>
