@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML链接编辑器</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            danger: '#EF4444',
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .link-card {
+        @apply bg-white rounded-lg shadow-md p-4 mb-4 transition-all duration-300 border border-gray-200;
+      }
+      .btn {
+        @apply px-4 py-2 rounded-md transition-all duration-200 font-medium;
+      }
+      .btn-primary {
+        @apply bg-primary text-white hover:bg-primary/90;
+      }
+      .btn-secondary {
+        @apply bg-secondary text-white hover:bg-secondary/90;
+      }
+      .btn-danger {
+        @apply bg-danger text-white hover:bg-danger/90;
+      }
+      .input-field {
+        @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <header class="mb-8 text-center">
+      <h1 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-gray-800 mb-2">HTML链接编辑器</h1>
+      <p class="text-gray-600">可视化编辑链接并实时生成HTML代码</p>
+    </header>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- 左侧编辑区域 -->
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-semibold text-gray-800">编辑区域</h2>
+          <button id="add-link-btn" class="btn btn-secondary flex items-center">
+            <i class="fa fa-plus mr-2"></i>添加链接
+          </button>
+        </div>
+        
+        <div id="links-container" class="space-y-4">
+          <!-- 链接编辑卡片将通过JavaScript动态添加 -->
+        </div>
+      </div>
+      
+      <!-- 右侧源码区域 -->
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-semibold text-gray-800">源码区域</h2>
+          <button id="import-btn" class="btn btn-primary flex items-center">
+            <i class="fa fa-upload mr-2"></i>导入源码
+          </button>
+        </div>
+        
+        <div class="mb-4">
+          <label for="source-code" class="block text-sm font-medium text-gray-700 mb-2">HTML源码:</label>
+          <textarea id="source-code" class="w-full h-[calc(100%-4rem)] min-h-[400px] p-4 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" readonly></textarea>
+        </div>
+        
+        <div class="flex justify-end">
+          <button id="copy-btn" class="btn btn-secondary flex items-center">
+            <i class="fa fa-copy mr-2"></i>复制源码
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 导入源码的模态框 -->
+  <div id="import-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">导入HTML源码</h3>
+        <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="mb-4">
+        <label for="import-code" class="block text-sm font-medium text-gray-700 mb-2">请输入HTML链接源码:</label>
+        <textarea id="import-code" class="w-full h-40 p-4 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" placeholder='例如: &lt;a href="https://www.baidu.com" target="_blank"&gt;百度&lt;/a&gt;'></textarea>
+      </div>
+      
+      <div class="flex justify-end">
+        <button id="do-import-btn" class="btn btn-primary">导入</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 通知提示 -->
+  <div id="notification" class="fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50"></div>
+
+  <script>
+    // 存储所有链接数据
+    let links = [];
+    
+    // DOM元素
+    const linksContainer = document.getElementById('links-container');
+    const sourceCodeTextarea = document.getElementById('source-code');
+    const addLinkBtn = document.getElementById('add-link-btn');
+    const importBtn = document.getElementById('import-btn');
+    const importModal = document.getElementById('import-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const importCodeTextarea = document.getElementById('import-code');
+    const doImportBtn = document.getElementById('do-import-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const notification = document.getElementById('notification');
+    
+    // 初始化：添加一个空链接
+    document.addEventListener('DOMContentLoaded', () => {
+      addNewLink();
+      updateSourceCode();
+      initDragAndDrop();
+    });
+    
+    // 添加新链接
+    addLinkBtn.addEventListener('click', addNewLink);
+    
+    // 导入按钮点击事件
+    importBtn.addEventListener('click', () => {
+      importModal.classList.remove('hidden');
+      importCodeTextarea.focus();
+    });
+    
+    // 关闭模态框
+    closeModalBtn.addEventListener('click', () => {
+      importModal.classList.add('hidden');
+      importCodeTextarea.value = '';
+    });
+    
+    // 点击模态框外部关闭
+    importModal.addEventListener('click', (e) => {
+      if (e.target === importModal) {
+        importModal.classList.add('hidden');
+        importCodeTextarea.value = '';
+      }
+    });
+    
+    // 执行导入
+    doImportBtn.addEventListener('click', () => {
+      const code = importCodeTextarea.value.trim();
+      if (!code) {
+        showNotification('请输入要导入的源码', 'error');
+        return;
+      }
+      
+      try {
+        // 解析HTML源码
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(code, 'text/html');
+        const aTags = doc.querySelectorAll('a');
+        
+        if (aTags.length === 0) {
+          showNotification('未找到有效的链接标签', 'error');
+          return;
+        }
+        
+        // 清空现有链接
+        links = [];
+        
+        // 添加解析后的链接
+        aTags.forEach(a => {
+          links.push({
+            title: a.textContent,
+            url: a.href,
+            newWindow: a.target === '_blank'
+          });
+        });
+        
+        // 更新UI
+        renderLinks();
+        updateSourceCode();
+        importModal.classList.add('hidden');
+        importCodeTextarea.value = '';
+        showNotification(`成功导入 ${aTags.length} 个链接`, 'success');
+      } catch (error) {
+        showNotification('导入失败: ' + error.message, 'error');
+        console.error('Import error:', error);
+      }
+    });
+    
+    // 复制源码
+    copyBtn.addEventListener('click', () => {
+      sourceCodeTextarea.select();
+      document.execCommand('copy');
+      showNotification('源码已复制到剪贴板', 'success');
+    });
+    
+    // 添加新链接
+    function addNewLink() {
+      const newLink = {
+        title: '',
+        url: '',
+        newWindow: false
+      };
+      
+      links.push(newLink);
+      renderLinks();
+    }
+    
+    // 渲染所有链接编辑卡片
+    function renderLinks() {
+      linksContainer.innerHTML = '';
+      
+      links.forEach((link, index) => {
+        const linkCard = createLinkCard(link, index);
+        linksContainer.appendChild(linkCard);
+      });
+    }
+    
+    // 创建单个链接编辑卡片
+    function createLinkCard(link, index) {
+      const card = document.createElement('div');
+      card.className = 'link-card';
+      card.dataset.index = index;
+      card.draggable = true;
+      
+      card.innerHTML = `
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="font-medium text-gray-800">链接 ${index + 1}</h3>
+          <div class="flex space-x-2">
+            <button class="move-up-btn p-2 text-gray-500 hover:text-primary transition-colors" title="上移">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+            <button class="move-down-btn p-2 text-gray-500 hover:text-primary transition-colors" title="下移">
+              <i class="fa fa-arrow-down"></i>
+            </button>
+            <button class="delete-btn p-2 text-gray-500 hover:text-danger transition-colors" title="删除">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="space-y-3">
+          <div>
+            <label for="title-${index}" class="block text-sm font-medium text-gray-700 mb-1">链接标题:</label>
+            <input type="text" id="title-${index}" class="input-field" value="${escapeHtml(link.title)}" placeholder="输入链接标题">
+          </div>
+          
+          <div>
+            <label for="url-${index}" class="block text-sm font-medium text-gray-700 mb-1">链接地址:</label>
+            <input type="url" id="url-${index}" class="input-field" value="${escapeHtml(link.url)}" placeholder="https://example.com">
+          </div>
+          
+          <div class="flex items-center">
+            <input type="checkbox" id="newwindow-${index}" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" ${link.newWindow ? 'checked' : ''}>
+            <label for="newwindow-${index}" class="ml-2 block text-sm text-gray-700">在新窗口打开</label>
+          </div>
+          
+          <div class="pt-2">
+            <button class="save-btn btn btn-primary w-full">确定</button>
+          </div>
+        </div>
+      `;
+      
+      // 添加事件监听器
+      const titleInput = card.querySelector(`#title-${index}`);
+      const urlInput = card.querySelector(`#url-${index}`);
+      const newWindowCheckbox = card.querySelector(`#newwindow-${index}`);
+      const saveBtn = card.querySelector('.save-btn');
+      const deleteBtn = card.querySelector('.delete-btn');
+      const moveUpBtn = card.querySelector('.move-up-btn');
+      const moveDownBtn = card.querySelector('.move-down-btn');
+      
+      // 保存按钮点击事件
+      saveBtn.addEventListener('click', () => {
+        links[index] = {
+          title: titleInput.value.trim(),
+          url: urlInput.value.trim(),
+          newWindow: newWindowCheckbox.checked
+        };
+        
+        // 保存后添加视觉反馈
+        card.classList.add('ring-2', 'ring-green-500');
+        setTimeout(() => {
+          card.classList.remove('ring-2', 'ring-green-500');
+        }, 1000);
+        
+        updateSourceCode();
+        showNotification('链接已保存', 'success');
+      });
+      
+      // 删除按钮点击事件
+      deleteBtn.addEventListener('click', () => {
+        if (links.length <= 1) {
+          showNotification('至少保留一个链接', 'error');
+          return;
+        }
+        
+        links.splice(index, 1);
+        renderLinks();
+        updateSourceCode();
+        showNotification('链接已删除', 'success');
+      });
+      
+      // 上移按钮点击事件
+      moveUpBtn.addEventListener('click', () => {
+        if (index > 0) {
+          // 交换位置
+          [links[index], links[index - 1]] = [links[index - 1], links[index]];
+          renderLinks();
+          updateSourceCode();
+        }
+      });
+      
+      // 下移按钮点击事件
+      moveDownBtn.addEventListener('click', () => {
+        if (index < links.length - 1) {
+          // 交换位置
+          [links[index], links[index + 1]] = [links[index + 1], links[index]];
+          renderLinks();
+          updateSourceCode();
+        }
+      });
+      
+      return card;
+    }
+    
+    // 更新源码显示
+    function updateSourceCode() {
+      let html = '';
+      
+      links.forEach(link => {
+        if (!link.url) return; // 跳过空链接
+        
+        const href = escapeHtml(link.url);
+        const title = escapeHtml(link.title || href); // 如果没有标题，使用URL作为标题
+        const target = link.newWindow ? ' target="_blank"' : '';
+        
+        html += `<a href="${href}"${target}>${title}</a>\n`;
+      });
+      
+      sourceCodeTextarea.value = html;
+    }
+    
+    // 初始化拖拽排序功能
+    function initDragAndDrop() {
+      let draggedItem = null;
+      
+      linksContainer.addEventListener('dragstart', (e) => {
+        if (e.target.classList.contains('link-card')) {
+          draggedItem = e.target;
+          setTimeout(() => {
+            e.target.classList.add('opacity-50', 'scale-95');
+          }, 0);
+        }
+      });
+      
+      linksContainer.addEventListener('dragend', (e) => {
+        if (draggedItem) {
+          draggedItem.classList.remove('opacity-50', 'scale-95');
+          draggedItem = null;
+        }
+      });
+      
+      linksContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (draggedItem) {
+          const afterElement = getDragAfterElement(linksContainer, e.clientY);
+          if (afterElement == null) {
+            linksContainer.appendChild(draggedItem);
+          } else {
+            linksContainer.insertBefore(draggedItem, afterElement);
+          }
+        }
+      });
+      
+      linksContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (draggedItem) {
+          // 更新links数组顺序
+          const newOrder = [];
+          document.querySelectorAll('.link-card').forEach(card => {
+            const index = parseInt(card.dataset.index);
+            newOrder.push(links[index]);
+          });
+          
+          links = newOrder;
+          renderLinks();
+          updateSourceCode();
+        }
+      });
+    }
+    
+    // 辅助函数：确定拖拽后元素的位置
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll('.link-card:not(.opacity-50)')];
+      
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+    
+    // 显示通知
+    function showNotification(message, type = 'info') {
+      notification.textContent = message;
+      
+      // 设置样式
+      if (type === 'success') {
+        notification.className = 'fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg bg-green-500 text-white transform translate-y-0 opacity-100 transition-all duration-300 z-50';
+      } else if (type === 'error') {
+        notification.className = 'fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg bg-red-500 text-white transform translate-y-0 opacity-100 transition-all duration-300 z-50';
+      } else {
+        notification.className = 'fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg bg-blue-500 text-white transform translate-y-0 opacity-100 transition-all duration-300 z-50';
+      }
+      
+      // 3秒后隐藏
+      setTimeout(() => {
+        notification.className = 'fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50';
+      }, 3000);
+    }
+    
+    // HTML转义函数，防止XSS
+    function escapeHtml(unsafe) {
+      if (!unsafe) return '';
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
