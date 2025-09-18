@@ -26,3 +26,5 @@
  13.[base64转换工具](https://lab.xudadi.cn/tool/base64convert.html)
 
  14.[链接编辑器](https://lab.xudadi.cn/tool/link-editor.html)
+
+ 15.[每周食谱编辑器](https://lab.xudadi.cn/tool/shipuchuli.html)
