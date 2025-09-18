@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每周食谱智能文本处理工具</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义主题 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        neutral: '#1F2937',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .transition-all-300 {
+                transition: all 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 md:py-12 max-w-4xl">
+        <!-- 页面标题 -->
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-[clamp(1.8rem,5vw,3rem)] font-bold text-neutral text-shadow mb-3">文本处理工具</h1>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">粘贴文本后自动处理：在第一个tab前换行，食材前换行，并在"g"后添加"、"</p>
+        </header>
+        
+        <!-- 主内容区 -->
+        <main class="bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-8 transform hover:shadow-xl transition-all-300">
+            <!-- 输入区域 -->
+            <div class="mb-8">
+                <label for="inputText" class="block text-gray-700 font-medium mb-2">请粘贴需要处理的文本：</label>
+                <textarea 
+                    id="inputText" 
+                    class="w-full h-40 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all-300 resize-none"
+                    placeholder="在此粘贴文本..."
+                ></textarea>
+            </div>
+            
+            <!-- 按钮区域 -->
+            <div class="flex flex-wrap gap-4 mb-8">
+                <button 
+                    id="processBtn" 
+                    class="bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-6 rounded-lg shadow transition-all-300 flex items-center"
+                >
+                    <i class="fa fa-magic mr-2"></i>处理文本
+                </button>
+                <button 
+                    id="clearBtn" 
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2.5 px-6 rounded-lg shadow transition-all-300 flex items-center"
+                >
+                    <i class="fa fa-eraser mr-2"></i>清空内容
+                </button>
+            </div>
+            
+            <!-- 输出区域 -->
+            <div>
+                <label for="outputText" class="block text-gray-700 font-medium mb-2">处理后的文本：</label>
+                <div class="relative">
+                    <textarea 
+                        id="outputText" 
+                        class="w-full h-40 p-4 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-secondary focus:border-secondary transition-all-300 resize-none"
+                        readonly
+                    ></textarea>
+                    <button 
+                        id="copyBtn" 
+                        class="absolute right-3 bottom-3 bg-secondary hover:bg-secondary/90 text-white font-medium py-1 px-3 rounded shadow transition-all-300 text-sm flex items-center opacity-0"
+                    >
+                        <i class="fa fa-copy mr-1"></i>复制结果
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <!-- 说明区域 -->
+        <section class="bg-blue-50 rounded-xl p-6 shadow-md">
+            <h2 class="text-lg font-semibold text-primary mb-3 flex items-center">
+                <i class="fa fa-info-circle mr-2"></i>功能说明
+            </h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li>在第一个Tab转义字符前添加一个换行</li>
+                <li>在"食材："文本前添加一个换行</li>
+                <li>在第一个Tab转义字符后添加"食材："文本</li>
+                <li>自动去除文本中所有的Tab转义字符</li>
+                <li>自动去除文本中所有的空格</li>
+                <li>在每个"g"字符后面添加一个"、"符号</li>
+                <li>最后一个"g"字符后面不会添加"、"</li>
+                <li>支持粘贴后自动处理或手动点击"处理文本"按钮</li>
+            </ul>
+        </section>
+        
+        <!-- 页脚 -->
+        <footer class="mt-10 text-center text-gray-500 text-sm">
+            <p>文本处理工具 &copy; 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const processBtn = document.getElementById('processBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        
+        // 处理文本的核心函数
+        function processText(text) {
+            // 先处理第一个tab的特殊需求
+            let processed = text;
+            const firstTabIndex = processed.indexOf('\t');
+            
+            // 如果存在tab字符
+            if (firstTabIndex !== -1) {
+                // 在第一个tab前添加换行，在第一个tab后添加换行和"食材："
+                processed = 
+                    processed.substring(0, firstTabIndex) + '\n' +  // 第一个tab前添加换行
+                    processed.substring(firstTabIndex, firstTabIndex + 1) + '\n食材：' +  // 第一个tab后添加换行和"食材："
+                    processed.substring(firstTabIndex + 1);
+            }
+            
+            // 去除所有Tab和空格
+            processed = processed.replace(/\t/g, '').replace(/\s/g, '');
+            
+            // 找到所有"g"的位置
+            const gPositions = [];
+            for (let i = 0; i < processed.length; i++) {
+                if (processed[i] === 'g') {
+                    gPositions.push(i);
+                }
+            }
+            
+            // 如果没有"g"，直接返回处理后的文本
+            if (gPositions.length === 0) {
+                return processed;
+            }
+            
+            // 最后一个"g"的位置
+            const lastGPosition = gPositions[gPositions.length - 1];
+            
+            // 在每个"g"后添加"、"，除了最后一个
+            let result = '';
+            for (let i = 0; i < processed.length; i++) {
+                result += processed[i];
+                // 如果当前字符是"g"且不是最后一个"g"，则添加"、"
+                if (processed[i] === 'g' && i !== lastGPosition) {
+                    result += '、';
+                }
+            }
+            
+            return result;
+        }
+        
+        // 处理文本并显示结果
+        function handleProcessing() {
+            const input = inputText.value;
+            const processed = processText(input);
+            outputText.value = processed;
+            
+            // 显示复制按钮（如果有内容）
+            toggleCopyButton(processed.length > 0);
+            
+            // 添加处理完成的视觉反馈
+            outputText.classList.add('border-secondary');
+            setTimeout(() => {
+                outputText.classList.remove('border-secondary');
+            }, 500);
+        }
+        
+        // 显示或隐藏复制按钮
+        function toggleCopyButton(show) {
+            if (show) {
+                copyBtn.classList.remove('opacity-0');
+                copyBtn.classList.add('opacity-100');
+            } else {
+                copyBtn.classList.remove('opacity-100');
+                copyBtn.classList.add('opacity-0');
+            }
+        }
+        
+        // 监听粘贴事件
+        inputText.addEventListener('paste', () => {
+            // 稍微延迟，确保粘贴内容已更新
+            setTimeout(handleProcessing, 100);
+        });
+        
+        // 处理按钮点击事件
+        processBtn.addEventListener('click', handleProcessing);
+        
+        // 清空按钮点击事件
+        clearBtn.addEventListener('click', () => {
+            inputText.value = '';
+            outputText.value = '';
+            toggleCopyButton(false);
+            inputText.focus();
+        });
+        
+        // 复制按钮点击事件
+        copyBtn.addEventListener('click', () => {
+            outputText.select();
+            document.execCommand('copy');
+            
+            // 显示复制成功的反馈
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fa fa-check mr-1"></i>已复制';
+            copyBtn.classList.remove('bg-secondary');
+            copyBtn.classList.add('bg-green-600');
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.classList.remove('bg-green-600');
+                copyBtn.classList.add('bg-secondary');
+            }, 2000);
+        });
+        
+        // 页面加载时聚焦到输入框
+        window.addEventListener('load', () => {
+            inputText.focus();
+        });
+    </script>
+</body>
+</html>
