@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>包本通过数据处理工具</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入SheetJS用于处理Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3b82f6',
+            secondary: '#10b981',
+            danger: '#ef4444',
+            warning: '#f59e0b',
+            dark: '#1e293b',
+            accent: '#8b5cf6',
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .table-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      .selected-cell {
+        background-color: rgba(59, 130, 246, 0.2);
+        border: 2px solid #3b82f6 !important;
+      }
+      .selected-row {
+        background-color: rgba(239, 68, 68, 0.1);
+      }
+      .btn-hover {
+        @apply transition-all duration-300 hover:shadow-lg transform hover:-translate-y-0.5;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+  <!-- 顶部导航 -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-table text-primary text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold text-dark">包本通过数据处理工具</h1>
+      </div>
+      <div class="hidden md:flex items-center space-x-1 text-sm text-gray-500">
+        <i class="fa fa-info-circle"></i>
+        <span>包本数据处理</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 固定的操作按钮区域 -->
+  <section class="hidden bg-white shadow-md z-40 sticky top-16" id="actionsSection">
+    <div class="container mx-auto px-4 py-4">
+      <h2 class="text-lg font-semibold mb-4 flex items-center">
+        <i class="fa fa-cogs text-primary mr-2"></i>数据操作
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <button id="mergeNamesBtn" class="bg-primary text-white py-3 px-4 rounded-lg flex items-center justify-center btn-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none" disabled>
+          <i class="fa fa-users mr-2"></i>合并姓名
+        </button>
+        <button id="mergeBooksBtn" class="bg-secondary text-white py-3 px-4 rounded-lg flex items-center justify-center btn-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none" disabled>
+          <i class="fa fa-book mr-2"></i>合并书名
+        </button>
+        <button id="autoMergeBtn" class="bg-accent text-white py-3 px-4 rounded-lg flex items-center justify-center btn-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none" disabled>
+          <i class="fa fa-magic mr-2"></i>一键合并
+        </button>
+        <button id="deleteSelectedRowsBtn" class="bg-danger text-white py-3 px-4 rounded-lg flex items-center justify-center btn-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none" disabled>
+          <i class="fa fa-trash mr-2"></i>删除选中行
+        </button>
+        <button id="undoBtn" class="bg-warning text-white py-3 px-4 rounded-lg flex items-center justify-center btn-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none" disabled>
+          <i class="fa fa-undo mr-2"></i>撤销
+        </button>
+        <button id="downloadBtn" class="bg-dark text-white py-3 px-4 rounded-lg flex items-center justify-center btn-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none" disabled>
+          <i class="fa fa-download mr-2"></i>下载Excel
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 主内容区 -->
+  <main class="flex-grow container mx-auto px-4 py-6 pt-24">
+    <!-- 上传区域 -->
+    <section class="mb-8 bg-white rounded-xl p-6 shadow-sm">
+      <h2 class="text-lg font-semibold mb-4 flex items-center">
+        <i class="fa fa-upload text-primary mr-2"></i>上传Excel文件
+      </h2>
+      <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-colors hover:border-primary">
+        <input type="file" id="fileUpload" accept=".xlsx, .xls" class="hidden" />
+        <label for="fileUpload" class="cursor-pointer">
+          <i class="fa fa-file-excel-o text-5xl text-primary mb-4"></i>
+          <p class="text-gray-600 mb-2">点击或拖拽Excel文件到此处上传</p>
+          <p class="text-sm text-gray-400">支持 .xlsx 和 .xls 格式</p>
+        </label>
+      </div>
+      <div id="fileInfo" class="mt-4 hidden">
+        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+          <div class="flex items-center">
+            <i class="fa fa-file-text-o text-primary mr-2"></i>
+            <span id="fileName" class="font-medium"></span>
+          </div>
+          <button id="removeFile" class="text-gray-500 hover:text-danger transition-colors">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 表格展示区域 -->
+    <section class="mb-8 hidden" id="tableSection">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+        <h2 class="text-lg font-semibold mb-2 md:mb-0 flex items-center">
+          <i class="fa fa-table text-primary mr-2"></i>数据表格
+          <span class="ml-2 text-sm font-normal text-gray-500">(勾选的行不参与一键合并)</span>
+        </h2>
+        <div class="text-sm text-gray-500">
+          <span id="selectedCount">未选择单元格</span>
+          <span id="selectedRowsCount" class="ml-4">未选择行</span>
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto bg-white rounded-xl shadow-sm table-shadow">
+        <table id="dataTable" class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr id="tableHeader"></tr>
+          </thead>
+          <tbody id="tableBody" class="bg-white divide-y divide-gray-200"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 消息提示区域 -->
+    <section id="messageSection" class="hidden fixed bottom-6 right-6 z-50 max-w-md"></section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-white border-t border-gray-200 py-4">
+    <div class="container mx-auto px-4 text-center text-sm text-gray-500">
+      <p>©xudadi.com 2025 包本通过数据处理工</p>
+    </div>
+  </footer>
+
+  <script>
+    // 全局变量
+    let workbook = null;
+    let worksheet = null;
+    let jsonData = [];
+    let displayData = []; // 用于显示的数据（包含序号和复选框状态）
+    let selectedCells = [];
+    let selectedRows = new Set(); // 同时存储框选和勾选的行
+    let isSelecting = false;
+    let startCell = null;
+    let history = []; // 用于存储历史操作，支持撤销
+    let maxHistorySize = 10; // 最大历史记录数量
+    
+    // 列索引缓存
+    let nameColIndex = -1;
+    let classColIndex = -1;
+    let bookContentColIndex = -1;
+    // 显示用的额外列（序号和复选框不计入实际数据列）
+    const EXTRA_COLUMNS = 2; // 序号列 + 复选框列
+
+    // DOM元素
+    const fileUpload = document.getElementById('fileUpload');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const removeFile = document.getElementById('removeFile');
+    const tableSection = document.getElementById('tableSection');
+    const dataTable = document.getElementById('dataTable');
+    const tableHeader = document.getElementById('tableHeader');
+    const tableBody = document.getElementById('tableBody');
+    const actionsSection = document.getElementById('actionsSection');
+    const mergeNamesBtn = document.getElementById('mergeNamesBtn');
+    const mergeBooksBtn = document.getElementById('mergeBooksBtn');
+    const autoMergeBtn = document.getElementById('autoMergeBtn');
+    const deleteSelectedRowsBtn = document.getElementById('deleteSelectedRowsBtn');
+    const undoBtn = document.getElementById('undoBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const selectedCount = document.getElementById('selectedCount');
+    const selectedRowsCount = document.getElementById('selectedRowsCount');
+    const messageSection = document.getElementById('messageSection');
+
+    // 初始化事件监听
+    function initEventListeners() {
+      fileUpload.addEventListener('change', handleFileUpload);
+      removeFile.addEventListener('click', handleRemoveFile);
+      dataTable.addEventListener('mousedown', startSelection);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', endSelection);
+      mergeNamesBtn.addEventListener('click', () => executeWithHistory(mergeNames));
+      mergeBooksBtn.addEventListener('click', () => executeWithHistory(mergeBooks));
+      autoMergeBtn.addEventListener('click', autoMergeAll);
+      deleteSelectedRowsBtn.addEventListener('click', () => executeWithHistory(deleteSelectedRows));
+      undoBtn.addEventListener('click', undoLastAction);
+      downloadBtn.addEventListener('click', downloadExcel);
+    }
+
+    // 带历史记录的执行函数
+    function executeWithHistory(action) {
+      saveToHistory();
+      action();
+      updateUndoButton();
+    }
+
+    // 保存当前状态到历史记录
+    function saveToHistory() {
+      const stateCopy = JSON.parse(JSON.stringify({
+        jsonData: jsonData,
+        displayData: displayData
+      }));
+      
+      history.push(stateCopy);
+      
+      if (history.length > maxHistorySize) {
+        history.shift();
+      }
+      
+      updateUndoButton();
+    }
+
+    // 撤销上一步操作
+    function undoLastAction() {
+      if (history.length === 0) {
+        showMessage('没有可撤销的操作', 'info');
+        return;
+      }
+      
+      const lastState = history.pop();
+      jsonData = lastState.jsonData;
+      displayData = lastState.displayData;
+      
+      renderTable();
+      clearSelection();
+      updateUndoButton();
+      updateSelectedButtons();
+      
+      showMessage('已撤销上一步操作', 'success');
+    }
+
+    // 更新撤销按钮状态
+    function updateUndoButton() {
+      undoBtn.disabled = history.length === 0;
+    }
+
+    // 处理文件上传
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      fileName.textContent = file.name;
+      fileInfo.classList.remove('hidden');
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          worksheet = workbook.Sheets[firstSheetName];
+          jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          initDisplayData();
+          identifyKeyColumns();
+          renderTable();
+          tableSection.classList.remove('hidden');
+          actionsSection.classList.remove('hidden');
+          downloadBtn.disabled = false;
+          autoMergeBtn.disabled = checkKeyColumnsExist();
+          
+          history = [];
+          updateUndoButton();
+          
+          showMessage('文件上传成功', 'success');
+        } catch (error) {
+          showMessage('文件解析失败，请检查文件格式', 'error');
+          console.error('文件解析错误:', error);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // 初始化显示数据（添加序号和复选框状态）
+    function initDisplayData() {
+      displayData = [];
+      // 表头行
+      displayData.push({
+        checked: false, // 表头复选框
+        index: '' // 序号表头
+      });
+      
+      // 数据行
+      for (let i = 1; i < jsonData.length; i++) {
+        displayData.push({
+          checked: false, // 默认为未勾选
+          index: i // 序号从1开始
+        });
+      }
+    }
+
+    // 识别关键列
+    function identifyKeyColumns() {
+      if (!jsonData || jsonData.length === 0) return;
+      
+      const headers = jsonData[0].map(header => 
+        header?.toString().toLowerCase().replace(/\s+/g, '')
+      );
+      
+      // 查找姓名列（实际数据列，加上额外列偏移）
+      const nameCol = headers.findIndex(header => 
+        header && header.includes('姓名')
+      );
+      nameColIndex = nameCol !== -1 ? nameCol + EXTRA_COLUMNS : -1;
+      
+      // 查找班级列
+      const classCol = headers.findIndex(header => 
+        header && header.includes('班级')
+      );
+      classColIndex = classCol !== -1 ? classCol + EXTRA_COLUMNS : -1;
+      
+      // 查找包本内容列
+      const bookContentCol = headers.findIndex(header => 
+        header && (header.includes('包本') || header.includes('内容'))
+      );
+      bookContentColIndex = bookContentCol !== -1 ? bookContentCol + EXTRA_COLUMNS : -1;
+      
+      // 默认列位置（加上额外列偏移）
+      if (nameColIndex === -1 && jsonData[0].length >= 3) {
+        nameColIndex = 1 + EXTRA_COLUMNS; // 第二列是姓名
+        classColIndex = 0 + EXTRA_COLUMNS; // 第一列是班级
+        bookContentColIndex = 2 + EXTRA_COLUMNS; // 第三列是包本内容
+      }
+    }
+
+    // 检查关键列是否存在
+    function checkKeyColumnsExist() {
+      return nameColIndex === -1 || classColIndex === -1 || bookContentColIndex === -1;
+    }
+
+    // 移除文件
+    function handleRemoveFile() {
+      fileUpload.value = '';
+      fileInfo.classList.add('hidden');
+      tableSection.classList.add('hidden');
+      actionsSection.classList.add('hidden');
+      workbook = null;
+      worksheet = null;
+      jsonData = [];
+      displayData = [];
+      nameColIndex = -1;
+      classColIndex = -1;
+      bookContentColIndex = -1;
+      history = [];
+      clearSelection();
+      updateSelectedButtons();
+      updateUndoButton();
+      downloadBtn.disabled = true;
+      autoMergeBtn.disabled = true;
+    }
+
+    // 渲染表格
+    function renderTable() {
+      if (!jsonData || jsonData.length === 0) return;
+      
+      tableHeader.innerHTML = '';
+      tableBody.innerHTML = '';
+      
+      // 创建表头 - 增加序号列和复选框列
+      // 1. 复选框表头
+      const checkboxHeader = document.createElement('th');
+      checkboxHeader.className = 'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200 w-12';
+      checkboxHeader.innerHTML = '<input type="checkbox" id="selectAll" class="rounded border-gray-300 text-primary focus:ring-primary">';
+      tableHeader.appendChild(checkboxHeader);
+      
+      // 2. 序号表头
+      const indexHeader = document.createElement('th');
+      indexHeader.textContent = '序号';
+      indexHeader.className = 'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200 w-16';
+      tableHeader.appendChild(indexHeader);
+      
+      // 3. 原有表头
+      const headers = jsonData[0];
+      headers.forEach((header, colIndex) => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        th.className = 'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200';
+        const displayColIndex = colIndex + EXTRA_COLUMNS;
+        if (displayColIndex === nameColIndex) th.classList.add('bg-blue-50');
+        if (displayColIndex === classColIndex) th.classList.add('bg-green-50');
+        if (displayColIndex === bookContentColIndex) th.classList.add('bg-purple-50');
+        th.dataset.col = displayColIndex;
+        th.dataset.row = 0;
+        tableHeader.appendChild(th);
+      });
+      
+      // 全选复选框事件
+      document.getElementById('selectAll').addEventListener('change', function(e) {
+        const isChecked = e.target.checked;
+        // 更新所有数据行的复选框状态和选中行集合
+        for (let i = 1; i < displayData.length; i++) {
+          displayData[i].checked = isChecked;
+          if (isChecked) {
+            selectedRows.add(i);
+          } else {
+            selectedRows.delete(i);
+          }
+        }
+        // 更新行选中状态样式
+        updateRowSelectionStyles();
+        // 更新计数和按钮状态
+        updateSelectedCount();
+        updateSelectedButtons();
+      });
+      
+      // 渲染表格体
+      renderTableBody();
+    }
+
+    // 渲染表格体
+    function renderTableBody() {
+      tableBody.innerHTML = '';
+      
+      // 创建表格内容行（从1开始，跳过表头）
+      for (let rowIndex = 1; rowIndex < jsonData.length; rowIndex++) {
+        const rowData = jsonData[rowIndex];
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50 transition-colors';
+        tr.dataset.row = rowIndex;
+        
+        // 1. 复选框单元格
+        const checkboxCell = document.createElement('td');
+        checkboxCell.className = 'px-4 py-3 whitespace-nowrap border border-gray-200';
+        checkboxCell.innerHTML = `<input type="checkbox" class="row-checkbox rounded border-gray-300 text-primary focus:ring-primary" ${displayData[rowIndex].checked ? 'checked' : ''}>`;
+        checkboxCell.dataset.row = rowIndex;
+        checkboxCell.dataset.col = 0; // 复选框列固定为0
+        tr.appendChild(checkboxCell);
+        
+        // 为复选框添加事件监听 - 核心修改点
+        const checkbox = checkboxCell.querySelector('input');
+        checkbox.addEventListener('change', function(e) {
+          displayData[rowIndex].checked = e.target.checked;
+          // 更新选中行集合
+          if (e.target.checked) {
+            selectedRows.add(rowIndex);
+          } else {
+            selectedRows.delete(rowIndex);
+          }
+          // 更新行选中状态样式
+          updateRowSelectionStyles();
+          // 更新计数和按钮状态
+          updateSelectedCount();
+          updateSelectedButtons();
+        });
+        
+        // 2. 序号单元格
+        const indexCell = document.createElement('td');
+        indexCell.textContent = displayData[rowIndex].index;
+        indexCell.className = 'px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200 font-medium';
+        indexCell.dataset.row = rowIndex;
+        indexCell.dataset.col = 1; // 序号列固定为1
+        tr.appendChild(indexCell);
+        
+        // 3. 数据单元格
+        rowData.forEach((cellData, colIndex) => {
+          const td = document.createElement('td');
+          td.textContent = cellData || '';
+          td.className = 'px-4 py-3 whitespace-nowrap text-sm text-gray-500 border border-gray-200';
+          td.dataset.row = rowIndex;
+          td.dataset.col = colIndex + EXTRA_COLUMNS; // 数据列索引加上偏移
+          tr.appendChild(td);
+        });
+        
+        tableBody.appendChild(tr);
+      }
+      
+      // 初始化行选中样式
+      updateRowSelectionStyles();
+    }
+
+    // 更新行选中状态样式
+    function updateRowSelectionStyles() {
+      // 清除所有行的选中样式
+      document.querySelectorAll('.selected-row').forEach(row => {
+        row.classList.remove('selected-row');
+      });
+      
+      // 为选中的行添加样式
+      selectedRows.forEach(rowIndex => {
+        const rowElement = document.querySelector(`tr[data-row="${rowIndex}"]`);
+        if (rowElement) {
+          rowElement.classList.add('selected-row');
+        }
+      });
+    }
+
+    // 开始选择单元格
+    function startSelection(e) {
+      // 忽略复选框和序号列的选择
+      const col = parseInt(e.target.dataset.col || e.target.parentElement.dataset.col);
+      if (col < EXTRA_COLUMNS) return;
+      
+      if (e.target.tagName !== 'TD' && e.target.tagName !== 'TH') return;
+      
+      isSelecting = true;
+      // 不清空选中行集合，保留复选框的选择
+      selectedCells = [];
+      document.querySelectorAll('.selected-cell').forEach(cell => {
+        cell.classList.remove('selected-cell');
+      });
+      
+      const row = parseInt(e.target.dataset.row);
+      startCell = { row, col };
+      
+      selectCell(row, col);
+      updateSelectedButtons();
+    }
+
+    // 处理鼠标移动
+    function handleMouseMove(e) {
+      if (!isSelecting || !startCell) return;
+      
+      const target = document.elementFromPoint(e.clientX, e.clientY);
+      if (!target) return;
+      
+      const cell = target.tagName === 'TD' || target.tagName === 'TH' ? target : target.closest('td, th');
+      if (!cell) return;
+      
+      // 忽略复选框和序号列的选择
+      const col = parseInt(cell.dataset.col);
+      if (col < EXTRA_COLUMNS) return;
+      
+      const endRow = parseInt(cell.dataset.row);
+      const endCol = parseInt(cell.dataset.col);
+      
+      // 只清除单元格选择，保留行选择
+      selectedCells = [];
+      document.querySelectorAll('.selected-cell').forEach(cell => {
+        cell.classList.remove('selected-cell');
+      });
+      
+      const minRow = Math.min(startCell.row, endRow);
+      const maxRow = Math.max(startCell.row, endRow);
+      const minCol = Math.min(startCell.col, endCol);
+      const maxCol = Math.max(startCell.col, endCol);
+      
+      for (let row = minRow; row <= maxRow; row++) {
+        for (let col = minCol; col <= maxCol; col++) {
+          selectCell(row, col);
+        }
+      }
+      
+      updateSelectedButtons();
+    }
+
+    // 结束选择
+    function endSelection() {
+      isSelecting = false;
+      startCell = null;
+    }
+
+    // 选择单个单元格
+    function selectCell(row, col) {
+      // 忽略复选框和序号列
+      if (col < EXTRA_COLUMNS) return;
+      
+      const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+      if (cell) {
+        cell.classList.add('selected-cell');
+        selectedCells.push({ row, col, element: cell });
+        
+        if (row > 0) {
+          selectedRows.add(row);
+        }
+        
+        // 更新行选中样式
+        updateRowSelectionStyles();
+        updateSelectedCount();
+      }
+    }
+
+    // 清除选择
+    function clearSelection() {
+      document.querySelectorAll('.selected-cell').forEach(cell => {
+        cell.classList.remove('selected-cell');
+      });
+      
+      // 保留复选框的选择，只清除框选的单元格
+      selectedCells = [];
+      
+      // 更新行选中样式（保留复选框选中的行）
+      updateRowSelectionStyles();
+      updateSelectedCount();
+    }
+
+    // 更新选择计数
+    function updateSelectedCount() {
+      if (selectedCells.length === 0) {
+        selectedCount.textContent = '未选择单元格';
+      } else if (selectedCells.length === 1) {
+        selectedCount.textContent = '已选择 1 个单元格';
+      } else {
+        selectedCount.textContent = `已选择 ${selectedCells.length} 个单元格`;
+      }
+      
+      const rowCount = selectedRows.size;
+      if (rowCount === 0) {
+        selectedRowsCount.textContent = '未选择行';
+      } else if (rowCount === 1) {
+        selectedRowsCount.textContent = '已选择 1 行';
+      } else {
+        selectedRowsCount.textContent = `已选择 ${rowCount} 行`;
+      }
+    }
+
+    // 更新选择按钮状态
+    function updateSelectedButtons() {
+      const hasSelection = selectedCells.length > 0;
+      const hasSelectedRows = selectedRows.size > 0;
+      
+      mergeNamesBtn.disabled = !hasSelection;
+      mergeBooksBtn.disabled = !hasSelection;
+      deleteSelectedRowsBtn.disabled = !hasSelectedRows;
+    }
+
+    // 合并姓名
+    function mergeNames() {
+      if (selectedCells.length === 0) return;
+      
+      const columns = new Set(selectedCells.map(cell => cell.col));
+      if (columns.size > 1) {
+        showMessage('请确保选中的单元格属于同一列', 'warning');
+        return;
+      }
+      
+      const nameCol = selectedCells[0].col;
+      
+      if (nameCol <= EXTRA_COLUMNS) {
+        showMessage('未找到班级列（姓名列前一列）', 'warning');
+        return;
+      }
+      const classCol = nameCol - 1;
+      
+      if (nameCol + 1 >= jsonData[0].length + EXTRA_COLUMNS) {
+        showMessage('未找到包本内容列（姓名列后一列）', 'warning');
+        return;
+      }
+      const bookContentCol = nameCol + 1;
+      
+      const classes = [];
+      const bookContents = [];
+      const rows = new Set(selectedCells.map(cell => cell.row));
+      
+      rows.forEach(row => {
+        if (row > 0) {
+          const dataClassCol = classCol - EXTRA_COLUMNS;
+          const className = jsonData[row][dataClassCol]?.toString().trim() || '';
+          classes.push(className);
+          
+          const dataContentCol = bookContentCol - EXTRA_COLUMNS;
+          const bookContent = jsonData[row][dataContentCol]?.toString().trim() || '';
+          bookContents.push(bookContent);
+        }
+      });
+      
+      if (classes.length > 0) {
+        const firstClass = classes[0];
+        const allSameClass = classes.every(cls => cls === firstClass);
+        
+        if (!allSameClass) {
+          showMessage('班级数据不一致，请检查后再操作', 'error');
+          return;
+        }
+      }
+      
+      if (bookContents.length > 0) {
+        const firstContent = bookContents[0];
+        const allSameContent = bookContents.every(content => content === firstContent);
+        
+        if (!allSameContent) {
+          showMessage('包本内容不一致，请检查后再操作', 'error');
+          return;
+        }
+      }
+      
+      const names = selectedCells.map(cell => {
+        const dataCol = cell.col - EXTRA_COLUMNS;
+        return jsonData[cell.row][dataCol]?.toString().trim() || '';
+      }).filter(name => name);
+      
+      if (names.length === 0) {
+        showMessage('未选中有效的姓名', 'warning');
+        return;
+      }
+      
+      let merged = '';
+      if (names.length === 1) {
+        merged = `${names[0]}（1位）`;
+      } else {
+        merged = names.slice(0, -1).join('、') + `、${names[names.length - 1]}等${names.length}位`;
+      }
+      
+      const firstCell = selectedCells[0];
+      const firstDataCol = firstCell.col - EXTRA_COLUMNS;
+      jsonData[firstCell.row][firstDataCol] = merged;
+      firstCell.element.textContent = merged;
+      
+      selectedCells.slice(1).forEach(cell => {
+        const dataCol = cell.col - EXTRA_COLUMNS;
+        jsonData[cell.row][dataCol] = '';
+        cell.element.textContent = '';
+      });
+      
+      clearSelection();
+      updateSelectedButtons();
+      
+      showMessage(`姓名合并成功，共 ${names.length} 位`, 'success');
+    }
+
+    // 合并书名
+    function mergeBooks() {
+      if (selectedCells.length === 0) return;
+      
+      const columns = new Set(selectedCells.map(cell => cell.col));
+      if (columns.size > 1) {
+        showMessage('请确保选中的单元格属于同一列', 'warning');
+        return;
+      }
+      
+      const books = selectedCells.map(cell => {
+        const dataCol = cell.col - EXTRA_COLUMNS;
+        return jsonData[cell.row][dataCol]?.toString().trim() || '';
+      }).filter(book => book);
+      
+      if (books.length === 0) {
+        showMessage('未选中有效的书名', 'warning');
+        return;
+      }
+      
+      const firstBook = books[0];
+      const allSame = books.every(book => book === firstBook);
+      
+      if (!allSame) {
+        showMessage('检测到书名不一致，请检查书名后执行操作', 'error');
+        return;
+      }
+      
+      const firstCell = selectedCells[0];
+      const firstDataCol = firstCell.col - EXTRA_COLUMNS;
+      jsonData[firstCell.row][firstDataCol] = firstBook;
+      firstCell.element.textContent = firstBook;
+      
+      selectedCells.slice(1).forEach(cell => {
+        const dataCol = cell.col - EXTRA_COLUMNS;
+        jsonData[cell.row][dataCol] = '';
+        cell.element.textContent = '';
+      });
+      
+      clearSelection();
+      updateSelectedButtons();
+      
+      showMessage('书名合并成功', 'success');
+    }
+
+    // 一键合并所有符合条件的姓名（排除勾选的行）
+    function autoMergeAll() {
+      saveToHistory();
+      
+      if (checkKeyColumnsExist()) {
+        showMessage('无法识别关键列（姓名、班级、包本内容），请确保表格包含这些列', 'error');
+        return;
+      }
+      
+      const groups = {};
+      
+      for (let rowIndex = 1; rowIndex < jsonData.length; rowIndex++) {
+        if (displayData[rowIndex]?.checked) continue;
+        
+        const rowData = jsonData[rowIndex];
+        
+        const dataClassCol = classColIndex - EXTRA_COLUMNS;
+        const dataContentCol = bookContentColIndex - EXTRA_COLUMNS;
+        const dataNameCol = nameColIndex - EXTRA_COLUMNS;
+        
+        const className = rowData[dataClassCol]?.toString().trim() || '';
+        const bookContent = rowData[dataContentCol]?.toString().trim() || '';
+        const name = rowData[dataNameCol]?.toString().trim() || '';
+        
+        if (!name) continue;
+        
+        const groupKey = `${className}|${bookContent}`;
+        
+        if (!groups[groupKey]) {
+          groups[groupKey] = {
+            className,
+            bookContent,
+            names: [],
+            rows: []
+          };
+        }
+        
+        groups[groupKey].names.push(name);
+        groups[groupKey].rows.push(rowIndex);
+      }
+      
+      const groupCount = Object.keys(groups).length;
+      if (groupCount === 0) {
+        showMessage('未找到可合并的姓名数据（已排除勾选的行）', 'info');
+        return;
+      }
+      
+      let mergedGroupCount = 0;
+      let totalMergedNames = 0;
+      
+      Object.values(groups).forEach(group => {
+        if (group.names.length <= 1) return;
+        
+        let mergedName = '';
+        if (group.names.length === 1) {
+          mergedName = `${group.names[0]}（1位）`;
+        } else {
+          mergedName = group.names.slice(0, -1).join('、') + 
+                      `、${group.names[group.names.length - 1]}等${group.names.length}位`;
+        }
+        
+        const firstRowIndex = group.rows[0];
+        const dataNameCol = nameColIndex - EXTRA_COLUMNS;
+        jsonData[firstRowIndex][dataNameCol] = mergedName;
+        
+        group.rows.slice(1).forEach(rowIndex => {
+          jsonData[rowIndex][dataNameCol] = '';
+        });
+        
+        mergedGroupCount++;
+        totalMergedNames += group.names.length;
+      });
+      
+      let emptyNameRowsDeleted = 0;
+      for (let i = jsonData.length - 1; i >= 1; i--) {
+        if (displayData[i]?.checked) continue;
+        
+        const dataNameCol = nameColIndex - EXTRA_COLUMNS;
+        const name = jsonData[i][dataNameCol]?.toString().trim() || '';
+        if (!name) {
+          jsonData.splice(i, 1);
+          displayData.splice(i, 1);
+          emptyNameRowsDeleted++;
+        }
+      }
+      
+      for (let i = 1; i < displayData.length; i++) {
+        displayData[i].index = i;
+      }
+      
+      renderTable();
+      updateUndoButton();
+      
+      if (mergedGroupCount === 0) {
+        if (emptyNameRowsDeleted > 0) {
+          showMessage(`未找到需要合并的姓名组，但已删除 ${emptyNameRowsDeleted} 个空姓名行`, 'info');
+        } else {
+          showMessage('未找到需要合并的姓名组（每组需包含2个及以上姓名）', 'info');
+        }
+      } else {
+        showMessage(`一键合并完成，共合并 ${mergedGroupCount} 组，${totalMergedNames} 个姓名，同时删除了 ${emptyNameRowsDeleted} 个空姓名行`, 'success');
+      }
+    }
+
+    // 删除选中的行（同时支持复选框勾选和框选的行）
+    function deleteSelectedRows() {
+      const rowCount = selectedRows.size;
+      if (rowCount === 0) {
+        showMessage('未选中任何行', 'warning');
+        return;
+      }
+      
+      // 从大到小排序行索引，避免删除时索引偏移
+      const rowsToDelete = Array.from(selectedRows).sort((a, b) => b - a);
+      
+      rowsToDelete.forEach(rowIndex => {
+        jsonData.splice(rowIndex, 1);
+        displayData.splice(rowIndex, 1);
+      });
+      
+      // 更新序号
+      for (let i = 1; i < displayData.length; i++) {
+        displayData[i].index = i;
+      }
+      
+      renderTable();
+      // 清除选择
+      selectedRows.clear();
+      selectedCells = [];
+      updateRowSelectionStyles();
+      updateSelectedCount();
+      updateSelectedButtons();
+      
+      showMessage(`已成功删除 ${rowCount} 行数据`, 'success');
+    }
+
+    // 下载Excel（排除序号列和复选框列）
+    function downloadExcel() {
+      if (!jsonData || jsonData.length === 0) return;
+      
+      try {
+        const newWorksheet = XLSX.utils.aoa_to_sheet(jsonData);
+        const newWorkbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, '处理后的数据');
+        XLSX.writeFile(newWorkbook, '处理后的表格.xlsx');
+        
+        showMessage('文件下载成功', 'success');
+      } catch (error) {
+        showMessage('文件生成失败', 'error');
+        console.error('文件生成错误:', error);
+      }
+    }
+
+    // 显示消息提示
+    function showMessage(text, type = 'info') {
+      const message = document.createElement('div');
+      
+      let bgColor, icon;
+      switch (type) {
+        case 'success':
+          bgColor = 'bg-green-50 border-green-200 text-green-800';
+          icon = 'fa-check-circle';
+          break;
+        case 'error':
+          bgColor = 'bg-red-50 border-red-200 text-red-800';
+          icon = 'fa-exclamation-circle';
+          break;
+        case 'warning':
+          bgColor = 'bg-yellow-50 border-yellow-200 text-yellow-800';
+          icon = 'fa-exclamation-triangle';
+          break;
+        default:
+          bgColor = 'bg-blue-50 border-blue-200 text-blue-800';
+          icon = 'fa-info-circle';
+      }
+      
+      message.className = `border rounded-lg p-4 shadow-lg flex items-start ${bgColor} animate-fade-in`;
+      message.innerHTML = `
+        <i class="fa ${icon} mt-0.5 mr-3 text-lg"></i>
+        <p>${text}</p>
+      `;
+      
+      messageSection.innerHTML = '';
+      messageSection.appendChild(message);
+      messageSection.classList.remove('hidden');
+      
+      setTimeout(() => {
+        message.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+        setTimeout(() => {
+          messageSection.classList.add('hidden');
+        }, 300);
+      }, 3000);
+    }
+
+    // 添加动画样式
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', initEventListeners);
+  </script>
+</body>
+</html>
