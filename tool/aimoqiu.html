@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>摸球实验模拟平台-xudadi.cn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            yellowBall: '#FFD700',
+            redBall: '#FF3B30',
+            neutral: {
+              100: '#F5F7FA',
+              200: '#E4E7ED',
+              300: '#C0C4CC',
+              400: '#909399',
+              500: '#606266',
+              600: '#303133',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
+            'elevated': '0 10px 30px rgba(22, 93, 255, 0.12)',
+          }
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .transition-transform-opacity {
+        transition-property: transform, opacity;
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+      }
+      .experiment-history-row {
+        @apply grid grid-cols-5 gap-2 py-2 border-b border-neutral-100 last:border-0;font-size: 20px;font-weight: bolder;
+      }
+      .experiment-history-header {
+        @apply grid grid-cols-5 gap-2 py-3 font-medium text-neutral-500 border-b border-neutral-200;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-neutral-100 min-h-screen text-neutral-600">
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- 页面标题 -->
+    <header class="text-center mb-8">
+      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-neutral-600 mb-2">摸球实验模拟平台</h1>
+      <p class="text-neutral-400 max-w-2xl mx-auto">通过设置参数模拟随机抽球过程，直观展示概率统计结果</p>
+    </header>
+    
+    <!-- 主内容区 -->
+    <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- 左侧：控制面板 -->
+      <section class="bg-white rounded-2xl shadow-card p-6 lg:p-8 transition-all duration-300 hover:shadow-elevated flex flex-col">
+        <h2 class="text-xl font-semibold text-neutral-600 mb-6 flex items-center">
+          <i class="fa fa-sliders text-primary mr-2"></i>实验参数设置
+        </h2>
+        
+        <form id="experiment-form" class="space-y-6">
+          <!-- 实验组数设置 -->
+          <div class="space-y-2">
+            <label for="experiment-groups" class="block text-sm font-medium text-neutral-500">
+              实验组数
+            </label>
+            <div class="flex items-center gap-3">
+              <input 
+                type="number" 
+                id="experiment-groups" 
+                min="1" 
+                max="20" 
+                value="1"
+                class="flex-1 px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              >
+              <span class="text-neutral-400 whitespace-nowrap">组</span>
+            </div>
+          </div>
+          
+          <!-- 抽球次数设置 -->
+          <div class="space-y-2">
+            <label for="draw-count" class="block text-sm font-medium text-neutral-500">
+              单次实验抽球次数
+            </label>
+            <div class="flex items-center gap-3">
+              <input 
+                type="number" 
+                id="draw-count" 
+                min="1" 
+                max="100000" 
+                value="1000"
+                class="flex-1 px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              >
+              <span class="text-neutral-400 whitespace-nowrap">次</span>
+            </div>
+          </div>
+          
+          <!-- 黄球数量设置 -->
+          <div class="space-y-2">
+            <label for="yellow-count" class="block text-sm font-medium text-neutral-500">
+              黄球数量
+            </label>
+            <div class="flex items-center gap-3">
+              <input 
+                type="number" 
+                id="yellow-count" 
+                min="1" 
+                max="100" 
+                value="5"
+                class="flex-1 px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              >
+              <span class="text-neutral-400 whitespace-nowrap">个</span>
+            </div>
+          </div>
+          
+          <!-- 红球数量设置 -->
+          <div class="space-y-2">
+            <label for="red-count" class="block text-sm font-medium text-neutral-500">
+              红球数量
+            </label>
+            <div class="flex items-center gap-3">
+              <input 
+                type="number" 
+                id="red-count" 
+                min="1" 
+                max="100" 
+                value="5"
+                class="flex-1 px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              >
+              <span class="text-neutral-400 whitespace-nowrap">个</span>
+            </div>
+          </div>
+          
+          <!-- 按钮区域 -->
+          <div class="pt-4 flex flex-col sm:flex-row gap-4">
+            <button 
+              type="button" 
+              id="start-btn" 
+              disabled
+              class="flex-1 bg-primary/50 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 cursor-not-allowed"
+            >
+              <i class="fa fa-play"></i>
+              <span>开始实验</span>
+            </button>
+            <button 
+              type="button" 
+              id="reset-btn" 
+              class="flex-1 bg-white border border-neutral-200 hover:border-neutral-300 text-neutral-600 font-medium py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+            >
+              <i class="fa fa-refresh"></i>
+              <span>重置所有实验</span>
+            </button>
+          </div>
+        </form>
+        
+        <!-- 实验状态 -->
+        <div id="experiment-status" class="mt-8 p-4 rounded-lg bg-neutral-100 hidden">
+          <h3 class="text-sm font-medium text-neutral-500 mb-2">当前实验进度</h3>
+          <div class="w-full bg-white rounded-full h-2.5 mb-2">
+            <div id="progress-bar" class="bg-primary h-2.5 rounded-full w-0 transition-all duration-300"></div>
+          </div>
+          <div class="flex justify-between text-xs text-neutral-400">
+            <span id="progress-text">0/0 次</span>
+            <span id="percentage-text">0%</span>
+          </div>
+        </div>
+        
+        <!-- 最近10次实验记录 -->
+        <div class="mt-8 flex-1 overflow-hidden flex flex-col">
+          <h3 class="text-lg font-semibold text-neutral-600 mb-4 flex items-center">
+            <i class="fa fa-history text-primary mr-2"></i>最近10次实验记录
+          </h3>
+          
+          <div id="experiment-history-container" class="bg-neutral-50 rounded-xl p-4 overflow-y-auto flex-1">
+            <!-- 历史记录为空时显示 -->
+            <div id="history-empty-state" class="text-center text-neutral-400 py-8">
+              暂无实验记录
+            </div>
+            
+            <!-- 历史记录表格 -->
+            <div id="history-table" class="hidden">
+              <div class="experiment-history-header">
+                <div class="text-center">序号</div>
+                <div class="text-center">黄球次数</div>
+                <div class="text-center">红球次数</div>
+                <div class="text-center">黄球概率</div>
+                <div class="text-center">红球概率</div>
+              </div>
+              <div id="history-entries" class="text-sm">
+                <!-- 实验记录将通过JS动态添加 -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 右侧：实验结果展示 -->
+      <section class="flex flex-col gap-6">
+        <!-- 实验对比图表 -->
+        <div class="bg-white rounded-2xl shadow-card p-6 lg:p-8 transition-all duration-300 hover:shadow-elevated relative">
+          <h2 class="text-xl font-semibold text-neutral-600 mb-6 flex items-center">
+            <i class="fa fa-bar-chart text-primary mr-2"></i>实验组对比
+          </h2>
+          
+          <!-- 汇总统计 -->
+          <div id="summary-stats" class="flex justify-center gap-8 mb-6 p-4 bg-neutral-50 rounded-xl hidden">
+            <div class="text-center">
+              <div class="text-yellowBall font-bold text-xl" id="total-yellow-summary">0</div>
+              <div class="text-sm text-neutral-500">黄球总数</div>
+            </div>
+            <div class="text-center">
+              <div class="text-redBall font-bold text-xl" id="total-red-summary">0</div>
+              <div class="text-sm text-neutral-500">红球总数</div>
+            </div>
+            <div class="text-center">
+              <div class="text-primary font-bold text-xl" id="total-experiments">0</div>
+              <div class="text-sm text-neutral-500">实验次数</div>
+            </div>
+          </div>
+          
+          <!-- 图表容器 -->
+          <div class="gradient-bg rounded-xl p-4 h-[350px]">
+            <canvas id="experiments-chart"></canvas>
+          </div>
+          
+          <!-- 提示信息 -->
+          <div id="chart-empty-state" class="absolute inset-0 flex items-center justify-center text-neutral-300 text-sm">
+            请设置参数并开始实验
+          </div>
+        </div>
+        
+        <!-- 统计信息 -->
+        <div class="bg-white rounded-2xl shadow-card p-6 lg:p-8 transition-all duration-300 hover:shadow-elevated">
+          <h2 class="text-xl font-semibold text-neutral-600 mb-6 flex items-center">
+            <i class="fa fa-table text-primary mr-2"></i>最新实验统计结果
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 统计数据 -->
+            <div class="space-y-4">
+              <div class="flex justify-between items-center p-3 bg-neutral-100 rounded-lg">
+                <span class="text-neutral-500">本次实验次数</span>
+                <span id="current-experiment-count" class="font-semibold text-neutral-600">0</span>
+              </div>
+              
+              <div class="flex justify-between items-center p-3 bg-neutral-100 rounded-lg">
+                <span class="text-neutral-500">黄球抽取次数</span>
+                <span id="yellow-drawn" class="font-semibold text-yellowBall">0</span>
+              </div>
+              
+              <div class="flex justify-between items-center p-3 bg-neutral-100 rounded-lg">
+                <span class="text-neutral-500">红球抽取次数</span>
+                <span id="red-drawn" class="font-semibold text-redBall">0</span>
+              </div>
+              
+              <div class="flex justify-between items-center p-3 bg-neutral-100 rounded-lg">
+                <span class="text-neutral-500">黄球概率</span>
+                <span id="yellow-probability" class="font-semibold text-yellowBall">0%</span>
+              </div>
+              
+              <div class="flex justify-between items-center p-3 bg-neutral-100 rounded-lg">
+                <span class="text-neutral-500">红球概率</span>
+                <span id="red-probability" class="font-semibold text-redBall">0%</span>
+              </div>
+            </div>
+            
+            <!-- 概率图表 -->
+            <div>
+              <canvas id="result-chart" width="400" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer class="mt-12 text-center text-neutral-400 text-sm">
+      <p>摸球实验模拟平台 &copy; Xudadi.com <script type="text/javascript">document.write(new Date().getFullYear());</script></p>
+    </footer>
+  </div>
+
+  <script>
+    // DOM 元素
+    const experimentGroupsInput = document.getElementById('experiment-groups');
+    const drawCountInput = document.getElementById('draw-count');
+    const yellowCountInput = document.getElementById('yellow-count');
+    const redCountInput = document.getElementById('red-count');
+    const startBtn = document.getElementById('start-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const experimentStatus = document.getElementById('experiment-status');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const percentageText = document.getElementById('percentage-text');
+    const currentExperimentCountEl = document.getElementById('current-experiment-count');
+    const yellowDrawnEl = document.getElementById('yellow-drawn');
+    const redDrawnEl = document.getElementById('red-drawn');
+    const yellowProbabilityEl = document.getElementById('yellow-probability');
+    const redProbabilityEl = document.getElementById('red-probability');
+    const totalYellowSummaryEl = document.getElementById('total-yellow-summary');
+    const totalRedSummaryEl = document.getElementById('total-red-summary');
+    const totalExperimentsEl = document.getElementById('total-experiments');
+    const summaryStatsEl = document.getElementById('summary-stats');
+    const chartEmptyState = document.getElementById('chart-empty-state');
+    const historyEmptyState = document.getElementById('history-empty-state');
+    const historyTable = document.getElementById('history-table');
+    const historyEntries = document.getElementById('history-entries');
+    
+    // 实验数据和状态
+    let isExperimentRunning = false;
+    let experimentInterval;
+    let experimentsChart;
+    let resultChart;
+    let experimentsData = []; // 存储所有实验数据
+    let experimentHistory = []; // 存储实验历史记录，最多10条
+    let totalYellowCount = 0;
+    let totalRedCount = 0;
+    let currentGroup = 0;
+    let totalGroups = 0;
+    
+    // 验证参数并启用/禁用开始按钮
+    function validateParameters() {
+      const groups = parseInt(experimentGroupsInput.value);
+      const draws = parseInt(drawCountInput.value);
+      const yellow = parseInt(yellowCountInput.value);
+      const red = parseInt(redCountInput.value);
+      
+      // 检查是否超过最大抽球次数
+      const exceedsMaxDraws = !isNaN(draws) && draws > 100000;
+      
+      const isValid = !isNaN(groups) && groups >= 1 && groups <= 20 &&
+                      !isNaN(draws) && draws >= 1 && draws <= 100000 &&
+                      !isNaN(yellow) && yellow >= 1 && yellow <= 100 &&
+                      !isNaN(red) && red >= 1 && red <= 100;
+      
+      startBtn.disabled = !isValid || isExperimentRunning;
+      startBtn.classList.toggle('bg-primary/50', !isValid || isExperimentRunning);
+      startBtn.classList.toggle('bg-primary', isValid && !isExperimentRunning);
+      startBtn.classList.toggle('hover:bg-primary/90', isValid && !isExperimentRunning);
+      startBtn.classList.toggle('cursor-not-allowed', !isValid || isExperimentRunning);
+      startBtn.classList.toggle('transform', isValid && !isExperimentRunning);
+      startBtn.classList.toggle('hover:-translate-y-0.5', isValid && !isExperimentRunning);
+      startBtn.classList.toggle('hover:shadow-lg', isValid && !isExperimentRunning);
+      
+      // 特殊处理超过最大抽球次数的情况
+      if (exceedsMaxDraws) {
+        startBtn.disabled = true;
+        startBtn.classList.add('bg-primary/50', 'cursor-not-allowed');
+        startBtn.classList.remove('bg-primary', 'hover:bg-primary/90', 'transform', 'hover:-translate-y-0.5', 'hover:shadow-lg');
+      }
+    }
+    
+    // 初始化图表（黄球和红球分开展示，并在条形顶部显示数量）
+    function initCharts() {
+      // 实验组对比图表 - 分开展示黄球和红球
+      const experimentsCtx = document.getElementById('experiments-chart').getContext('2d');
+      experimentsChart = new Chart(experimentsCtx, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: '黄球',
+              data: [],
+              backgroundColor: '#FFD700',  // 黄色
+            },
+            {
+              label: '红球',
+              data: [],
+              backgroundColor: '#FF3B30',  // 红色
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              stacked: false,
+              title: {
+                display: true,
+                text: '实验组别',
+                font: {
+                  weight: 'bold'
+                }
+              }
+            },
+            y: {
+              stacked: false,
+              title: {
+                display: true,
+                text: '抽中次数',
+                font: {
+                  weight: 'bold'
+                }
+              },
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                afterLabel: function(context) {
+                  const total = context.dataset.data[context.dataIndex] + 
+                               experimentsChart.data.datasets[context.datasetIndex === 0 ? 1 : 0].data[context.dataIndex];
+                  const percentage = Math.round((context.raw / total) * 100);
+                  return `占比: ${percentage}%`;
+                }
+              }
+            },
+            // 自定义插件将处理条形顶部的数值显示
+            datalabels: {
+              display: true,
+              align: 'end',
+              anchor: 'end',
+              color: '#333',
+              font: {
+                weight: 'bold'
+              }
+            }
+          },
+          animation: {
+            duration: 800
+          }
+        }
+      });
+      
+      // 结果概率图表
+      const resultCtx = document.getElementById('result-chart').getContext('2d');
+      resultChart = new Chart(resultCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['黄球', '红球'],
+          datasets: [{
+            data: [0, 0],
+            backgroundColor: ['#FFD700', '#FF3B30'],  // 黄色和红色
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                font: {
+                  size: 12
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                  return `${label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          },
+          cutout: '65%',
+          animation: {
+            animateScale: true,
+            animateRotate: true
+          }
+        }
+      });
+    }
+    
+    // 添加实验记录到历史
+    function addExperimentToHistory(yellowCount, redCount, totalDraws) {
+      const yellowProbability = Math.round((yellowCount / totalDraws) * 100);
+      const redProbability = 100 - yellowProbability;
+      
+      // 添加新记录到历史数组开头
+      experimentHistory.unshift({
+        id: experimentsData.length,
+        yellow: yellowCount,
+        red: redCount,
+        yellowProb: yellowProbability,
+        redProb: redProbability,
+        total: totalDraws
+      });
+      
+      // 保持历史记录最多10条
+      if (experimentHistory.length > 10) {
+        experimentHistory = experimentHistory.slice(0, 10);
+      }
+      
+      // 更新历史记录UI
+      updateExperimentHistoryUI();
+    }
+    
+    // 更新实验历史记录UI
+    function updateExperimentHistoryUI() {
+      // 清空现有记录
+      historyEntries.innerHTML = '';
+      
+      // 显示表格，隐藏空状态提示
+      if (experimentHistory.length > 0) {
+        historyEmptyState.classList.add('hidden');
+        historyTable.classList.remove('hidden');
+        
+        // 添加每条记录
+        experimentHistory.forEach((entry, index) => {
+          const row = document.createElement('div');
+          row.className = 'experiment-history-row';
+          row.innerHTML = `
+            <div class="text-center">${entry.id}</div>
+            <div class="text-center text-yellowBall">${entry.yellow}</div>
+            <div class="text-center text-redBall">${entry.red}</div>
+            <div class="text-center text-yellowBall">${entry.yellowProb}%</div>
+            <div class="text-center text-redBall">${entry.redProb}%</div>
+          `;
+          historyEntries.appendChild(row);
+        });
+      } else {
+        // 显示空状态提示，隐藏表格
+        historyEmptyState.classList.remove('hidden');
+        historyTable.classList.add('hidden');
+      }
+    }
+    
+    // 重置当前实验
+    function resetCurrentExperiment() {
+      // 清除定时器
+      if (experimentInterval) {
+        clearInterval(experimentInterval);
+        experimentInterval = null;
+      }
+      
+      // 重置当前实验统计数据
+      currentExperimentCountEl.textContent = '0';
+      yellowDrawnEl.textContent = '0';
+      redDrawnEl.textContent = '0';
+      yellowProbabilityEl.textContent = '0%';
+      redProbabilityEl.textContent = '0%';
+      
+      // 更新当前结果图表
+      resultChart.data.datasets[0].data = [0, 0];
+      resultChart.update();
+    }
+    
+    // 重置所有实验数据
+    function resetAllExperiments() {
+      resetCurrentExperiment();
+      
+      // 重置状态
+      isExperimentRunning = false;
+      currentGroup = 0;
+      totalGroups = 0;
+      
+      // 清空历史记录
+      experimentHistory = [];
+      updateExperimentHistoryUI();
+      
+      // 更新按钮状态
+      startBtn.innerHTML = '<i class="fa fa-play"></i><span>开始实验</span>';
+      validateParameters();
+      
+      // 隐藏进度条
+      experimentStatus.classList.add('hidden');
+      
+      // 清空实验数据
+      experimentsData = [];
+      totalYellowCount = 0;
+      totalRedCount = 0;
+      
+      // 更新图表
+      experimentsChart.data.labels = [];
+      experimentsChart.data.datasets[0].data = [];
+      experimentsChart.data.datasets[1].data = [];
+      experimentsChart.update();
+      
+      // 显示提示信息，隐藏汇总统计
+      chartEmptyState.classList.remove('hidden');
+      summaryStatsEl.classList.add('hidden');
+    }
+    
+    // 添加实验结果到图表
+    function addExperimentResult(yellowCount, redCount) {
+      const experimentNumber = experimentsData.length + 1;
+      const totalDraws = parseInt(drawCountInput.value);
+      
+      // 保存实验数据
+      experimentsData.push({
+        yellow: yellowCount,
+        red: redCount,
+        total: yellowCount + redCount
+      });
+      
+      // 添加到历史记录
+      addExperimentToHistory(yellowCount, redCount, totalDraws);
+      
+      // 更新总计
+      totalYellowCount += yellowCount;
+      totalRedCount += redCount;
+      
+      // 更新图表
+      experimentsChart.data.labels.push(`实验 ${experimentNumber}`);
+      experimentsChart.data.datasets[0].data.push(yellowCount);
+      experimentsChart.data.datasets[1].data.push(redCount);
+      experimentsChart.update();
+      
+      // 隐藏提示信息，显示汇总统计
+      chartEmptyState.classList.add('hidden');
+      summaryStatsEl.classList.remove('hidden');
+      
+      // 更新汇总统计
+      totalYellowSummaryEl.textContent = totalYellowCount;
+      totalRedSummaryEl.textContent = totalRedCount;
+      totalExperimentsEl.textContent = experimentsData.length;
+    }
+    
+    // 执行单次实验
+    function runSingleExperiment() {
+      // 获取参数
+      const totalDraws = parseInt(drawCountInput.value);
+      const yellowCount = parseInt(yellowCountInput.value);
+      const redCount = parseInt(redCountInput.value);
+      
+      // 根据抽球次数调整步长，优化性能
+      let steps = Math.max(1, Math.floor(totalDraws / 100));
+      // 当抽球次数很大时，增加步长以加快实验速度
+      if (totalDraws > 10000) {
+        steps = Math.max(100, Math.floor(totalDraws / 100));
+      }
+      
+      // 初始化统计数据
+      let currentDraw = 0;
+      let yellowDrawnCount = 0;
+      let redDrawnCount = 0;
+      
+      // 显示进度条
+      experimentStatus.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      
+      // 执行抽球模拟
+      experimentInterval = setInterval(() => {
+        // 一次处理多步以加快实验速度
+        const nextDraw = Math.min(currentDraw + steps, totalDraws);
+        
+        // 批量处理
+        for (let i = currentDraw; i < nextDraw; i++) {
+          // 随机抽取一个球
+          const random = Math.random();
+          const yellowProbability = yellowCount / (yellowCount + redCount);
+          
+          if (random < yellowProbability) {
+            yellowDrawnCount++;
+          } else {
+            redDrawnCount++;
+          }
+        }
+        
+        currentDraw = nextDraw;
+        
+        // 计算概率
+        const totalDrawn = yellowDrawnCount + redDrawnCount;
+        const yellowProbability = totalDrawn > 0 ? Math.round((yellowDrawnCount / totalDrawn) * 100) : 0;
+        const redProbability = 100 - yellowProbability;
+        
+        // 更新UI
+        currentExperimentCountEl.textContent = currentDraw;
+        yellowDrawnEl.textContent = yellowDrawnCount;
+        redDrawnEl.textContent = redDrawnCount;
+        yellowProbabilityEl.textContent = `${yellowProbability}%`;
+        redProbabilityEl.textContent = `${redProbability}%`;
+        
+        // 更新当前结果图表
+        resultChart.data.datasets[0].data = [yellowDrawnCount, redDrawnCount];
+        resultChart.update();
+        
+        // 更新进度
+        const progress = (currentDraw / totalDraws) * 100;
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `${currentDraw}/${totalDraws} 次 (第 ${currentGroup}/${totalGroups} 组)`;
+        percentageText.textContent = `${Math.round(progress)}%`;
+        
+        // 实验结束
+        if (currentDraw >= totalDraws) {
+          clearInterval(experimentInterval);
+          experimentInterval = null;
+          
+          // 添加实验结果到对比图表
+          addExperimentResult(yellowDrawnCount, redDrawnCount);
+          
+          // 检查是否还有更多组实验要运行
+          currentGroup++;
+          if (currentGroup < totalGroups) {
+            // 延迟开始下一组实验
+            setTimeout(runSingleExperiment, 1000);
+          } else {
+            // 所有组实验完成
+            isExperimentRunning = false;
+            startBtn.innerHTML = '<i class="fa fa-play"></i><span>开始实验</span>';
+            validateParameters();
+          }
+        }
+      }, 50); // 每50ms更新一次进度
+    }
+    
+    // 开始所有组实验
+    function startAllExperiments() {
+      // 获取参数
+      totalGroups = parseInt(experimentGroupsInput.value);
+      const totalDraws = parseInt(drawCountInput.value);
+      
+      // 验证参数 - 特别检查抽球次数是否超过100000
+      if (totalDraws > 100000) {
+        alert('单次抽球次数不可以超过100000次！');
+        return;
+      }
+      
+      if (isNaN(totalGroups) || totalGroups < 1 || totalGroups > 20) {
+        alert('请设置有效的实验组数（1-20）');
+        return;
+      }
+      
+      if (isNaN(totalDraws) || totalDraws < 1) {
+        alert('请设置有效的抽球次数（1-100000）');
+        return;
+      }
+      
+      if (isNaN(parseInt(yellowCountInput.value)) || yellowCountInput.value < 1 || yellowCountInput.value > 100) {
+        alert('请设置有效的黄球数量（1-100）');
+        return;
+      }
+      
+      if (isNaN(parseInt(redCountInput.value)) || redCountInput.value < 1 || redCountInput.value > 100) {
+        alert('请设置有效的红球数量（1-100）');
+        return;
+      }
+      
+      // 更新状态
+      isExperimentRunning = true;
+      currentGroup = 0;
+      startBtn.disabled = true;
+      startBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i><span>实验进行中</span>';
+      
+      // 开始第一组实验
+      runSingleExperiment();
+    }
+    
+    // 事件监听
+    startBtn.addEventListener('click', startAllExperiments);
+    resetBtn.addEventListener('click', resetAllExperiments);
+    
+    // 监听参数变化，验证并更新按钮状态
+    experimentGroupsInput.addEventListener('input', validateParameters);
+    drawCountInput.addEventListener('input', validateParameters);
+    yellowCountInput.addEventListener('input', validateParameters);
+    redCountInput.addEventListener('input', validateParameters);
+    
+    // 页面加载完成后初始化
+    window.addEventListener('load', () => {
+      // 注册自定义数据标签插件，在条形图顶部显示数值
+      Chart.register({
+        id: 'datalabels',
+        beforeDraw: function(chart) {
+          if (chart.config.type === 'bar') {
+            const ctx = chart.ctx;
+            const datasets = chart.data.datasets;
+            
+            chart.data.labels.forEach((label, index) => {
+              datasets.forEach((dataset, datasetIndex) => {
+                const value = dataset.data[index];
+                if (value === null || value === undefined) return;
+                
+                const meta = chart.getDatasetMeta(datasetIndex);
+                const element = meta.data[index];
+                
+                if (element) {
+                  const x = element.x;
+                  const y = element.y - 10; // 位置在条形顶部
+                  
+                  ctx.save();
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillStyle = '#333';
+                  ctx.font = 'bold 12px Arial';
+                  ctx.fillText(value, x, y);
+                  ctx.restore();
+                }
+              });
+            });
+          }
+        }
+      });
+      
+      initCharts();
+      resetAllExperiments();
+      validateParameters();
+    });
+  </script>
+</body>
+</html>
