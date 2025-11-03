@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>财务金额大小写转换工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e40af', // 深蓝色作为主色调，体现财务专业性
+            secondary: '#3b82f6',
+            neutral: '#f1f5f9',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .input-focus {
+        @apply focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none;
+      }
+      .card-shadow {
+        @apply shadow-lg shadow-gray-200/80;
+      }
+    }
+  </style>
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?063e0dbc68cf9b93c55d0a29ffdd22ea";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>    
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <!-- 顶部导航 -->
+  <header class="bg-primary text-white py-4 shadow-md">
+    <div class="container mx-auto px-4 md:px-6">
+      <div class="flex justify-between items-center">
+        <h1 class="text-xl md:text-2xl font-semibold flex items-center">
+          <i class="fa fa-calculator mr-3"></i>
+          财务金额大小写转换工具
+        </h1>
+        <div id="datetime-display" class="text-sm md:text-base font-medium flex items-center">
+          <i class="fa fa-clock-o mr-2"></i>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主要内容区 -->
+  <main class="flex-grow container mx-auto px-4 md:px-6 py-8 md:py-12">
+    <div class="max-w-2xl mx-auto">
+      <!-- 说明卡片 -->
+      <div class="bg-white rounded-lg p-4 mb-6 card-shadow">
+        <p class="text-gray-600 text-sm md:text-base">
+          输入小写金额（支持整数和小数，最多两位小数），系统将自动转换为财务专用大写金额格式。
+        </p>
+      </div>
+      
+      <!-- 转换工具卡片 -->
+      <div class="bg-white rounded-lg p-6 md:p-8 card-shadow transition-all duration-300 hover:shadow-xl">
+        <!-- 小写金额输入区 -->
+        <div class="mb-8">
+          <label for="lowercase-amount" class="block text-gray-700 font-medium mb-2">
+            小写金额
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">¥</span>
+            <input 
+              type="text" 
+              id="lowercase-amount" 
+              placeholder="例如：12345.67" 
+              class="w-full pl-8 pr-3 py-3 border border-gray-300 rounded-lg input-focus transition-all duration-200"
+            >
+          </div>
+          <p id="input-error" class="mt-2 text-red-500 text-sm hidden">请输入有效的金额格式（最多两位小数）</p>
+        </div>
+        
+        <!-- 大写金额显示区 -->
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">
+            大写金额
+          </label>
+          <div class="flex items-center">
+            <div id="uppercase-amount" class="flex-grow min-h-[54px] p-3 border border-gray-300 rounded-l-lg bg-neutral overflow-x-auto">
+              <span class="text-gray-500 italic">请输入小写金额</span>
+            </div>
+            <button 
+              id="copy-btn" 
+              class="bg-primary hover:bg-primary/90 text-white px-4 py-3 rounded-r-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled
+            >
+              <i class="fa fa-copy mr-1"></i> 复制
+            </button>
+          </div>
+          <p id="copy-success" class="mt-2 text-green-500 text-sm hidden">
+            <i class="fa fa-check-circle mr-1"></i>已复制到剪贴板
+          </p>
+        </div>
+      </div>
+      
+      <!-- 示例说明 -->
+      <div class="mt-8 bg-white rounded-lg p-5 card-shadow">
+        <h3 class="text-gray-800 font-medium mb-3"><strong>金额大写转换器的使用说明：</strong><br></h3>
+        <div class="a">        <ul class="text-gray-600 text-sm space-y-2">          
+          <li>1、正确的大写金额数字为：壹、贰、叁、肆、伍、陆、柒、捌、玖、拾、佰、仟、万、亿、元、角、分、零、整(正)等。</li>
+          <li>2、中文大写金额数字前应加上“人民币”字样，大写金额数字紧接“人民币”字样，不可留有空白。例如：人民币贰拾万陆仟元零柒角伍分。</li>
+          <h2>大小写转换-使用说明：</h2>
+          <li>1、大写金额以「元」结尾的，应在最后写「整」（或「正」）结尾；</li>
+          <li>2、以「角」结尾的，结尾可以不写「整」（或「正」）；</li>
+          <li>3、以「分」结尾的，结尾不写「整」（或「正」）；</li>
+        </ul>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-gray-800 text-gray-300 py-6 mt-12">
+    <div class="container mx-auto px-4 md:px-6 text-center text-sm">
+      <p>Copyright &copy; 2003-<script type="text/javascript">document.write(new Date().getFullYear());</script> <a href="https://www.xudadi.com">Xudadi.com</a> All Rights Reserved</p>
+    </div>
+  </footer>
+
+  <script>
+    // 更新日期时间显示
+    function updateDateTime() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1; // 月份从0开始，需要加1
+      const day = now.getDate();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      // 格式化日期时间
+      const dateTimeStr = `${year}年${month}月${day}日 ${hours}:${minutes}:${seconds}`;
+      document.querySelector('#datetime-display span').textContent = dateTimeStr;
+    }
+    
+    // 初始化并每秒更新一次日期时间
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+
+    // 金额转换核心函数
+    function convertToUppercase(num) {
+      // 验证输入是否为有效的数字格式
+      const reg = /^(\d+)(\.\d{1,2})?$/;
+      if (!reg.test(num)) {
+        return null;
+      }
+      
+      // 中文数字映射
+      const digit = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
+      const unit = ['', '拾', '佰', '仟', '万', '拾', '佰', '仟', '亿', '拾', '佰', '仟'];
+      
+      // 分离整数和小数部分
+      let parts = num.split('.');
+      let integerPart = parts[0];
+      let decimalPart = parts.length > 1 ? parts[1] : '';
+      
+      // 处理整数部分
+      let result = '';
+      for (let i = 0; i < integerPart.length; i++) {
+        let digitValue = parseInt(integerPart[i]);
+        let unitIndex = integerPart.length - 1 - i;
+        
+        if (digitValue !== 0) {
+          result += digit[digitValue] + unit[unitIndex];
+        } else {
+          // 处理零的情况，避免多个零连续出现
+          if (i < integerPart.length - 1 && parseInt(integerPart[i + 1]) !== 0) {
+            result += digit[0];
+          }
+          // 处理单位（万、亿）在零后面的情况
+          if (unit[unitIndex] === '万' || unit[unitIndex] === '亿') {
+            result += unit[unitIndex];
+          }
+        }
+      }
+      
+      // 处理整数部分为0的情况
+      if (result === '') {
+        result = '零';
+      } else {
+        // 处理拾位的特殊情况（如10应转为"拾"而非"壹拾"）
+        if (result.startsWith('壹拾')) {
+          result = result.substring(1);
+        }
+      }
+      
+      // 添加"元"
+      if (integerPart !== '0') {
+        result += '元';
+      }
+      
+      // 处理小数部分
+      if (decimalPart === '00' || decimalPart === '') {
+        // 没有小数或小数为00，添加"整"
+        if (integerPart !== '0') {
+          result += '整';
+        }
+      } else {
+        // 处理角
+        if (decimalPart[0] !== '0') {
+          result += digit[parseInt(decimalPart[0])] + '角';
+        }
+        // 处理分
+        if (decimalPart.length > 1 && decimalPart[1] !== '0') {
+          result += digit[parseInt(decimalPart[1])] + '分';
+        }
+      }
+      
+      return result;
+    }
+    
+    // DOM元素
+    const lowercaseInput = document.getElementById('lowercase-amount');
+    const uppercaseOutput = document.getElementById('uppercase-amount');
+    const copyBtn = document.getElementById('copy-btn');
+    const copySuccess = document.getElementById('copy-success');
+    const inputError = document.getElementById('input-error');
+    
+    // 实时转换处理
+    lowercaseInput.addEventListener('input', function() {
+      const inputValue = this.value.trim();
+      
+      // 清除之前的状态
+      inputError.classList.add('hidden');
+      copySuccess.classList.add('hidden');
+      
+      if (inputValue === '') {
+        uppercaseOutput.innerHTML = '<span class="text-gray-500 italic">请输入小写金额</span>';
+        copyBtn.disabled = true;
+        return;
+      }
+      
+      // 转换金额
+      const uppercaseValue = convertToUppercase(inputValue);
+      
+      if (uppercaseValue) {
+        uppercaseOutput.textContent = uppercaseValue;
+        copyBtn.disabled = false;
+      } else {
+        uppercaseOutput.innerHTML = '<span class="text-red-500">无效的金额格式</span>';
+        inputError.classList.remove('hidden');
+        copyBtn.disabled = true;
+      }
+    });
+    
+    // 复制功能
+    copyBtn.addEventListener('click', function() {
+      const textToCopy = uppercaseOutput.textContent;
+      
+      // 复制到剪贴板
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        // 显示成功提示
+        copySuccess.classList.remove('hidden');
+        
+        // 3秒后隐藏提示
+        setTimeout(() => {
+          copySuccess.classList.add('hidden');
+        }, 3000);
+      }).catch(err => {
+        console.error('复制失败: ', err);
+        alert('复制失败，请手动复制');
+      });
+    });
+    
+    // 输入框获得焦点时的处理
+    lowercaseInput.addEventListener('focus', function() {
+      copySuccess.classList.add('hidden');
+    });
+  </script>
+</body>
+</html>
