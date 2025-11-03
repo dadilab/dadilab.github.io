@@ -55,6 +55,40 @@
       .experiment-history-header {
         @apply grid grid-cols-5 gap-2 py-3 font-medium text-neutral-500 border-b border-neutral-200;
       }
+      .password-input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .password-toggle {
+        position: absolute;
+        right: 30px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #909399;
+        transition: color 0.2s;
+        z-index: 10;
+        background: white;
+        padding: 4px;
+        border-radius: 3px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .password-toggle:hover {
+        color: #165DFF;
+        background: #f5f7fa;
+      }
+      .password-input {
+        padding-right: 40px !important;
+      }
+      .unit-label {
+        margin-left: 8px;
+        white-space: nowrap;
+      }
     }
   </style>
 </head>
@@ -104,7 +138,7 @@
                 id="draw-count" 
                 min="1" 
                 max="100000" 
-                value="1000"
+                value="100"
                 class="flex-1 px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               >
               <span class="text-neutral-400 whitespace-nowrap">次</span>
@@ -116,16 +150,17 @@
             <label for="yellow-count" class="block text-sm font-medium text-neutral-500">
               黄球数量
             </label>
-            <div class="flex items-center gap-3">
+            <div class="password-input-container">
               <input 
-                type="number" 
+                type="password" 
                 id="yellow-count" 
                 min="1" 
                 max="100" 
-                value="5"
-                class="flex-1 px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                value="4"
+                class="password-input flex-1 px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               >
-              <span class="text-neutral-400 whitespace-nowrap">个</span>
+              <i class="fa fa-eye-slash password-toggle" id="yellow-toggle"></i>
+              <span class="text-neutral-400 unit-label">个</span>
             </div>
           </div>
           
@@ -134,16 +169,17 @@
             <label for="red-count" class="block text-sm font-medium text-neutral-500">
               红球数量
             </label>
-            <div class="flex items-center gap-3">
+            <div class="password-input-container">
               <input 
-                type="number" 
+                type="password" 
                 id="red-count" 
                 min="1" 
                 max="100" 
-                value="5"
-                class="flex-1 px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                value="2"
+                class="password-input flex-1 px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               >
-              <span class="text-neutral-400 whitespace-nowrap">个</span>
+              <i class="fa fa-eye-slash password-toggle" id="red-toggle"></i>
+              <span class="text-neutral-400 unit-label">个</span>
             </div>
           </div>
           
@@ -291,7 +327,7 @@
     
     <!-- 页脚 -->
     <footer class="mt-12 text-center text-neutral-400 text-sm">
-      <p>摸球实验模拟平台 &copy; Xudadi.com <script type="text/javascript">document.write(new Date().getFullYear());</script></p>
+      <p>Copyright &copy; 2003-<script type="text/javascript">document.write(new Date().getFullYear());</script> <a href="https://www.xudadi.com">摸球实验模拟平台</a> All Rights Reserved</p>
     </footer>
   </div>
 
@@ -301,6 +337,8 @@
     const drawCountInput = document.getElementById('draw-count');
     const yellowCountInput = document.getElementById('yellow-count');
     const redCountInput = document.getElementById('red-count');
+    const yellowToggle = document.getElementById('yellow-toggle');
+    const redToggle = document.getElementById('red-toggle');
     const startBtn = document.getElementById('start-btn');
     const resetBtn = document.getElementById('reset-btn');
     const experimentStatus = document.getElementById('experiment-status');
@@ -332,6 +370,20 @@
     let totalRedCount = 0;
     let currentGroup = 0;
     let totalGroups = 0;
+    
+    // 切换密码显示/隐藏
+    function togglePassword(inputId, toggleIcon) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+      } else {
+        input.type = 'password';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+      }
+    }
     
     // 验证参数并启用/禁用开始按钮
     function validateParameters() {
@@ -774,6 +826,10 @@
     drawCountInput.addEventListener('input', validateParameters);
     yellowCountInput.addEventListener('input', validateParameters);
     redCountInput.addEventListener('input', validateParameters);
+    
+    // 密码显示/隐藏切换
+    yellowToggle.addEventListener('click', () => togglePassword('yellow-count', yellowToggle));
+    redToggle.addEventListener('click', () => togglePassword('red-count', redToggle));
     
     // 页面加载完成后初始化
     window.addEventListener('load', () => {
