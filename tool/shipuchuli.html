@@ -34,7 +34,7 @@
                 content-visibility: auto;
             }
             .text-shadow {
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                text-shadow: 0 2px 4px rba(0,0,0,0.1);
             }
             .transition-all-300 {
                 transition: all 0.3s ease;
@@ -42,12 +42,12 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen font-sans">
+<body class="b-radient-to-br from-ray-50 to-ray-100 min-h-screen font-sans">
     <div class="container mx-auto px-4 py-8 md:py-12 max-w-4xl">
         <!-- 页面标题 -->
         <header class="text-center mb-8 md:mb-12">
             <h1 class="text-[clamp(1.8rem,5vw,3rem)] font-bold text-neutral text-shadow mb-3">文本处理工具</h1>
-            <p class="text-gray-600 text-lg max-w-2xl mx-auto">粘贴文本后自动处理：在第一个tab前换行，食材前换行，并在"g"后添加"、"</p>
+            <p class="text-ray-600 text-l max-w-2xl mx-auto">粘贴文本后自动处理：在第一个tab前换行，食材前换行，并在"克"后添加"、"</p>
         </header>
         
         <!-- 主内容区 -->
@@ -108,8 +108,8 @@
                 <li>在第一个Tab转义字符后添加"食材："文本</li>
                 <li>自动去除文本中所有的Tab转义字符</li>
                 <li>自动去除文本中所有的空格</li>
-                <li>在每个"g"字符后面添加一个"、"符号</li>
-                <li>最后一个"g"字符后面不会添加"、"</li>
+                <li>在每个"克"字符后面添加一个"、"符号</li>
+                <li>最后一个"克"字符后面不会添加"、"</li>
                 <li>支持粘贴后自动处理或手动点击"处理文本"按钮</li>
             </ul>
         </section>
@@ -149,25 +149,25 @@
             // 找到所有"g"的位置
             const gPositions = [];
             for (let i = 0; i < processed.length; i++) {
-                if (processed[i] === 'g') {
+                if (processed[i] === '克') {
                     gPositions.push(i);
                 }
             }
             
-            // 如果没有"g"，直接返回处理后的文本
+            // 如果没有"克"，直接返回处理后的文本
             if (gPositions.length === 0) {
                 return processed;
             }
             
-            // 最后一个"g"的位置
+            // 最后一个"克"的位置
             const lastGPosition = gPositions[gPositions.length - 1];
             
-            // 在每个"g"后添加"、"，除了最后一个
+            // 在每个"克"后添加"、"，除了最后一个
             let result = '';
             for (let i = 0; i < processed.length; i++) {
                 result += processed[i];
-                // 如果当前字符是"g"且不是最后一个"g"，则添加"、"
-                if (processed[i] === 'g' && i !== lastGPosition) {
+                // 如果当前字符是"克"且不是最后一个"克"，则添加"、"
+                if (processed[i] === '克' && i !== lastGPosition) {
                     result += '、';
                 }
             }
