@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -102,7 +104,7 @@
                                 
                                 <div>
                                     <label class="block text-xs text-gray-500 mb-1">起始值</label>
-                                    <input type="number" class="start-value w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" value="1">
+                                    <input type="number" class="start-value w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" value="0">
                                 </div>
                                 
                                 <div>
@@ -245,7 +247,7 @@
                         
                         <div>
                             <label class="block text-xs text-gray-500 mb-1">起始值</label>
-                            <input type="number" class="start-value w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" value="1">
+                            <input type="number" class="start-value w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary" value="0">
                         </div>
                         
                         <div>
@@ -319,7 +321,7 @@
             const markers = Array.from(markerItems).map(item => {
                 return {
                     name: item.querySelector('.marker-name').value.trim(),
-                    start: parseInt(item.querySelector('.start-value').value) || 1,
+                    start: parseInt(item.querySelector('.start-value').value) || 0,
                     step: parseInt(item.querySelector('.step-value').value) || 1,
                     format: item.querySelector('.format-pattern').value.trim()
                 };
