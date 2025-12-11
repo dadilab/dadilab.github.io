@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Html网页代码预览器</title>
+    <!-- 引入Tailwind CSS以实现快速美观的样式设计 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定义样式以优化textarea和iframe的体验 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        #codeInput {
+            border: none;
+            outline: none;
+            resize: none;
+            background-color: #282c34; /* 深色编辑器背景 */
+            color: #abb2bf; /* 柔和的文本颜色 */
+            font-family: 'Courier New', Courier, monospace; /* 等宽字体 */
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 1rem;
+        }
+        .gold-gradient-text {
+            /* 创建一个橙色渐变背景 */
+            background: linear-gradient(45deg, #63CAF3, #8FD3F6);
+            /* 将背景裁剪为文字的形状 */
+            -webkit-background-clip: text;
+            background-clip: text;
+            /* 将文字颜色设为透明，以显示背景的渐变色 */
+            color: transparent;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen" style="background: linear-gradient(45deg, #63CAF3, #8FD3F6);">
+
+    <!-- 1. 顶部标题栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-center items-baseline">
+            <h1 class="text-3xl font-bold flex items-center">
+                <span class="text-3xl mr-2">🍋</span>
+                <span class="gold-gradient-text">许老师的Html网页代码预览器</span>
+            </h1>
+            <p class="text-gray-500 text-sm ml-4">把代码粘贴到左侧，即可在右侧预览网页</p>
+        </div>
+    </header>
+
+    <!-- 2. 主要内容区域：左右分栏 -->
+    <main class="flex-1 flex overflow-hidden p-4 gap-4">
+        <!-- 左侧：代码输入区 -->
+        <div class="w-1/2 flex flex-col bg-[#282c34] shadow-lg rounded-lg overflow-hidden">
+            <textarea id="codeInput" class="w-full h-full" placeholder="在这里粘贴或输入你的HTML代码..."><!-- 在这里开始编写您的HTML代码 -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>示例页面</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; background-color: #f0f8ff; }
+        h1 { color: #4a4a4a; }
+        p { color: #6a6a6a; }
+        .button {
+            background-color: #ff6347;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>欢迎!</h1>
+    <p>这是一个实时预览的示例。</p>
+    <button class="button" onclick="alert('按钮被点击了!')">点我</button>
+
+<script>
+// 禁止右键菜单
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// 禁止选择文本
+document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// 禁止拖拽
+document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// 禁止各种快捷键
+document.addEventListener('keydown', function(e) {
+    // 禁止F12开发者工具
+    if (e.keyCode === 123) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+Shift+I (开发者工具)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+Shift+C (检查元素)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+Shift+J (控制台)
+    if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+U (查看源代码)
+    if (e.ctrlKey && e.keyCode === 85) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+A (全选)
+    if (e.ctrlKey && e.keyCode === 65) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+C (复制)
+    if (e.ctrlKey && e.keyCode === 67) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+V (粘贴)
+    if (e.ctrlKey && e.keyCode === 86) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+X (剪切)
+    if (e.ctrlKey && e.keyCode === 88) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+S (保存)
+    if (e.ctrlKey && e.keyCode === 83) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // 禁止Ctrl+P (打印)
+    if (e.ctrlKey && e.keyCode === 80) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// 添加CSS样式禁止选择
+var style = document.createElement('style');
+style.innerHTML = `
+    body {
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
+        -webkit-touch-callout: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+    
+    * {
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
+    }
+    
+    img {
+        -webkit-user-drag: none !important;
+        -khtml-user-drag: none !important;
+        -moz-user-drag: none !important;
+        -o-user-drag: none !important;
+        user-drag: none !important;
+        pointer-events: none !important;
+    }
+`;
+document.head.appendChild(style);
+
+// 禁止打印
+window.addEventListener('beforeprint', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// 监听粘贴事件
+document.addEventListener('paste', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// 清空控制台
+console.clear();
+
+// 禁用控制台
+// var originalLog = console.log;
+// console.log = function() {};
+// console.warn = function() {};
+// console.error = function() {};
+// console.info = function() {};
+// console.debug = function() {};
+
+// 反调试
+// (function() {
+//     var originalDevtools = window.console;
+//     Object.defineProperty(window, 'console', {
+//         get: function() {
+//             throw new Error('Console is disabled');
+//         },
+//         set: function() {
+//             throw new Error('Console is disabled');
+//         }
+//     });
+// })();
+</script>
+</body>
+</html></textarea>
+        </div>
+
+        <!-- 右侧：代码预览区 -->
+        <div class="w-1/2 p-4 bg-white relative rounded-lg shadow-lg">
+             <!-- 按钮容器 -->
+            <div class="absolute top-4 right-4 z-10 flex flex-col space-y-2">
+                <!-- 保存按钮 -->
+                <button id="saveButton" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6a1 1 0 10-2 0v5.586L7.707 10.293zM5 4a1 1 0 011-1h8a1 1 0 011 1v1a1 1 0 110 2v5.5a1.5 1.5 0 01-1.5 1.5h-7A1.5 1.5 0 015 12.5V7a1 1 0 110-2V4z" />
+                    </svg>
+                    保存为HTML
+                </button>
+                 <!-- 全屏查看按钮 -->
+                <button id="fullscreenButton" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h2a1 1 0 110 2H4v2a1 1 0 11-2 0V3zm14 0a1 1 0 00-1-1h-2a1 1 0 100 2h2v2a1 1 0 102 0V3zM3 17a1 1 0 001 1h2a1 1 0 100-2H4v-2a1 1 0 10-2 0v3zm14 0a1 1 0 01-1 1h-2a1 1 0 110-2h2v-2a1 1 0 112 0v3z" clip-rule="evenodd" />
+                    </svg>
+                    全屏查看效果
+                </button>
+            </div>
+            <iframe id="previewFrame" class="w-full h-full bg-white"></iframe>
+        </div>
+    </main>
+
+    <script>
+        // 获取DOM元素
+        const codeInput = document.getElementById('codeInput');
+        const previewFrame = document.getElementById('previewFrame');
+        const saveButton = document.getElementById('saveButton');
+        const fullscreenButton = document.getElementById('fullscreenButton');
+
+        /**
+         * 更新右侧的预览区域
+         */
+        function updatePreview() {
+            const code = codeInput.value;
+            const previewDoc = previewFrame.contentWindow.document;
+            previewDoc.open();
+            previewDoc.write(code);
+            previewDoc.close();
+        }
+
+        /**
+         * 将代码保存为本地HTML文件
+         */
+        function saveCodeToFile() {
+            const code = codeInput.value;
+            const blob = new Blob([code], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'my_webpage.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }
+
+        /**
+         * 将预览区域全屏显示
+         */
+        function viewFullscreen() {
+            // 检查浏览器是否支持全屏API
+            if (previewFrame.requestFullscreen) {
+                previewFrame.requestFullscreen();
+            } else if (previewFrame.webkitRequestFullscreen) { // Safari
+                previewFrame.webkitRequestFullscreen();
+            } else if (previewFrame.msRequestFullscreen) { // IE11
+                previewFrame.msRequestFullscreen();
+            }
+        }
+
+        // 添加事件监听器
+        // 1. 当在输入框中输入时，实时更新预览
+        codeInput.addEventListener('input', updatePreview);
+
+        // 2. 当点击保存按钮时，执行保存操作
+        saveButton.addEventListener('click', saveCodeToFile);
+
+        // 3. 当点击全屏按钮时，执行全屏操作
+        fullscreenButton.addEventListener('click', viewFullscreen);
+
+        // 页面加载完成后，立即执行一次更新，以显示默认的代码
+        window.addEventListener('load', updatePreview);
+    </script>
+
+</body>
+</html>
