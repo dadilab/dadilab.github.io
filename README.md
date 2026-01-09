@@ -30,5 +30,7 @@
  15.[每周食谱编辑器](https://lab.xudadi.cn/tool/shipuchuli.html)
 
  16.[包本数据处理工具](https://lab.xudadi.cn/yuhua/baoben.html)
+
+ 17.[财务金额大写转换](https://lab.xudadi.cn/tool/amount-in-words.html)
  
- 17.[Html编辑器](https://lab.xudadi.cn/tool/htmleditor.html)
+ 18.[Html编辑器](https://lab.xudadi.cn/tool/htmleditor.html)
