@@ -34,3 +34,5 @@
  17.[财务金额大写转换](https://lab.xudadi.cn/tool/amount-in-words.html)
  
  18.[Html编辑器](https://lab.xudadi.cn/tool/htmleditor.html)
+
+ 19.[文字头像生成器](https://lab.xudadi.cn/tool/text-avatar-generation.html)
