@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>树状导航目录</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 15px; }
+        .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 15px 50px rgba(0,0,0,0.25); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .toolbar { display: flex; gap: 6px; flex-wrap: wrap; }
+        .btn { padding: 7px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
+        .btn-primary { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); }
+        .btn-primary:hover { background: rgba(255,255,255,0.3); }
+        .btn-success { background: #48bb78; color: white; }
+        .btn-success:hover { background: #38a169; }
+        .btn-danger { background: #fc8181; color: white; }
+        .btn-danger:hover { background: #f56565; }
+        .btn-warning { background: #f6ad55; color: white; }
+        .btn-warning:hover { background: #ed8936; }
+        .btn-info { background: #4299e1; color: white; }
+        .btn-info:hover { background: #3182ce; }
+        .main-content { padding: 12px; }
+        .selection-toolbar { background: #f7fafc; padding: 8px 14px; border-bottom: 1px solid #e2e8f0; display: none; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .selection-toolbar.active { display: flex; }
+        .selection-info { color: #4a5568; font-size: 12px; }
+        .selection-info strong { color: #5a67d8; }
+        .tree-container { padding: 6px; }
+        .menu { list-style: none; margin: 0; padding: 0; }
+        .menu li { padding: 4px 8px; display: flex; align-items: center; border-radius: 4px; margin: 1px 0; font-size: 13px; }
+        .menu li:hover { background: #f0f4f8; }
+        .menu li.selected { background: #e6fffa; border: 1px solid #81e6d9; }
+        .menu li.folder-item { cursor: pointer; }
+        .menu li.folder-item > i.fa-folder { color: #ecc94b; }
+        .menu li.folder-item > i.fa-folder-open { color: #d69e2e; }
+        .menu li a { color: #2d3748; text-decoration: none; flex: 1; margin-left: 4px; }
+        .menu li a[href]:hover { color: #5a67d8; text-decoration: underline; }
+        .menu li > i { width: 18px; text-align: center; color: #718096; }
+        .menu li > i.fa-internet-explorer { color: #3182ce; }
+        .bei-link { display: inline-flex; align-items: center; margin-left: 6px; }
+        .bei-link img { width: 14px; height: 14px; opacity: 0.6; }
+        .bei-link:hover img { opacity: 1; }
+        .note-icon { margin-left: 6px; color: #a0aec0; cursor: help; font-size: 12px; }
+        .note-icon:hover { color: #5a67d8; }
+        .menu .menu { margin-left: 20px; padding-left: 8px; border-left: 2px solid #e2e8f0; }
+        .submenu { display: none; }
+        .submenu.expanded { display: block; }
+        .menu li input[type="checkbox"] { margin-right: 6px; accent-color: #5a67d8; cursor: pointer; }
+        .item-actions { display: flex; gap: 3px; margin-left: auto; opacity: 0; transition: opacity 0.15s; }
+        .menu li:hover .item-actions { opacity: 1; }
+        .action-btn { width: 20px; height: 20px; border: none; border-radius: 3px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; background: #edf2f7; color: #4a5568; transition: all 0.15s; }
+        .action-btn:hover { background: #e2e8f0; }
+        .action-btn.move-up:hover { background: #c6f6d5; color: #276749; }
+        .action-btn.move-down:hover { background: #c6f6d5; color: #276749; }
+        .action-btn.transfer:hover { background: #bee3f8; color: #2b6cb0; }
+        .action-btn.delete:hover { background: #fed7d7; color: #c53030; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 10px; width: 100%; max-width: 420px; max-height: 90vh; overflow: auto; box-shadow: 0 15px 50px rgba(0,0,0,0.3); }
+        .modal-header { padding: 14px 18px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 15px; color: #2d3748; display: flex; align-items: center; gap: 8px; }
+        .modal-close { width: 26px; height: 26px; border: none; background: #f7fafc; border-radius: 5px; cursor: pointer; font-size: 16px; color: #718096; }
+        .modal-close:hover { background: #edf2f7; }
+        .modal-body { padding: 16px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #4a5568; font-size: 12px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 5px; font-size: 13px; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #5a67d8; }
+        .form-group textarea { resize: vertical; min-height: 50px; }
+        .modal-footer { padding: 12px 18px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 8px; }
+        .hint-text { font-size: 12px; color: #718096; margin-top: 4px; }
+        .selected-summary { background: #edf2f7; border-radius: 6px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px; color: #4a5568; max-height: 120px; overflow-y: auto; }
+        .item-tag { display: inline-block; background: #e2e8f0; padding: 2px 8px; border-radius: 4px; margin: 2px; font-size: 11px; }
+        .item-tag.folder { background: #faf089; }
+        .empty-state { text-align: center; padding: 30px 20px; color: #a0aec0; }
+        .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+        .empty-state h3 { font-size: 14px; color: #718096; margin-bottom: 4px; }
+        @media (max-width: 600px) { body { padding: 8px; } .header { padding: 12px 14px; } .header h1 { font-size: 16px; } .btn { padding: 5px 8px; font-size: 11px; } .menu li { font-size: 12px; padding: 3px 6px; } .menu .menu { margin-left: 14px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fa fa-folder-open"></i> 树状导航目录</h1>
+            <div class="toolbar">
+                <button class="btn btn-success" onclick="showAddFolderModal()"><i class="fa fa-plus"></i> 新建文件夹</button>
+                <button class="btn btn-primary" onclick="showAddLinkModal()"><i class="fa fa-link"></i> 新增链接</button>
+                <button class="btn btn-primary" onclick="toggleSelectionMode()"><i class="fa fa-check-square-o"></i> 选择</button>
+                <button class="btn btn-warning" onclick="document.getElementById('importInput').click()"><i class="fa fa-download"></i> 导入</button>
+                <button class="btn btn-primary" onclick="exportJSON()"><i class="fa fa-upload"></i> JSON</button>
+                <button class="btn btn-primary" onclick="exportHTML()"><i class="fa fa-file-code-o"></i> HTML</button>
+            </div>
+        </div>
+        <div class="selection-toolbar" id="selectionToolbar">
+            <span class="selection-info">已选择: <strong id="selectedCount">0</strong> 项</span>
+            <button class="btn btn-info" onclick="showBatchMoveModal()"><i class="fa fa-arrows"></i> 批量移动</button>
+            <button class="btn btn-danger" onclick="deleteSelected()"><i class="fa fa-trash"></i> 删除</button>
+            <button class="btn btn-primary" onclick="toggleSelectionMode()">取消</button>
+        </div>
+        <div class="main-content"><ul class="menu tree-container" id="treeContainer"></ul></div>
+    </div>
+
+    <div class="modal-overlay" id="addFolderModal">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fa fa-folder"></i> 新建文件夹</h3><button class="modal-close" onclick="closeModal('addFolderModal')">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>文件夹名称</label><input type="text" id="folderName" placeholder="请输入文件夹名称"></div>
+                <div class="form-group"><label>父级文件夹 (可选)</label><select id="parentFolder"><option value="">根目录</option></select></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('addFolderModal')">取消</button><button class="btn btn-success" onclick="addFolder()">确定</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addLinkModal">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fa fa-link"></i> 新增链接</h3><button class="modal-close" onclick="closeModal('addLinkModal')">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>链接标题</label><input type="text" id="linkTitle" placeholder="请输入链接标题"></div>
+                <div class="form-group"><label>链接地址</label><input type="url" id="linkUrl" placeholder="https://example.com"></div>
+                <div class="form-group"><label>备用链接 (可选)</label><input type="url" id="linkBackupUrl" placeholder="备用地址"></div>
+                <div class="form-group"><label>备注 (可选)</label><textarea id="linkNote" placeholder="备注信息"></textarea></div>
+                <div class="form-group"><label>所属文件夹</label><select id="linkFolder"><option value="">根目录</option></select></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('addLinkModal')">取消</button><button class="btn btn-success" onclick="addLink()">确定</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editFolderModal">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fa fa-edit"></i> 编辑文件夹</h3><button class="modal-close" onclick="closeModal('editFolderModal')">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>文件夹名称</label><input type="text" id="editFolderName"></div>
+                <input type="hidden" id="editFolderId">
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('editFolderModal')">取消</button><button class="btn btn-success" onclick="saveFolderEdit()">保存</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editLinkModal">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fa fa-edit"></i> 编辑链接</h3><button class="modal-close" onclick="closeModal('editLinkModal')">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>链接标题</label><input type="text" id="editLinkTitle"></div>
+                <div class="form-group"><label>链接地址</label><input type="url" id="editLinkUrl"></div>
+                <div class="form-group"><label>备用链接</label><input type="url" id="editLinkBackupUrl"></div>
+                <div class="form-group"><label>备注</label><textarea id="editLinkNote"></textarea></div>
+                <input type="hidden" id="editLinkId"><input type="hidden" id="editLinkParentId">
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('editLinkModal')">取消</button><button class="btn btn-success" onclick="saveLinkEdit()">保存</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="transferFolderModal">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fa fa-arrows"></i> 转移文件夹</h3><button class="modal-close" onclick="closeModal('transferFolderModal')">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>将 "<span id="transferFolderName"></span>" 转移到：</label></div>
+                <div class="form-group"><label>目标文件夹</label><select id="transferFolderTarget"><option value="">根目录</option></select></div>
+                <input type="hidden" id="transferFolderId">
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('transferFolderModal')">取消</button><button class="btn btn-info" onclick="doTransferFolder()">确定转移</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="transferLinkModal">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fa fa-arrows"></i> 转移链接</h3><button class="modal-close" onclick="closeModal('transferLinkModal')">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>将 "<span id="transferLinkName"></span>" 转移到：</label></div>
+                <div class="form-group"><label>目标文件夹</label><select id="transferLinkTarget"><option value="">根目录</option></select></div>
+                <input type="hidden" id="transferLinkId">
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('transferLinkModal')">取消</button><button class="btn btn-info" onclick="doTransferLink()">确定转移</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="batchMoveModal">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fa fa-arrows"></i> 批量移动</h3><button class="modal-close" onclick="closeModal('batchMoveModal')">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>已选择的项目：</label><div class="selected-summary" id="batchMoveSummary"></div></div>
+                <div class="form-group"><label>目标文件夹</label><select id="batchMoveTarget"><option value="">根目录</option></select></div>
+                <p class="hint-text"><i class="fa fa-info-circle"></i> 选中的文件夹及其内容将一起移动到目标位置</p>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('batchMoveModal')">取消</button><button class="btn btn-info" onclick="doBatchMove()">确定移动</button></div>
+        </div>
+    </div>
+
+    <input type="file" id="importInput" accept=".json" style="display:none" onchange="handleImport(event)">
+
+    <script>
+var data={folders:[],links:[]},selectionMode=false,selectedItems={folders:new Set(),links:new Set()};
+function generateId(){return Date.now().toString(36)+Math.random().toString(36).substr(2)}
+function init(){var d=localStorage.getItem('treeNavData');if(d)data=JSON.parse(d);render()}
+function saveData(){localStorage.setItem('treeNavData',JSON.stringify(data))}
+function render(){var c=document.getElementById('treeContainer');if(data.folders.length===0&&data.links.length===0){c.innerHTML='<li class="empty-state"><div class="icon"><i class="fa fa-inbox"></i></div><h3>暂无内容</h3><p>点击上方按钮添加文件夹和链接</p></li>';return}c.innerHTML=renderFolders(null)+renderLinks(null)}
+function renderFolders(pid){var f=data.folders.filter(function(x){return x.parentId===pid});if(f.length===0)return'';return f.map(function(fld,i){var sel=selectedItems.folders.has(fld.id),cf=renderFolders(fld.id),cl=renderLinks(fld.id),hc=cf||cl,mu=i>0,md=i<f.length-1;return'<li class="folder-item '+(sel?'selected':'')+'" data-folder-id="'+fld.id+'">'+(selectionMode?'<input type="checkbox" '+(sel?'checked':'')+' onclick="event.stopPropagation();toggleFolderSelect(\''+fld.id+'\')">':'')+'<i class="fa fa-folder" id="folder-icon-'+fld.id+'" onclick="toggleFolder(\''+fld.id+'\')"></i><a onclick="toggleFolder(\''+fld.id+'\')">'+esc(fld.name)+'</a><div class="item-actions"><button class="action-btn move-up" onclick="event.stopPropagation();moveFolderUp(\''+fld.id+'\')" title="上移"'+(!mu?' disabled style="opacity:0.3"':'')+'><i class="fa fa-arrow-up"></i></button><button class="action-btn move-down" onclick="event.stopPropagation();moveFolderDown(\''+fld.id+'\')" title="下移"'+(!md?' disabled style="opacity:0.3"':'')+'><i class="fa fa-arrow-down"></i></button><button class="action-btn transfer" onclick="event.stopPropagation();showTransferFolderModal(\''+fld.id+'\')" title="转移"><i class="fa fa-arrows"></i></button><button class="action-btn" onclick="event.stopPropagation();addSubFolder(\''+fld.id+'\')" title="添加子文件夹"><i class="fa fa-folder"></i></button><button class="action-btn" onclick="event.stopPropagation();addLinkInFolder(\''+fld.id+'\')" title="添加链接"><i class="fa fa-link"></i></button><button class="action-btn" onclick="event.stopPropagation();editFolder(\''+fld.id+'\')" title="编辑"><i class="fa fa-edit"></i></button><button class="action-btn delete" onclick="event.stopPropagation();deleteFolder(\''+fld.id+'\')" title="删除"><i class="fa fa-trash"></i></button></div></li><ul class="menu submenu" id="submenu-'+fld.id+'">'+(hc?cf+cl:'')+'</ul>'}).join('')}
+function renderLinks(pid){var l=data.links.filter(function(x){return x.parentId===pid});if(l.length===0)return'';return l.map(function(lnk,i){var sel=selectedItems.links.has(lnk.id),ni=lnk.note?'<i class="fa fa-info-circle note-icon" title="'+esc(lnk.note)+'"></i>':'',bl=lnk.backupUrl?'<a href="'+esc(lnk.backupUrl)+'" target="_blank" class="bei-link" title="备用链接"><img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23718096\'%3E%3Cpath d=\'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z\'/%3E%3C/svg%3E"></a>':'',mu=i>0,md=i<l.length-1;return'<li class="'+(sel?'selected':'')+'" data-link-id="'+lnk.id+'">'+(selectionMode?'<input type="checkbox" '+(sel?'checked':'')+' onchange="toggleLinkSelect(\''+lnk.id+'\')">':'')+'<i class="fa fa-internet-explorer"></i><a href="'+esc(lnk.url)+'" target="_blank" title="'+esc(lnk.note||'')+'">'+esc(lnk.title)+'</a>'+bl+ni+'<div class="item-actions"><button class="action-btn move-up" onclick="event.stopPropagation();moveLinkUp(\''+lnk.id+'\')" title="上移"'+(!mu?' disabled style="opacity:0.3"':'')+'><i class="fa fa-arrow-up"></i></button><button class="action-btn move-down" onclick="event.stopPropagation();moveLinkDown(\''+lnk.id+'\')" title="下移"'+(!md?' disabled style="opacity:0.3"':'')+'><i class="fa fa-arrow-down"></i></button><button class="action-btn transfer" onclick="event.stopPropagation();showTransferLinkModal(\''+lnk.id+'\')" title="转移"><i class="fa fa-arrows"></i></button><button class="action-btn" onclick="event.stopPropagation();editLink(\''+lnk.id+'\',\''+(pid||'')+'\')" title="编辑"><i class="fa fa-edit"></i></button><button class="action-btn delete" onclick="event.stopPropagation();deleteLink(\''+lnk.id+'\')" title="删除"><i class="fa fa-trash"></i></button></div></li>'}).join('')}
+function toggleFolder(id){var s=document.getElementById('submenu-'+id),i=document.getElementById('folder-icon-'+id);if(s){s.classList.toggle('expanded');i.classList.toggle('fa-folder-open');i.classList.toggle('fa-folder')}}
+function showModal(id){document.getElementById(id).classList.add('active')}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+function showAddFolderModal(){updateFolderSelect('parentFolder');document.getElementById('folderName').value='';showModal('addFolderModal')}
+function updateFolderSelect(sid,exc){var s=document.getElementById(sid);s.innerHTML='<option value="">根目录</option>';function addOpts(pid,px){data.folders.filter(function(f){return f.parentId===pid&&f.id!==exc}).forEach(function(fld){s.innerHTML+='<option value="'+fld.id+'">'+px+esc(fld.name)+'</option>';addOpts(fld.id,px+'　')})}addOpts(null,'')}
+function addFolder(){var n=document.getElementById('folderName').value.trim(),p=document.getElementById('parentFolder').value||null;if(!n){alert('请输入文件夹名称');return}data.folders.push({id:generateId(),name:n,parentId:p});saveData();render();closeModal('addFolderModal')}
+function addSubFolder(pid){var n=prompt('请输入子文件夹名称:');if(n&&n.trim()){data.folders.push({id:generateId(),name:n.trim(),parentId:pid});saveData();render();expandParent(pid)}}
+function expandParent(fid){var s=document.getElementById('submenu-'+fid),i=document.getElementById('folder-icon-'+fid);if(s){s.classList.add('expanded');i.classList.remove('fa-folder');i.classList.add('fa-folder-open')}}
+function showAddLinkModal(){updateFolderSelect('linkFolder');document.getElementById('linkTitle').value='';document.getElementById('linkUrl').value='';document.getElementById('linkBackupUrl').value='';document.getElementById('linkNote').value='';showModal('addLinkModal')}
+function addLinkInFolder(fid){var t=prompt('请输入链接标题:');if(!t||!t.trim())return;var u=prompt('请输入链接地址:');if(!u||!u.trim())return;var n=prompt('请输入备注(可选):');data.links.push({id:generateId(),title:t.trim(),url:u.trim(),note:n?n.trim():'',backupUrl:'',parentId:fid});saveData();render();expandParent(fid)}
+function addLink(){var t=document.getElementById('linkTitle').value.trim(),u=document.getElementById('linkUrl').value.trim(),b=document.getElementById('linkBackupUrl').value.trim(),n=document.getElementById('linkNote').value.trim(),p=document.getElementById('linkFolder').value||null;if(!t){alert('请输入链接标题');return}if(!u){alert('请输入链接地址');return}data.links.push({id:generateId(),title:t,url:u,backupUrl:b,note:n,parentId:p});saveData();render();closeModal('addLinkModal')}
+function editFolder(fid){var f=data.folders.find(function(x){return x.id===fid});if(f){document.getElementById('editFolderName').value=f.name;document.getElementById('editFolderId').value=fid;showModal('editFolderModal')}}
+function saveFolderEdit(){var n=document.getElementById('editFolderName').value.trim(),fid=document.getElementById('editFolderId').value;if(!n){alert('请输入文件夹名称');return}var f=data.folders.find(function(x){return x.id===fid});if(f){f.name=n;saveData();render()}closeModal('editFolderModal')}
+function deleteFolder(fid){if(!confirm('确定要删除此文件夹吗？'))return;function getIds(pid){var ids=[pid];data.folders.filter(function(f){return f.parentId===pid}).forEach(function(c){ids.push(...getIds(c.id))});return ids}var ids=getIds(fid);data.folders=data.folders.filter(function(f){return!ids.includes(f.id)});data.links=data.links.filter(function(l){return!ids.includes(l.parentId)});saveData();render()}
+function editLink(lid,pid){var l=data.links.find(function(x){return x.id===lid});if(l){document.getElementById('editLinkTitle').value=l.title;document.getElementById('editLinkUrl').value=l.url;document.getElementById('editLinkBackupUrl').value=l.backupUrl||'';document.getElementById('editLinkNote').value=l.note||'';document.getElementById('editLinkId').value=lid;document.getElementById('editLinkParentId').value=pid;showModal('editLinkModal')}}
+function saveLinkEdit(){var t=document.getElementById('editLinkTitle').value.trim(),u=document.getElementById('editLinkUrl').value.trim(),b=document.getElementById('editLinkBackupUrl').value.trim(),n=document.getElementById('editLinkNote').value.trim(),lid=document.getElementById('editLinkId').value;if(!t){alert('请输入链接标题');return}if(!u){alert('请输入链接地址');return}var l=data.links.find(function(x){return x.id===lid});if(l){l.title=t;l.url=u;l.backupUrl=b;l.note=n;saveData();render()}closeModal('editLinkModal')}
+function deleteLink(lid){if(!confirm('确定要删除此链接吗？'))return;data.links=data.links.filter(function(l){return l.id!==lid});saveData();render()}
+function moveFolderUp(fid){var f=data.folders.find(function(x){return x.id===fid});if(!f)return;var sibs=data.folders.filter(function(x){return x.parentId===f.parentId}),idx=sibs.findIndex(function(x){return x.id===fid});if(idx<=0)return;var gi=data.folders.findIndex(function(x){return x.id===fid}),pi=data.folders.findIndex(function(x){return x.id===sibs[idx-1].id});[data.folders[gi],data.folders[pi]]=[data.folders[pi],data.folders[gi]];saveData();render()}
+function moveFolderDown(fid){var f=data.folders.find(function(x){return x.id===fid});if(!f)return;var sibs=data.folders.filter(function(x){return x.parentId===f.parentId}),idx=sibs.findIndex(function(x){return x.id===fid});if(idx>=sibs.length-1)return;var gi=data.folders.findIndex(function(x){return x.id===fid}),ni=data.folders.findIndex(function(x){return x.id===sibs[idx+1].id});[data.folders[gi],data.folders[ni]]=[data.folders[ni],data.folders[gi]];saveData();render()}
+function moveLinkUp(lid){var l=data.links.find(function(x){return x.id===lid});if(!l)return;var sibs=data.links.filter(function(x){return x.parentId===l.parentId}),idx=sibs.findIndex(function(x){return x.id===lid});if(idx<=0)return;var gi=data.links.findIndex(function(x){return x.id===lid}),pi=data.links.findIndex(function(x){return x.id===sibs[idx-1].id});[data.links[gi],data.links[pi]]=[data.links[pi],data.links[gi]];saveData();render()}
+function moveLinkDown(lid){var l=data.links.find(function(x){return x.id===lid});if(!l)return;var sibs=data.links.filter(function(x){return x.parentId===l.parentId}),idx=sibs.findIndex(function(x){return x.id===lid});if(idx>=sibs.length-1)return;var gi=data.links.findIndex(function(x){return x.id===lid}),ni=data.links.findIndex(function(x){return x.id===sibs[idx+1].id});[data.links[gi],data.links[ni]]=[data.links[ni],data.links[gi]];saveData();render()}
+function showTransferFolderModal(fid){var f=data.folders.find(function(x){return x.id===fid});if(!f)return;document.getElementById('transferFolderName').textContent=f.name;document.getElementById('transferFolderId').value=fid;updateFolderSelect('transferFolderTarget',fid);showModal('transferFolderModal')}
+function doTransferFolder(){var fid=document.getElementById('transferFolderId').value,np=document.getElementById('transferFolderTarget').value||null,f=data.folders.find(function(x){return x.id===fid});if(!f)return;function isDesc(cid,tid){if(cid===tid)return true;return data.folders.filter(function(x){return x.parentId===cid}).some(function(c){return isDesc(c.id,tid)})}if(np&&isDesc(fid,np)){alert('不能将文件夹转移到自己或自己的子文件夹中！');return}f.parentId=np;saveData();render();closeModal('transferFolderModal')}
+function showTransferLinkModal(lid){var l=data.links.find(function(x){return x.id===lid});if(!l)return;document.getElementById('transferLinkName').textContent=l.title;document.getElementById('transferLinkId').value=lid;updateFolderSelect('transferLinkTarget');showModal('transferLinkModal')}
+function doTransferLink(){var lid=document.getElementById('transferLinkId').value,np=document.getElementById('transferLinkTarget').value||null,l=data.links.find(function(x){return x.id===lid});if(!l)return;l.parentId=np;saveData();render();closeModal('transferLinkModal')}
+function toggleSelectionMode(){selectionMode=!selectionMode;selectedItems={folders:new Set(),links:new Set()};document.getElementById('selectionToolbar').classList.toggle('active',selectionMode);render();updateSelectedCount()}
+function toggleFolderSelect(fid){selectedItems.folders.has(fid)?selectedItems.folders.delete(fid):selectedItems.folders.add(fid);updateSelectedCount()}
+function toggleLinkSelect(lid){selectedItems.links.has(lid)?selectedItems.links.delete(lid):selectedItems.links.add(lid);updateSelectedCount()}
+function updateSelectedCount(){document.getElementById('selectedCount').textContent=selectedItems.folders.size+selectedItems.links.size}
+function getDescIds(fid){var ids=[fid];data.folders.filter(function(f){return f.parentId===fid}).forEach(function(c){ids.push(...getDescIds(c.id))});return ids}
+function showBatchMoveModal(){if(selectedItems.folders.size===0&&selectedItems.links.size===0){alert('请先选择要移动的项目');return}var exc=[];selectedItems.folders.forEach(function(fid){exc.push(fid);exc.push(...getDescIds(fid))});var sum='';selectedItems.folders.forEach(function(fid){var f=data.folders.find(function(x){return x.id===fid});if(f)sum+='<span class="item-tag folder"><i class="fa fa-folder"></i> '+esc(f.name)+'</span>'});selectedItems.links.forEach(function(lid){var l=data.links.find(function(x){return x.id===lid});if(l)sum+='<span class="item-tag"><i class="fa fa-link"></i> '+esc(l.title)+'</span>'});document.getElementById('batchMoveSummary').innerHTML=sum;updateFolderSelect('batchMoveTarget',exc);showModal('batchMoveModal')}
+function doBatchMove(){var np=document.getElementById('batchMoveTarget').value||null;selectedItems.folders.forEach(function(fid){var f=data.folders.find(function(x){return x.id===fid});if(f)f.parentId=np});selectedItems.links.forEach(function(lid){var l=data.links.find(function(x){return x.id===lid});if(l)l.parentId=np});saveData();selectedItems={folders:new Set(),links:new Set()};render();updateSelectedCount();closeModal('batchMoveModal')}
+function deleteSelected(){if(selectedItems.folders.size===0&&selectedItems.links.size===0){alert('请先选择要删除的项目');return}if(!confirm('确定要删除选中的项目吗？'))return;function getIds(pid){var ids=[pid];data.folders.filter(function(f){return f.parentId===pid}).forEach(function(c){ids.push(...getIds(c.id))});return ids}var allIds=[];selectedItems.folders.forEach(function(fid){allIds.push(...getIds(fid))});data.folders=data.folders.filter(function(f){return!allIds.includes(f.id)});data.links=data.links.filter(function(l){return!selectedItems.links.has(l.id)&&!allIds.includes(l.parentId)});saveData();selectedItems={folders:new Set(),links:new Set()};render();updateSelectedCount()}
+function exportJSON(){var b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='tree-nav-data.json';a.click();URL.revokeObjectURL(a.href)}
+function handleImport(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){try{var d=JSON.parse(ev.target.result);if(d.folders&&d.links){if(confirm('导入将覆盖当前数据，是否继续？')){data=d;saveData();render();alert('导入成功！')}}else alert('无效的数据格式')}catch(err){alert('导入失败：'+err.message)}};r.readAsText(f);e.target.value=''}
+function exportHTML(){var h=genStatic(),b=new Blob([h],{type:'text/html;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='tree-nav-readonly.html';a.click();URL.revokeObjectURL(a.href)}
+function genStatic(){return'<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1.0">\n<title>树状导航目录</title>\n<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">\n<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:15px}.container{max-width:900px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 15px 50px rgba(0,0,0,.25);overflow:hidden}.header{background:linear-gradient(135deg,#5a67d8 0%,#6b46c1 100%);color:#fff;padding:16px 20px}.header h1{font-size:20px;display:flex;align-items:center;gap:8px}.main-content{padding:12px}.menu{list-style:none;padding:6px}.menu li{padding:4px 8px;display:flex;align-items:center;border-radius:4px;margin:1px 0;font-size:13px}.menu li:hover{background:#f0f4f8}.menu li.folder-item{cursor:pointer}.menu li>i{width:18px;text-align:center;color:#718096}.menu li>i.fa-folder{color:#ecc94b}.menu li>i.fa-folder-open{color:#d69e2e}.menu li>i.fa-internet-explorer{color:#3182ce}.menu li a{color:#2d3748;text-decoration:none;flex:1;margin-left:4px}.menu li a[href]:hover{color:#5a67d8;text-decoration:underline}.menu .menu{margin-left:20px;padding-left:8px;border-left:2px solid #e2e8f0}.submenu{display:none}.submenu.expanded{display:block}.bei-link{display:inline-flex;align-items:center;margin-left:6px}.bei-link img{width:14px;height:14px;opacity:.6}.note-icon{margin-left:6px;color:#a0aec0;cursor:help;font-size:12px}@media(max-width:600px){body{padding:8px}.header{padding:12px 14px}.header h1{font-size:16px}.menu li{font-size:12px}}</style>\n</head>\n<body>\n<div class="container">\n<div class="header"><h1><i class="fa fa-folder-open"></i> 树状导航目录</h1></div>\n<div class="main-content"><ul class="menu" id="tc">'+genStaticContent()+'</ul></div>\n</div>\n<script>function toggleFolder(id){var s=document.getElementById("submenu-"+id),i=document.getElementById("fi-"+id);if(s){s.classList.toggle("expanded");i.classList.toggle("fa-folder-open");i.classList.toggle("fa-folder")}}<\/script>\n</body>\n</html>'}
+function genStaticContent(){if(data.folders.length===0&&data.links.length===0)return'<li style="text-align:center;padding:30px;color:#a0aec0">暂无内容</li>';return genStaticFolders(null)+genStaticLinks(null)}
+function genStaticFolders(pid){var f=data.folders.filter(function(x){return x.parentId===pid});if(f.length===0)return'';return f.map(function(fld){var c=genStaticFolders(fld.id)+genStaticLinks(fld.id);return'<li class="folder-item"><i class="fa fa-folder" id="fi-'+fld.id+'" onclick="toggleFolder(\''+fld.id+'\')"></i><a onclick="toggleFolder(\''+fld.id+'\')">'+esc(fld.name)+'</a></li><ul class="menu submenu" id="submenu-'+fld.id+'">'+c+'</ul>'}).join('')}
+function genStaticLinks(pid){var l=data.links.filter(function(x){return x.parentId===pid});if(l.length===0)return'';return l.map(function(lnk){var ni=lnk.note?'<i class="fa fa-info-circle note-icon" title="'+esc(lnk.note)+'"></i>':'',bl=lnk.backupUrl?'<a href="'+esc(lnk.backupUrl)+'" target="_blank" class="bei-link"><img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23718096\'%3E%3Cpath d=\'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z\'/%3E%3C/svg%3E"></a>':'';return'<li><i class="fa fa-internet-explorer"></i><a href="'+esc(lnk.url)+'" target="_blank">'+esc(lnk.title)+'</a>'+bl+ni+'</li>'}).join('')}
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+init();
+    </script>
+</body>
+</html>
