@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片裁剪工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 移除了外部字体链接，改用系统原生字体 -->
+  <style>
+    :root {
+      --bg: #0a0a0c;
+      --bg-elevated: #141418;
+      --bg-card: #1a1a20;
+      --fg: #f0f0f2;
+      --fg-muted: #8a8a94;
+      --accent: #00d4aa;
+      --accent-dim: #00a884;
+      --border: #2a2a32;
+      --danger: #ff4d6a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      /* 优化后的系统字体栈：优先使用各平台最美观的无衬线字体 */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    h1, h2, h3 {
+      /* 标题字体栈：更具几何感的无衬线字体 */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-weight: 600;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-elevated);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--fg-muted);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in-up {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+
+    /* Grid background */
+    .grid-bg {
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* Glow effects */
+    .accent-glow {
+      box-shadow: 0 0 40px rgba(0, 212, 170, 0.15);
+    }
+
+    /* Button styles */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+      color: #000;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(0, 212, 170, 0.3);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-secondary.active {
+      background: rgba(0, 212, 170, 0.1);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Range slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-top: -6px;
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    input[type="range"]::-moz-range-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      border: none;
+    }
+
+    /* Canvas container */
+    .canvas-container {
+      position: relative;
+      background: repeating-conic-gradient(#1a1a20 0% 25%, #141418 0% 50%) 50% / 20px 20px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* Crop overlay */
+    .crop-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+    }
+
+    .crop-box {
+      position: absolute;
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+      cursor: move;
+      pointer-events: auto;
+    }
+
+    .crop-handle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 2px;
+      pointer-events: auto;
+    }
+
+    .crop-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+    .crop-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+    .crop-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+    .crop-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+    .crop-handle.n { top: -6px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+    .crop-handle.s { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+    .crop-handle.w { left: -6px; top: 50%; transform: translateY(-50%); cursor: w-resize; }
+    .crop-handle.e { right: -6px; top: 50%; transform: translateY(-50%); cursor: e-resize; }
+
+    /* Grid lines in crop box */
+    .crop-grid {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .crop-grid::before,
+    .crop-grid::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .crop-grid::before {
+      left: 33.33%;
+      right: 33.33%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: calc(100% / 3 * -1) 0 0 rgba(255, 255, 255, 0.2), calc(100% / 3) 0 0 rgba(255, 255, 255, 0.2);
+    }
+    .crop-grid::after {
+      top: 33.33%;
+      bottom: 33.33%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      margin-top: auto;
+      margin-bottom: auto;
+      box-shadow: 0 calc(100% / 3 * -1) 0 rgba(255, 255, 255, 0.2), 0 calc(100% / 3) 0 rgba(255, 255, 255, 0.2);
+    }
+
+    /* Upload area */
+    .upload-area {
+      border: 2px dashed var(--border);
+      transition: all 0.3s ease;
+    }
+    .upload-area:hover,
+    .upload-area.dragover {
+      border-color: var(--accent);
+      background: rgba(0, 212, 170, 0.05);
+    }
+
+    /* Ratio button */
+    .ratio-btn {
+      min-width: 60px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    /* Input field */
+    .input-field {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      transition: border-color 0.2s ease;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Preview section */
+    .preview-canvas-wrapper {
+      background: repeating-conic-gradient(#1a1a20 0% 25%, #141418 0% 50%) 50% / 16px 16px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* Format toggle buttons */
+    .format-btn {
+      padding: 8px 16px;
+      font-size: 13px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .format-btn:not(.active) {
+      background: var(--bg-elevated);
+      color: var(--fg-muted);
+      border: 1px solid var(--border);
+    }
+    .format-btn.active {
+      background: var(--accent);
+      color: #000;
+      font-weight: 600;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="grid-bg">
+  <div class="min-h-screen p-4 md:p-6 lg:p-8">
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto mb-6 animate-fade-in-up">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-dim)] flex items-center justify-center">
+          <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Image Cropper</h1>
+          <p class="text-sm text-[var(--fg-muted)]">专业图片裁剪工具</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto">
+      <!-- Upload Area (shown when no image) -->
+      <div id="uploadArea" class="upload-area rounded-2xl p-12 text-center animate-fade-in-up stagger-1">
+        <input type="file" id="fileInput" accept="image/*" class="hidden">
+        <div class="max-w-md mx-auto">
+          <div class="w-20 h-20 rounded-2xl bg-[var(--bg-card)] mx-auto mb-6 flex items-center justify-center">
+            <svg class="w-10 h-10 text-[var(--fg-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+          </div>
+          <h2 class="text-lg font-semibold mb-2">上传图片开始裁剪</h2>
+          <p class="text-[var(--fg-muted)] text-sm mb-6">支持 JPG、PNG、WebP 等常见格式</p>
+          <button onclick="document.getElementById('fileInput').click()" class="btn-primary px-6 py-3 rounded-lg">
+            选择图片
+          </button>
+          <p class="text-xs text-[var(--fg-muted)] mt-4">或拖拽图片到此处</p>
+        </div>
+      </div>
+
+      <!-- Editor (shown when image loaded) -->
+      <div id="editorArea" class="hidden">
+        <div class="grid lg:grid-cols-[1fr,320px] gap-6">
+          <!-- Canvas Area -->
+          <div class="animate-fade-in-up">
+            <div class="canvas-container accent-glow" id="canvasContainer">
+              <canvas id="mainCanvas"></canvas>
+              <div class="crop-overlay" id="cropOverlay">
+                <div class="crop-box" id="cropBox">
+                  <div class="crop-grid"></div>
+                  <div class="crop-handle nw" data-handle="nw"></div>
+                  <div class="crop-handle ne" data-handle="ne"></div>
+                  <div class="crop-handle sw" data-handle="sw"></div>
+                  <div class="crop-handle se" data-handle="se"></div>
+                  <div class="crop-handle n" data-handle="n"></div>
+                  <div class="crop-handle s" data-handle="s"></div>
+                  <div class="crop-handle w" data-handle="w"></div>
+                  <div class="crop-handle e" data-handle="e"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Controls below canvas -->
+            <div class="mt-4 flex flex-wrap items-center gap-4">
+              <button onclick="document.getElementById('fileInput').click()" class="btn-secondary px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                更换图片
+              </button>
+              <button onclick="resetImage()" class="btn-secondary px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                重置
+              </button>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="space-y-4 animate-fade-in-up stagger-2">
+            <!-- Ratio Selection -->
+            <div class="bg-[var(--bg-card)] rounded-xl p-4 border border-[var(--border)]">
+              <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                </svg>
+                裁剪比例
+              </h3>
+              <div class="grid grid-cols-3 gap-2 mb-3" id="ratioButtons">
+                <button class="ratio-btn btn-secondary rounded-lg" data-ratio="1:1">1:1</button>
+                <button class="ratio-btn btn-secondary rounded-lg" data-ratio="3:2">3:2</button>
+                <button class="ratio-btn btn-secondary rounded-lg" data-ratio="4:3">4:3</button>
+                <button class="ratio-btn btn-secondary rounded-lg" data-ratio="4:5">4:5</button>
+                <button class="ratio-btn btn-secondary rounded-lg" data-ratio="6:4">6:4</button>
+                <button class="ratio-btn btn-secondary rounded-lg" data-ratio="16:6">16:6</button>
+                <button class="ratio-btn btn-secondary rounded-lg" data-ratio="16:9">16:9</button>
+                <button class="ratio-btn btn-secondary rounded-lg" data-ratio="1inch">1寸照</button>
+                <button class="ratio-btn btn-secondary rounded-lg" data-ratio="2inch">2寸照</button>
+                <button class="ratio-btn btn-secondary rounded-lg col-span-2" data-ratio="custom">自定义比例</button>
+                <button class="ratio-btn btn-secondary rounded-lg" data-ratio="free">自由</button>
+              </div>
+              
+              <!-- Custom ratio inputs -->
+              <div id="customRatioInputs" class="hidden mt-3">
+                <div class="flex items-center gap-2">
+                  <input type="number" id="customRatioW" class="input-field w-full px-3 py-2 rounded-lg text-sm" placeholder="宽" min="1" value="1">
+                  <span class="text-[var(--fg-muted)]">:</span>
+                  <input type="number" id="customRatioH" class="input-field w-full px-3 py-2 rounded-lg text-sm" placeholder="高" min="1" value="1">
+                  <button onclick="applyCustomRatio()" class="btn-primary px-3 py-2 rounded-lg text-sm">应用</button>
+                </div>
+              </div>
+
+              <!-- Custom size inputs -->
+              <div id="customSizeInputs" class="hidden mt-3">
+                <p class="text-xs text-[var(--fg-muted)] mb-2">自定义尺寸 (像素)</p>
+                <div class="flex items-center gap-2">
+                  <input type="number" id="customSizeW" class="input-field w-full px-3 py-2 rounded-lg text-sm" placeholder="宽" min="1">
+                  <span class="text-[var(--fg-muted)]">×</span>
+                  <input type="number" id="customSizeH" class="input-field w-full px-3 py-2 rounded-lg text-sm" placeholder="高" min="1">
+                  <button onclick="applyCustomSize()" class="btn-primary px-3 py-2 rounded-lg text-sm">应用</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Transform Controls -->
+            <div class="bg-[var(--bg-card)] rounded-xl p-4 border border-[var(--border)]">
+              <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                </svg>
+                变换
+              </h3>
+              
+              <!-- Zoom -->
+              <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs text-[var(--fg-muted)]">缩放</label>
+                  <span id="zoomValue" class="text-xs text-[var(--fg-muted)]">100%</span>
+                </div>
+                <input type="range" id="zoomSlider" class="w-full" min="10" max="300" value="100">
+              </div>
+
+              <!-- Rotation -->
+              <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs text-[var(--fg-muted)]">旋转</label>
+                  <span id="rotateValue" class="text-xs text-[var(--fg-muted)]">0°</span>
+                </div>
+                <input type="range" id="rotateSlider" class="w-full" min="-180" max="180" value="0">
+              </div>
+
+              <!-- Quick rotate buttons -->
+              <div class="flex gap-2">
+                <button onclick="rotateBy(-90)" class="btn-secondary flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                  </svg>
+                  -90°
+                </button>
+                <button onclick="rotateBy(90)" class="btn-secondary flex-1 py-2 rounded-lg text-sm flex items-center justify-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"></path>
+                  </svg>
+                  +90°
+                </button>
+                <button onclick="flipHorizontal()" class="btn-secondary flex-1 py-2 rounded-lg text-sm" title="水平翻转">
+                  <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="bg-[var(--bg-card)] rounded-xl p-4 border border-[var(--border)]">
+              <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                预览
+              </h3>
+              <div class="preview-canvas-wrapper aspect-square flex items-center justify-center" id="previewWrapper">
+                <canvas id="previewCanvas" class="max-w-full max-h-full"></canvas>
+              </div>
+              <p id="previewSize" class="text-xs text-[var(--fg-muted)] mt-2 text-center">--</p>
+            </div>
+
+            <!-- Export Settings -->
+            <div class="bg-[var(--bg-card)] rounded-xl p-4 border border-[var(--border)]">
+              <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                导出设置
+              </h3>
+              
+              <!-- Format Selection -->
+              <div class="flex gap-2 mb-3">
+                <button id="formatPng" class="format-btn flex-1 active" onclick="setExportFormat('png')">PNG</button>
+                <button id="formatJpg" class="format-btn flex-1" onclick="setExportFormat('jpeg')">JPG</button>
+              </div>
+              
+              <!-- JPG Quality (only shown when JPG selected) -->
+              <div id="jpgQualitySection" class="hidden">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs text-[var(--fg-muted)]">JPG 质量</label>
+                  <span id="jpgQualityValue" class="text-xs text-[var(--fg-muted)]">92%</span>
+                </div>
+                <input type="range" id="jpgQualitySlider" class="w-full" min="10" max="100" value="92">
+                <p class="text-xs text-[var(--fg-muted)] mt-1 opacity-70">质量越高文件越大，建议 85-95%</p>
+              </div>
+            </div>
+
+            <!-- Download -->
+            <div class="space-y-2">
+              <button onclick="downloadImage()" class="btn-primary w-full py-3 rounded-lg flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                下载图片
+              </button>
+              <button onclick="showSaveDialog()" class="btn-secondary w-full py-2.5 rounded-lg text-sm flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                </svg>
+                自定义保存位置
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-[var(--bg-card)] border border-[var(--border)] px-4 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none z-50">
+    <p id="toastMessage" class="text-sm"></p>
+  </div>
+
+  <script>
+    // State
+    let state = {
+      image: null,
+      originalImage: null,
+      zoom: 100,
+      rotation: 0,
+      flipH: false,
+      ratio: 'free',
+      customRatio: null,
+      customSize: null,
+      crop: { x: 0, y: 0, width: 0, height: 0 },
+      isDragging: false,
+      dragType: null,
+      dragStart: { x: 0, y: 0 },
+      cropStart: { x: 0, y: 0, width: 0, height: 0 },
+      canvasRect: null,
+      exportFormat: 'png',
+      jpgQuality: 0.92
+    };
+
+    // Elements
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const editorArea = document.getElementById('editorArea');
+    const mainCanvas = document.getElementById('mainCanvas');
+    const previewCanvas = document.getElementById('previewCanvas');
+    const ctx = mainCanvas.getContext('2d');
+    const previewCtx = previewCanvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvasContainer');
+    const cropBox = document.getElementById('cropBox');
+    const cropOverlay = document.getElementById('cropOverlay');
+
+    // Ratio definitions
+    const ratios = {
+      '1:1': { w: 1, h: 1 },
+      '3:2': { w: 3, h: 2 },
+      '4:3': { w: 4, h: 3 },
+      '4:5': { w: 4, h: 5 },
+      '6:4': { w: 6, h: 4 },
+      '16:6': { w: 16, h: 6 },
+      '16:9': { w: 16, h: 9 },
+      '1inch': { w: 295, h: 413, label: '1寸照 (25×35mm)' },
+      '2inch': { w: 413, h: 579, label: '2寸照 (35×49mm)' }
+    };
+
+    // File input handler
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) loadImage(file);
+    });
+
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        loadImage(file);
+      }
+    });
+
+    // Load image
+    function loadImage(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          state.originalImage = img;
+          state.image = img;
+          state.zoom = 100;
+          state.rotation = 0;
+          state.flipH = false;
+          
+          uploadArea.classList.add('hidden');
+          editorArea.classList.remove('hidden');
+          
+          setupCanvas();
+          updatePreview();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Setup canvas
+    function setupCanvas() {
+      const containerWidth = canvasContainer.clientWidth || 800;
+      const containerHeight = Math.min(600, window.innerHeight - 200);
+      
+      const imgRatio = state.image.width / state.image.height;
+      let displayWidth, displayHeight;
+      
+      if (imgRatio > containerWidth / containerHeight) {
+        displayWidth = Math.min(containerWidth - 40, state.image.width);
+        displayHeight = displayWidth / imgRatio;
+      } else {
+        displayHeight = Math.min(containerHeight - 40, state.image.height);
+        displayWidth = displayHeight * imgRatio;
+      }
+
+      mainCanvas.width = displayWidth;
+      mainCanvas.height = displayHeight;
+      mainCanvas.style.width = displayWidth + 'px';
+      mainCanvas.style.height = displayHeight + 'px';
+      
+      canvasContainer.style.height = displayHeight + 'px';
+      
+      drawCanvas();
+      initCropBox();
+    }
+
+    // Draw canvas with transformations
+    function drawCanvas() {
+      const { width, height } = mainCanvas;
+      
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      
+      ctx.translate(width / 2, height / 2);
+      ctx.rotate((state.rotation * Math.PI) / 180);
+      if (state.flipH) ctx.scale(-1, 1);
+      
+      const scale = state.zoom / 100;
+      ctx.scale(scale, scale);
+      
+      ctx.drawImage(state.image, -state.image.width / 2, -state.image.height / 2);
+      ctx.restore();
+    }
+
+    // Initialize crop box
+    function initCropBox() {
+      const canvasWidth = mainCanvas.width;
+      const canvasHeight = mainCanvas.height;
+      
+      let cropWidth = canvasWidth * 0.8;
+      let cropHeight = canvasHeight * 0.8;
+      
+      if (state.ratio !== 'free' && state.ratio !== 'custom') {
+        const ratio = ratios[state.ratio] || state.customRatio;
+        if (ratio) {
+          const ratioValue = ratio.w / ratio.h;
+          if (cropWidth / cropHeight > ratioValue) {
+            cropWidth = cropHeight * ratioValue;
+          } else {
+            cropHeight = cropWidth / ratioValue;
+          }
+        }
+      } else if (state.customRatio) {
+        const ratioValue = state.customRatio.w / state.customRatio.h;
+        if (cropWidth / cropHeight > ratioValue) {
+          cropWidth = cropHeight * ratioValue;
+        } else {
+          cropHeight = cropWidth / ratioValue;
+        }
+      }
+      
+      state.crop = {
+        x: (canvasWidth - cropWidth) / 2,
+        y: (canvasHeight - cropHeight) / 2,
+        width: cropWidth,
+        height: cropHeight
+      };
+      
+      updateCropBox();
+    }
+
+    // Update crop box position
+    function updateCropBox() {
+      cropBox.style.left = state.crop.x + 'px';
+      cropBox.style.top = state.crop.y + 'px';
+      cropBox.style.width = Math.max(1, state.crop.width) + 'px';
+      cropBox.style.height = Math.max(1, state.crop.height) + 'px';
+      
+      updatePreview();
+    }
+
+    // Update preview
+    function updatePreview() {
+      if (!state.image) return;
+      
+      const maxPreviewSize = 250;
+      let previewWidth = state.crop.width;
+      let previewHeight = state.crop.height;
+      
+      const scale = Math.min(maxPreviewSize / previewWidth, maxPreviewSize / previewHeight, 1);
+      previewWidth *= scale;
+      previewHeight *= scale;
+      
+      previewCanvas.width = Math.max(1, previewWidth);
+      previewCanvas.height = Math.max(1, previewHeight);
+      
+      const scaleX = state.image.width / mainCanvas.width;
+      const scaleY = state.image.height / mainCanvas.height;
+      
+      const sx = state.crop.x * scaleX;
+      const sy = state.crop.y * scaleY;
+      const sw = state.crop.width * scaleX;
+      const sh = state.crop.height * scaleY;
+      
+      previewCtx.clearRect(0, 0, previewWidth, previewHeight);
+      
+      previewCtx.save();
+      previewCtx.translate(previewWidth / 2, previewHeight / 2);
+      previewCtx.rotate((state.rotation * Math.PI) / 180);
+      if (state.flipH) previewCtx.scale(-1, 1);
+      
+      const drawScale = scale * (state.zoom / 100);
+      previewCtx.scale(drawScale, drawScale);
+      
+      previewCtx.drawImage(
+        state.image,
+        -state.image.width / 2 - state.crop.x * scaleX + state.image.width / 2 - sw / 2,
+        -state.image.height / 2 - state.crop.y * scaleY + state.image.height / 2 - sh / 2,
+        state.image.width,
+        state.image.height
+      );
+      
+      previewCtx.restore();
+      
+      const outputW = Math.round(sw);
+      const outputH = Math.round(sh);
+      document.getElementById('previewSize').textContent = `${outputW} × ${outputH} 像素`;
+    }
+
+    // Crop box interaction
+    cropBox.addEventListener('mousedown', startDrag);
+    cropBox.addEventListener('touchstart', startDrag, { passive: false });
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('touchmove', drag, { passive: false });
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchend', endDrag);
+
+    function startDrag(e) {
+      e.preventDefault();
+      
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      state.canvasRect = mainCanvas.getBoundingClientRect();
+      state.isDragging = true;
+      state.dragStart = { x: clientX, y: clientY };
+      state.cropStart = { ...state.crop };
+      
+      const handle = e.target.dataset.handle;
+      state.dragType = handle || 'move';
+    }
+
+    function drag(e) {
+      if (!state.isDragging) return;
+      e.preventDefault();
+      
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const dx = clientX - state.dragStart.x;
+      const dy = clientY - state.dragStart.y;
+      
+      const canvasWidth = mainCanvas.width;
+      const canvasHeight = mainCanvas.height;
+      
+      let newCrop = { ...state.cropStart };
+      
+      if (state.dragType === 'move') {
+        newCrop.x = Math.max(0, Math.min(canvasWidth - newCrop.width, state.cropStart.x + dx));
+        newCrop.y = Math.max(0, Math.min(canvasHeight - newCrop.height, state.cropStart.y + dy));
+      } else {
+        const ratio = getActiveRatio();
+        
+        switch (state.dragType) {
+          case 'nw':
+            newCrop.x = state.cropStart.x + dx;
+            newCrop.y = state.cropStart.y + dy;
+            newCrop.width = state.cropStart.width - dx;
+            newCrop.height = state.cropStart.height - dy;
+            break;
+          case 'ne':
+            newCrop.y = state.cropStart.y + dy;
+            newCrop.width = state.cropStart.width + dx;
+            newCrop.height = state.cropStart.height - dy;
+            break;
+          case 'sw':
+            newCrop.x = state.cropStart.x + dx;
+            newCrop.width = state.cropStart.width - dx;
+            newCrop.height = state.cropStart.height + dy;
+            break;
+          case 'se':
+            newCrop.width = state.cropStart.width + dx;
+            newCrop.height = state.cropStart.height + dy;
+            break;
+          case 'n':
+            newCrop.y = state.cropStart.y + dy;
+            newCrop.height = state.cropStart.height - dy;
+            break;
+          case 's':
+            newCrop.height = state.cropStart.height + dy;
+            break;
+          case 'w':
+            newCrop.x = state.cropStart.x + dx;
+            newCrop.width = state.cropStart.width - dx;
+            break;
+          case 'e':
+            newCrop.width = state.cropStart.width + dx;
+            break;
+        }
+        
+        if (ratio) {
+          const ratioValue = ratio.w / ratio.h;
+          if (['nw', 'ne', 'sw', 'se'].includes(state.dragType)) {
+            if (state.dragType === 'nw' || state.dragType === 'se') {
+              newCrop.height = newCrop.width / ratioValue;
+            } else {
+              newCrop.width = newCrop.height * ratioValue;
+            }
+          } else if (state.dragType === 'n' || state.dragType === 's') {
+            newCrop.width = newCrop.height * ratioValue;
+          } else {
+            newCrop.height = newCrop.width / ratioValue;
+          }
+        }
+        
+        newCrop.width = Math.max(20, newCrop.width);
+        newCrop.height = Math.max(20, newCrop.height);
+        
+        if (newCrop.x < 0) {
+          newCrop.width += newCrop.x;
+          newCrop.x = 0;
+        }
+        if (newCrop.y < 0) {
+          newCrop.height += newCrop.y;
+          newCrop.y = 0;
+        }
+        if (newCrop.x + newCrop.width > canvasWidth) {
+          newCrop.width = canvasWidth - newCrop.x;
+        }
+        if (newCrop.y + newCrop.height > canvasHeight) {
+          newCrop.height = canvasHeight - newCrop.y;
+        }
+      }
+      
+      state.crop = newCrop;
+      updateCropBox();
+    }
+
+    function endDrag() {
+      state.isDragging = false;
+    }
+
+    function getActiveRatio() {
+      if (state.ratio !== 'free' && state.ratio !== 'custom') {
+        return ratios[state.ratio];
+      }
+      return state.customRatio;
+    }
+
+    // Ratio buttons
+    document.querySelectorAll('.ratio-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        state.ratio = btn.dataset.ratio;
+        state.customRatio = null;
+        
+        document.getElementById('customRatioInputs').classList.add('hidden');
+        document.getElementById('customSizeInputs').classList.add('hidden');
+        
+        if (state.ratio === 'custom') {
+          document.getElementById('customRatioInputs').classList.remove('hidden');
+        }
+        
+        initCropBox();
+      });
+    });
+
+    function applyCustomRatio() {
+      const w = parseInt(document.getElementById('customRatioW').value) || 1;
+      const h = parseInt(document.getElementById('customRatioH').value) || 1;
+      state.customRatio = { w, h };
+      initCropBox();
+      showToast('已应用自定义比例 ' + w + ':' + h);
+    }
+
+    function applyCustomSize() {
+      const w = parseInt(document.getElementById('customSizeW').value);
+      const h = parseInt(document.getElementById('customSizeH').value);
+      
+      if (w && h) {
+        state.customSize = { w, h };
+        showToast('输出尺寸设为 ' + w + ' × ' + h + ' 像素');
+      }
+    }
+
+    const zoomSlider = document.getElementById('zoomSlider');
+    zoomSlider.addEventListener('input', (e) => {
+      state.zoom = parseInt(e.target.value);
+      document.getElementById('zoomValue').textContent = state.zoom + '%';
+      drawCanvas();
+      updatePreview();
+    });
+
+    const rotateSlider = document.getElementById('rotateSlider');
+    rotateSlider.addEventListener('input', (e) => {
+      state.rotation = parseInt(e.target.value);
+      document.getElementById('rotateValue').textContent = state.rotation + '°';
+      drawCanvas();
+      updatePreview();
+    });
+
+    function rotateBy(deg) {
+      state.rotation = ((state.rotation + deg) % 360 + 360) % 360;
+      if (state.rotation > 180) state.rotation -= 360;
+      rotateSlider.value = state.rotation;
+      document.getElementById('rotateValue').textContent = state.rotation + '°';
+      drawCanvas();
+      updatePreview();
+    }
+
+    function flipHorizontal() {
+      state.flipH = !state.flipH;
+      drawCanvas();
+      updatePreview();
+      showToast('已水平翻转');
+    }
+
+    function resetImage() {
+      state.zoom = 100;
+      state.rotation = 0;
+      state.flipH = false;
+      zoomSlider.value = 100;
+      rotateSlider.value = 0;
+      document.getElementById('zoomValue').textContent = '100%';
+      document.getElementById('rotateValue').textContent = '0°';
+      drawCanvas();
+      initCropBox();
+      showToast('已重置');
+    }
+
+    function setExportFormat(format) {
+      state.exportFormat = format;
+      
+      document.getElementById('formatPng').classList.toggle('active', format === 'png');
+      document.getElementById('formatJpg').classList.toggle('active', format === 'jpeg');
+      document.getElementById('jpgQualitySection').classList.toggle('hidden', format !== 'jpeg');
+    }
+
+    const jpgQualitySlider = document.getElementById('jpgQualitySlider');
+    jpgQualitySlider.addEventListener('input', (e) => {
+      const quality = parseInt(e.target.value);
+      state.jpgQuality = quality / 100;
+      document.getElementById('jpgQualityValue').textContent = quality + '%';
+    });
+
+    function generateOutputCanvas() {
+      const outputCanvas = document.createElement('canvas');
+      const outputCtx = outputCanvas.getContext('2d');
+      
+      const scaleX = state.image.width / mainCanvas.width;
+      const scaleY = state.image.height / mainCanvas.height;
+      
+      let outputWidth = Math.round(state.crop.width * scaleX);
+      let outputHeight = Math.round(state.crop.height * scaleY);
+      
+      if (state.customSize) {
+        outputWidth = state.customSize.w;
+        outputHeight = state.customSize.h;
+      }
+      
+      outputCanvas.width = outputWidth;
+      outputCanvas.height = outputHeight;
+      
+      if (state.exportFormat === 'jpeg') {
+        outputCtx.fillStyle = '#FFFFFF';
+        outputCtx.fillRect(0, 0, outputWidth, outputHeight);
+      }
+      
+      outputCtx.save();
+      outputCtx.translate(outputWidth / 2, outputHeight / 2);
+      outputCtx.rotate((state.rotation * Math.PI) / 180);
+      if (state.flipH) outputCtx.scale(-1, 1);
+      
+      const scale = (state.zoom / 100) * (outputWidth / state.crop.width);
+      outputCtx.scale(scale, scale);
+      
+      outputCtx.drawImage(
+        state.image,
+        -state.image.width / 2,
+        -state.image.height / 2
+      );
+      
+      outputCtx.restore();
+      
+      return outputCanvas;
+    }
+
+    function downloadImage() {
+      const outputCanvas = generateOutputCanvas();
+      const extension = state.exportFormat === 'jpeg' ? 'jpg' : 'png';
+      const mimeType = state.exportFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
+      
+      const quality = state.exportFormat === 'jpeg' ? state.jpgQuality : undefined;
+      const dataUrl = outputCanvas.toDataURL(mimeType, quality);
+      
+      const link = document.createElement('a');
+      link.download = 'cropped-image.' + extension;
+      link.href = dataUrl;
+      link.click();
+      
+      const formatName = state.exportFormat === 'jpeg' ? 'JPG' : 'PNG';
+      showToast('图片已保存为 ' + formatName + ' 格式');
+    }
+
+    async function showSaveDialog() {
+      const outputCanvas = generateOutputCanvas();
+      const extension = state.exportFormat === 'jpeg' ? 'jpg' : 'png';
+      const mimeType = state.exportFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
+      
+      if ('showSaveFilePicker' in window) {
+        try {
+          const quality = state.exportFormat === 'jpeg' ? state.jpgQuality : undefined;
+          const blob = await new Promise(resolve => outputCanvas.toBlob(resolve, mimeType, quality));
+          
+          const handle = await window.showSaveFilePicker({
+            suggestedName: 'cropped-image.' + extension,
+            types: [{
+              description: state.exportFormat === 'jpeg' ? 'JPEG Image' : 'PNG Image',
+              accept: { [mimeType]: ['.' + extension] }
+            }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          
+          showToast('图片已保存到自定义位置');
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            showToast('保存失败，请使用下载功能');
+          }
+        }
+      } else {
+        downloadImage();
+        showToast('您的浏览器不支持自定义保存位置，已下载到默认位置');
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      toastMessage.textContent = message;
+      toast.style.opacity = '1';
+      toast.style.pointerEvents = 'auto';
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.pointerEvents = 'none';
+      }, 2000);
+    }
+
+    window.addEventListener('resize', () => {
+      if (state.image) {
+        setupCanvas();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!state.image) return;
+      
+      if (e.key === 'r') {
+        rotateBy(90);
+      } else if (e.key === 'f') {
+        flipHorizontal();
+      } else if (e.key === '0') {
+        resetImage();
+      } else if (e.key === '+' || e.key === '=') {
+        state.zoom = Math.min(300, state.zoom + 10);
+        zoomSlider.value = state.zoom;
+        document.getElementById('zoomValue').textContent = state.zoom + '%';
+        drawCanvas();
+        updatePreview();
+      } else if (e.key === '-') {
+        state.zoom = Math.max(10, state.zoom - 10);
+        zoomSlider.value = state.zoom;
+        document.getElementById('zoomValue').textContent = state.zoom + '%';
+        drawCanvas();
+        updatePreview();
+      }
+    });
+  </script>
+</body>
+</html>
