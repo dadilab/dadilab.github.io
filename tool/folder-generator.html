@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文件夹生成器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Noto Sans SC', sans-serif; }
+    .tree-line { border-left: 2px dashed #cbd5e1; margin-left: 12px; padding-left: 16px; }
+    .folder-item:hover .action-btn { opacity: 1; }
+    .action-btn { opacity: 0; transition: opacity 0.2s; }
+    pre { white-space: pre-wrap; word-break: break-all; }
+    .tab-active { background: linear-gradient(135deg, #10b981, #14b8a6); color: white; }
+    .card { background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); }
+    @media (prefers-color-scheme: dark) {
+      .card { background: rgba(15,23,42,0.9); }
+    }
+    .toast {
+      position: fixed; bottom: 20px; right: 20px; padding: 12px 24px;
+      background: #10b981; color: white; border-radius: 8px;
+      transform: translateY(100px); opacity: 0; transition: all 0.3s;
+      z-index: 1000;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { background: #ef4444; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800">
+  <div class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- 标题 -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
+        📁 文件夹生成器
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">快速生成创建文件夹的BAT批处理脚本</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 左侧：设置面板 -->
+      <div class="space-y-6">
+        <!-- 基础设置 -->
+        <div class="card rounded-2xl shadow-lg border-0 p-6">
+          <h2 class="text-lg font-semibold flex items-center gap-2 mb-4">
+            <span class="text-emerald-600">⚙️</span> 基础设置
+          </h2>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">选择盘符</label>
+              <select id="drive" class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                <option value="C">C盘</option>
+                <option value="D">D盘</option>
+                <option value="E">E盘</option>
+                <option value="F">F盘</option>
+                <option value="G">G盘</option>
+                <option value="H">H盘</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">主文件夹名称</label>
+              <input type="text" id="basePath" value="新建文件夹" 
+                class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+          </div>
+          <div class="p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+            <p class="text-sm">完整路径：<span id="fullPath" class="font-mono font-medium text-emerald-600">C:\新建文件夹</span></p>
+          </div>
+        </div>
+
+        <!-- 创建模式 -->
+        <div class="card rounded-2xl shadow-lg border-0 p-6">
+          <h2 class="text-lg font-semibold flex items-center gap-2 mb-4">
+            <span class="text-emerald-600">📚</span> 创建模式
+          </h2>
+          
+          <!-- Tab按钮 -->
+          <div class="flex gap-2 mb-4 flex-wrap">
+            <button onclick="switchMode('single')" id="tab-single" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium tab-active">
+              📁 单独命名
+            </button>
+            <button onclick="switchMode('batch')" id="tab-batch" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-200 dark:bg-slate-700">
+              📚 批量创建
+            </button>
+            <button onclick="switchMode('class')" id="tab-class" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-200 dark:bg-slate-700">
+              🎓 班级模式
+            </button>
+            <button onclick="switchMode('tree')" id="tab-tree" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-200 dark:bg-slate-700">
+              🌳 树状目录
+            </button>
+          </div>
+
+          <!-- 单独命名模式 -->
+          <div id="mode-single" class="mode-panel">
+            <div class="flex items-center justify-between mb-4">
+              <p class="text-sm text-slate-600">为每个文件夹单独命名</p>
+              <div class="flex gap-2">
+                <button onclick="clearFolders()" class="px-3 py-1 text-sm border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">🔄 重置</button>
+                <button onclick="addFolder()" class="px-3 py-1 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600">➕ 添加</button>
+              </div>
+            </div>
+            <div id="folderList" class="space-y-2 max-h-64 overflow-y-auto pr-2"></div>
+          </div>
+
+          <!-- 批量创建模式 -->
+          <div id="mode-batch" class="mode-panel hidden">
+            <p class="text-sm text-slate-600 mb-4">按前缀+数字批量创建文件夹</p>
+            <div class="grid grid-cols-3 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">前缀名称</label>
+                <input type="text" id="batchPrefix" value="文件夹" oninput="updatePreview()"
+                  class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">起始数字</label>
+                <input type="number" id="batchStart" value="1" min="1" oninput="updatePreview()"
+                  class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">创建数量</label>
+                <input type="number" id="batchCount" value="5" min="1" max="100" oninput="updatePreview()"
+                  class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+            </div>
+            <div id="batchPreview" class="p-3 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm"></div>
+          </div>
+
+          <!-- 班级模式 -->
+          <div id="mode-class" class="mode-panel hidden">
+            <p class="text-sm text-slate-600 mb-4">创建带自增数字的班级文件夹</p>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">前缀文字（可选）</label>
+                <input type="text" id="classPrefix" placeholder="如：高一" oninput="updatePreview()"
+                  class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">后缀文字（可选）</label>
+                <input type="text" id="classSuffix" placeholder="如：班" oninput="updatePreview()"
+                  class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">中间文字</label>
+                <input type="text" id="classMiddle" value="班" oninput="updatePreview()"
+                  class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">起始数字</label>
+                <input type="number" id="classStart" value="1" min="1" oninput="updatePreview()"
+                  class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium mb-2">创建数量</label>
+                <input type="number" id="classCount" value="6" min="1" max="50" oninput="updatePreview()"
+                  class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+              </div>
+            </div>
+            <div id="classPreview" class="p-3 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm"></div>
+          </div>
+
+          <!-- 树状目录模式 -->
+          <div id="mode-tree" class="mode-panel hidden">
+            <div class="flex items-center justify-between mb-4">
+              <p class="text-sm text-slate-600">创建多层嵌套的文件夹结构</p>
+              <div class="flex gap-2">
+                <button onclick="resetTree()" class="px-3 py-1 text-sm border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">🔄 重置</button>
+                <button onclick="addRootNode()" class="px-3 py-1 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600">➕ 添加根目录</button>
+              </div>
+            </div>
+            <div id="treeContainer" class="border rounded-lg bg-slate-50 dark:bg-slate-800/50 p-4 max-h-80 overflow-y-auto min-h-[200px]"></div>
+            <div class="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-sm text-emerald-700 dark:text-emerald-400">
+              💡 提示：点击文件夹旁的 ➕ 按钮添加子文件夹，支持无限层级嵌套
+            </div>
+          </div>
+        </div>
+
+        <!-- 下载设置 -->
+        <div class="card rounded-2xl shadow-lg border-0 p-6">
+          <h2 class="text-lg font-semibold flex items-center gap-2 mb-4">
+            <span class="text-emerald-600">📥</span> 下载设置
+          </h2>
+          <div class="flex items-center justify-between mb-4">
+            <label class="cursor-pointer">使用自定义下载路径</label>
+            <input type="checkbox" id="useCustomPath" onchange="toggleCustomPath()" class="w-5 h-5 accent-emerald-500">
+          </div>
+          <div id="defaultPathInfo" class="p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+            <p class="text-sm font-mono">%USERPROFILE%\Desktop (桌面)</p>
+          </div>
+          <div id="customPathInput" class="hidden">
+            <input type="text" id="customPath" placeholder="如：D:\Downloads"
+              class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+            <p class="text-xs text-slate-500 mt-2">输入完整路径，如 D:\Downloads 或使用环境变量 %USERPROFILE%\Downloads</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧：预览和导出 -->
+      <div class="space-y-6">
+        <!-- 文件夹预览 -->
+        <div class="card rounded-2xl shadow-lg border-0 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+              <span class="text-emerald-600">📁</span> 文件夹预览
+            </h2>
+            <span id="folderCount" class="px-3 py-1 bg-slate-200 dark:bg-slate-700 rounded-full text-sm">共 0 个文件夹</span>
+          </div>
+          <div id="previewContainer" class="max-h-48 overflow-y-auto space-y-1"></div>
+        </div>
+
+        <!-- BAT命令 -->
+        <div class="card rounded-2xl shadow-lg border-0 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+              <span class="text-emerald-600">📄</span> BAT批处理命令
+            </h2>
+            <div class="flex gap-2">
+              <button onclick="copyCommand()" class="px-4 py-2 text-sm border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1">
+                📋 复制
+              </button>
+              <button onclick="downloadBat()" class="px-4 py-2 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 flex items-center gap-1">
+                📥 下载
+              </button>
+            </div>
+          </div>
+          <pre id="batCode" class="text-sm font-mono bg-slate-900 text-slate-100 p-4 rounded-lg max-h-72 overflow-y-auto"></pre>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="card rounded-2xl shadow-lg border-0 p-6">
+          <h2 class="text-lg font-semibold mb-4">📖 使用说明</h2>
+          <div class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+            <div class="flex items-start gap-2">
+              <span class="px-2 py-0.5 border rounded text-xs font-medium shrink-0">1</span>
+              <p>选择盘符并设置主文件夹名称</p>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="px-2 py-0.5 border rounded text-xs font-medium shrink-0">2</span>
+              <p>选择创建模式：单独命名、批量创建、班级模式或树状目录</p>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="px-2 py-0.5 border rounded text-xs font-medium shrink-0">3</span>
+              <p>预览生成的文件夹列表</p>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="px-2 py-0.5 border rounded text-xs font-medium shrink-0">4</span>
+              <p>点击"复制"或"下载"获取BAT脚本</p>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="px-2 py-0.5 border rounded text-xs font-medium shrink-0">5</span>
+              <p>双击运行BAT文件即可创建文件夹</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="mt-12 text-center text-sm text-slate-500">
+      <p>文件夹生成器 - 让文件管理更简单</p>
+      <p class="mt-1">可直接保存此HTML文件到本地使用</p>
+    </footer>
+  </div>
+
+  <!-- Toast提示 -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // 状态管理
+    let currentMode = 'single';
+    let folders = [{ id: 1, name: '文件夹1', enabled: true }];
+    let treeNodes = [
+      {
+        id: 'node-1',
+        name: '项目文件夹',
+        expanded: true,
+        enabled: true,
+        children: [
+          {
+            id: 'node-2',
+            name: '文档',
+            expanded: true,
+            enabled: true,
+            children: [
+              { id: 'node-3', name: '设计文档', expanded: true, enabled: true, children: [] },
+              { id: 'node-4', name: '需求文档', expanded: true, enabled: true, children: [] }
+            ]
+          },
+          {
+            id: 'node-5',
+            name: '代码',
+            expanded: true,
+            enabled: true,
+            children: [
+              { id: 'node-6', name: '前端', expanded: true, enabled: true, children: [] },
+              { id: 'node-7', name: '后端', expanded: true, enabled: true, children: [] }
+            ]
+          }
+        ]
+      }
+    ];
+    let nodeIdCounter = 100;
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      updateFullPath();
+      renderFolders();
+      updatePreview();
+    });
+
+    // 监听基础设置变化
+    document.getElementById('drive').addEventListener('change', () => {
+      updateFullPath();
+      updatePreview();
+    });
+    document.getElementById('basePath').addEventListener('input', () => {
+      updateFullPath();
+      updatePreview();
+    });
+
+    // 更新完整路径显示
+    function updateFullPath() {
+      const drive = document.getElementById('drive').value;
+      const basePath = document.getElementById('basePath').value;
+      document.getElementById('fullPath').textContent = `${drive}:\\${basePath}`;
+    }
+
+    // 切换创建模式
+    function switchMode(mode) {
+      currentMode = mode;
+      
+      // 更新Tab样式
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('tab-active');
+        btn.classList.add('bg-slate-200', 'dark:bg-slate-700');
+      });
+      const activeTab = document.getElementById(`tab-${mode}`);
+      activeTab.classList.add('tab-active');
+      activeTab.classList.remove('bg-slate-200', 'dark:bg-slate-700');
+      
+      // 显示对应面板
+      document.querySelectorAll('.mode-panel').forEach(panel => panel.classList.add('hidden'));
+      document.getElementById(`mode-${mode}`).classList.remove('hidden');
+      
+      updatePreview();
+    }
+
+    // ===== 单独命名模式 =====
+    function renderFolders() {
+      const container = document.getElementById('folderList');
+      container.innerHTML = folders.map((folder, index) => `
+        <div class="folder-item flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+          <input type="checkbox" ${folder.enabled ? 'checked' : ''} onchange="toggleFolder(${folder.id})" class="w-4 h-4 accent-emerald-500">
+          <span class="px-2 py-0.5 border rounded text-xs font-medium">${index + 1}</span>
+          <input type="text" value="${folder.name}" onchange="updateFolderName(${folder.id}, this.value)"
+            class="flex-1 px-3 py-1 border rounded bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+          <button onclick="removeFolder(${folder.id})" class="action-btn p-1 text-red-500 hover:bg-red-50 rounded" ${folders.length <= 1 ? 'disabled' : ''}>🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function addFolder() {
+      folders.push({ id: Date.now(), name: `文件夹${folders.length + 1}`, enabled: true });
+      renderFolders();
+      updatePreview();
+    }
+
+    function removeFolder(id) {
+      if (folders.length > 1) {
+        folders = folders.filter(f => f.id !== id);
+        renderFolders();
+        updatePreview();
+      }
+    }
+
+    function updateFolderName(id, name) {
+      const folder = folders.find(f => f.id === id);
+      if (folder) folder.name = name;
+      updatePreview();
+    }
+
+    function toggleFolder(id) {
+      const folder = folders.find(f => f.id === id);
+      if (folder) folder.enabled = !folder.enabled;
+      updatePreview();
+    }
+
+    function clearFolders() {
+      folders = [{ id: Date.now(), name: '文件夹1', enabled: true }];
+      renderFolders();
+      updatePreview();
+    }
+
+    // ===== 树状目录模式 =====
+    function renderTree() {
+      const container = document.getElementById('treeContainer');
+      if (treeNodes.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-slate-500">
+            <div class="text-4xl mb-2">🌳</div>
+            <p>点击"添加根目录"开始创建</p>
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = treeNodes.map(node => renderTreeNode(node, 0)).join('');
+    }
+
+    function renderTreeNode(node, depth) {
+      const hasChildren = node.children && node.children.length > 0;
+      const indent = depth * 24;
+      const childrenHtml = hasChildren && node.expanded ? 
+        node.children.map(child => renderTreeNode(child, depth + 1)).join('') : '';
+      
+      return `
+        <div class="tree-node" data-id="${node.id}">
+          <div class="folder-item flex items-center gap-2 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" style="padding-left: ${indent + 8}px">
+            <input type="checkbox" ${node.enabled ? 'checked' : ''} onchange="toggleTreeNode('${node.id}')" class="w-4 h-4 accent-emerald-500">
+            <button onclick="toggleTreeExpand('${node.id}')" class="w-5 h-5 flex items-center justify-center ${!hasChildren ? 'invisible' : ''}">
+              ${hasChildren ? (node.expanded ? '🔽' : '▶️') : ''}
+            </button>
+            <span class="text-base">${hasChildren ? (node.expanded ? '📂' : '📁') : '📁'}</span>
+            <input type="text" value="${node.name}" onchange="updateTreeNodeName('${node.id}', this.value)"
+              class="flex-1 px-2 py-1 border rounded bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+            <button onclick="addTreeChild('${node.id}')" class="action-btn px-2 py-1 text-emerald-500 hover:bg-emerald-50 rounded text-sm" title="添加子文件夹">➕</button>
+            <button onclick="removeTreeNode('${node.id}')" class="action-btn px-2 py-1 text-red-500 hover:bg-red-50 rounded text-sm" title="删除">🗑️</button>
+          </div>
+          ${childrenHtml}
+        </div>
+      `;
+    }
+
+    function addRootNode() {
+      nodeIdCounter++;
+      treeNodes.push({
+        id: `node-${nodeIdCounter}`,
+        name: `新文件夹${treeNodes.length + 1}`,
+        expanded: true,
+        enabled: true,
+        children: []
+      });
+      renderTree();
+      updatePreview();
+    }
+
+    function addTreeChild(parentId) {
+      const addToChildren = (nodes) => {
+        for (let node of nodes) {
+          if (node.id === parentId) {
+            nodeIdCounter++;
+            node.children.push({
+              id: `node-${nodeIdCounter}`,
+              name: `子文件夹${node.children.length + 1}`,
+              expanded: true,
+              enabled: true,
+              children: []
+            });
+            node.expanded = true;
+            return true;
+          }
+          if (node.children && addToChildren(node.children)) return true;
+        }
+        return false;
+      };
+      addToChildren(treeNodes);
+      renderTree();
+      updatePreview();
+    }
+
+    function removeTreeNode(id) {
+      const removeFromNodes = (nodes) => {
+        return nodes.filter(node => {
+          if (node.id === id) return false;
+          if (node.children) node.children = removeFromNodes(node.children);
+          return true;
+        });
+      };
+      treeNodes = removeFromNodes(treeNodes);
+      renderTree();
+      updatePreview();
+    }
+
+    function updateTreeNodeName(id, name) {
+      const updateName = (nodes) => {
+        for (let node of nodes) {
+          if (node.id === id) {
+            node.name = name;
+            return true;
+          }
+          if (node.children && updateName(node.children)) return true;
+        }
+        return false;
+      };
+      updateName(treeNodes);
+      updatePreview();
+    }
+
+    function toggleTreeExpand(id) {
+      const toggle = (nodes) => {
+        for (let node of nodes) {
+          if (node.id === id) {
+            node.expanded = !node.expanded;
+            return true;
+          }
+          if (node.children && toggle(node.children)) return true;
+        }
+        return false;
+      };
+      toggle(treeNodes);
+      renderTree();
+    }
+
+    function toggleTreeNode(id) {
+      const toggle = (nodes) => {
+        for (let node of nodes) {
+          if (node.id === id) {
+            node.enabled = !node.enabled;
+            return true;
+          }
+          if (node.children && toggle(node.children)) return true;
+        }
+        return false;
+      };
+      toggle(treeNodes);
+      renderTree();
+      updatePreview();
+    }
+
+    function resetTree() {
+      nodeIdCounter = Date.now();
+      treeNodes = [
+        {
+          id: `node-${++nodeIdCounter}`,
+          name: '项目文件夹',
+          expanded: true,
+          enabled: true,
+          children: [
+            {
+              id: `node-${++nodeIdCounter}`,
+              name: '文档',
+              expanded: true,
+              enabled: true,
+              children: []
+            },
+            {
+              id: `node-${++nodeIdCounter}`,
+              name: '代码',
+              expanded: true,
+              enabled: true,
+              children: []
+            }
+          ]
+        }
+      ];
+      renderTree();
+      updatePreview();
+    }
+
+    // 收集树状节点路径
+    function collectTreePaths(nodes, parentPath) {
+      const result = [];
+      for (let node of nodes) {
+        if (node.enabled) {
+          const currentPath = `${parentPath}\\${node.name}`;
+          result.push({ path: currentPath, name: node.name });
+          if (node.children && node.children.length > 0) {
+            result.push(...collectTreePaths(node.children, currentPath));
+          }
+        }
+      }
+      return result;
+    }
+
+    function countTreeNodes(nodes) {
+      let count = 0;
+      for (let node of nodes) {
+        if (node.enabled) {
+          count++;
+          if (node.children) count += countTreeNodes(node.children);
+        }
+      }
+      return count;
+    }
+
+    // 渲染树状预览
+    function renderTreePreview(nodes, depth = 0) {
+      let html = '';
+      const prefix = '  '.repeat(depth);
+      for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+        if (!node.enabled) continue;
+        const isLast = i === nodes.filter(n => n.enabled).length - 1;
+        const line = depth === 0 ? (isLast ? '└─' : '├─') : (isLast ? '  └─' : '  ├─');
+        html += `<div class="flex items-center gap-2" style="padding-left: ${depth * 16}px">
+          <span class="text-slate-400 font-mono text-sm">${line}</span>
+          <span>📁</span>
+          <span class="text-sm">${node.name}</span>
+        </div>`;
+        if (node.children && node.children.length > 0) {
+          html += renderTreePreview(node.children, depth + 1);
+        }
+      }
+      return html;
+    }
+
+    // ===== 预览更新 =====
+    function updatePreview() {
+      const drive = document.getElementById('drive').value;
+      const basePath = document.getElementById('basePath').value;
+      const mainPath = `${drive}:\\${basePath}`;
+      
+      let folderList = [];
+      let previewHtml = '';
+      
+      if (currentMode === 'single') {
+        folderList = folders.filter(f => f.enabled).map(f => ({ path: `${mainPath}\\${f.name}`, name: f.name }));
+        previewHtml = folderList.map(f => `
+          <div class="folder-item flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+            <span>📁</span>
+            <span class="text-sm">${f.name}</span>
+          </div>
+        `).join('');
+        
+      } else if (currentMode === 'batch') {
+        const prefix = document.getElementById('batchPrefix').value;
+        const start = parseInt(document.getElementById('batchStart').value) || 1;
+        const count = Math.min(100, parseInt(document.getElementById('batchCount').value) || 1);
+        
+        folderList = [];
+        for (let i = 0; i < count; i++) {
+          const name = `${prefix}${start + i}`;
+          folderList.push({ path: `${mainPath}\\${name}`, name });
+        }
+        
+        // 批量预览
+        const preview = folderList.slice(0, 5).map(f => f.name).join(', ') + (count > 5 ? '...' : '');
+        document.getElementById('batchPreview').innerHTML = `预览：<span class="text-emerald-600 font-medium">${preview}</span>`;
+        
+        previewHtml = folderList.map(f => `
+          <div class="folder-item flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+            <span>📁</span>
+            <span class="text-sm">${f.name}</span>
+          </div>
+        `).join('');
+        
+      } else if (currentMode === 'class') {
+        const prefix = document.getElementById('classPrefix').value;
+        const suffix = document.getElementById('classSuffix').value;
+        const middle = document.getElementById('classMiddle').value;
+        const start = parseInt(document.getElementById('classStart').value) || 1;
+        const count = Math.min(50, parseInt(document.getElementById('classCount').value) || 1);
+        
+        folderList = [];
+        for (let i = 0; i < count; i++) {
+          const num = start + i;
+          const name = `${prefix}${num}${middle}${suffix}`;
+          folderList.push({ path: `${mainPath}\\${name}`, name });
+        }
+        
+        // 班级预览
+        const previewBadges = folderList.slice(0, 6).map(f => 
+          `<span class="px-2 py-1 bg-slate-200 dark:bg-slate-600 rounded text-sm">${f.name}</span>`
+        ).join('');
+        const moreBadge = count > 6 ? `<span class="px-2 py-1 border rounded text-sm">+${count - 6} 更多</span>` : '';
+        document.getElementById('classPreview').innerHTML = `<div class="flex flex-wrap gap-2">${previewBadges}${moreBadge}</div>`;
+        
+        previewHtml = folderList.map(f => `
+          <div class="folder-item flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+            <span>📁</span>
+            <span class="text-sm">${f.name}</span>
+          </div>
+        `).join('');
+        
+      } else if (currentMode === 'tree') {
+        folderList = collectTreePaths(treeNodes, mainPath);
+        
+        previewHtml = `
+          <div class="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg font-mono text-sm">
+            <div class="flex items-center gap-2 mb-2">
+              <span>📂</span>
+              <span class="font-medium">${basePath}</span>
+            </div>
+            ${renderTreePreview(treeNodes)}
+          </div>
+        `;
+        
+        renderTree();
+      }
+      
+      // 更新文件夹数量
+      const totalCount = currentMode === 'tree' ? countTreeNodes(treeNodes) : folderList.length;
+      document.getElementById('folderCount').textContent = `共 ${totalCount} 个文件夹`;
+      
+      // 更新预览区域
+      document.getElementById('previewContainer').innerHTML = previewHtml;
+      
+      // 生成BAT命令
+      generateBatCommand(mainPath, folderList);
+    }
+
+    // ===== BAT命令生成 =====
+    function generateBatCommand(mainPath, folderList) {
+      let lines = [];
+      lines.push('@echo off');
+      lines.push('chcp 65001 >nul');
+      lines.push('echo 正在创建文件夹...');
+      lines.push('');
+      lines.push(`if not exist "${mainPath}" (`);
+      lines.push(`    mkdir "${mainPath}"`);
+      lines.push(`    echo 已创建主文件夹: ${mainPath}`);
+      lines.push(')');
+      lines.push('');
+      
+      for (let folder of folderList) {
+        lines.push(`if not exist "${folder.path}" (`);
+        lines.push(`    mkdir "${folder.path}"`);
+        lines.push(`    echo 已创建: ${folder.path.replace(mainPath + '\\', '')}`);
+        lines.push(')');
+      }
+      
+      lines.push('');
+      lines.push('echo 所有文件夹创建完成！');
+      lines.push('pause');
+      
+      document.getElementById('batCode').textContent = lines.join('\r\n');
+    }
+
+    // ===== 复制命令 =====
+    function copyCommand() {
+      const text = document.getElementById('batCode').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('BAT命令已复制到剪贴板');
+      }).catch(() => {
+        showToast('复制失败，请手动复制', true);
+      });
+    }
+
+    // ===== 下载BAT文件 =====
+    function downloadBat() {
+      const text = document.getElementById('batCode').textContent;
+      const blob = new Blob([text], { type: 'application/bat' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'create_folders.bat';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('BAT文件下载成功');
+    }
+
+    // ===== 自定义路径切换 =====
+    function toggleCustomPath() {
+      const useCustom = document.getElementById('useCustomPath').checked;
+      document.getElementById('defaultPathInfo').classList.toggle('hidden', useCustom);
+      document.getElementById('customPathInput').classList.toggle('hidden', !useCustom);
+    }
+
+    // ===== Toast提示 =====
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show' + (isError ? ' error' : '');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
