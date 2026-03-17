@@ -1,0 +1,333 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES加密解密工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .encrypt-btn {
+            background: #667eea;
+            color: white;
+        }
+        .decrypt-btn {
+            background: #764ba2;
+            color: white;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        .clear-btn {
+            background: #dc3545;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        .result-group {
+            margin-top: 15px;
+        }
+        .result-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            min-height: 80px;
+            word-break: break-all;
+            color: #333;
+        }
+        .success {
+            border-color: #28a745 !important;
+            background: #d4edda !important;
+        }
+        .error {
+            border-color: #dc3545 !important;
+            background: #f8d7da !important;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #0c5460;
+        }
+        .info h3 {
+            margin-bottom: 10px;
+            color: #0c5460;
+        }
+        .info ul {
+            margin-left: 20px;
+        }
+        .info li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 AES加密解密工具</h1>
+        
+        <!-- 加密部分 -->
+        <div class="section">
+            <h2>📝 加密</h2>
+            <div class="input-group">
+                <label for="encryptText">要加密的内容：</label>
+                <textarea id="encryptText" placeholder="请输入要加密的文本内容..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="encryptPassword">密码：</label>
+                <input type="password" id="encryptPassword" placeholder="请输入加密密码">
+            </div>
+            <div class="button-group">
+                <button class="encrypt-btn" onclick="encryptText()">加密</button>
+            </div>
+            <div class="result-group">
+                <label>加密结果：</label>
+                <div id="encryptResult" class="result-box"></div>
+                <div class="actions">
+                    <button class="copy-btn" onclick="copyResult('encryptResult')">复制</button>
+                    <button class="clear-btn" onclick="clearAll('encrypt')">清空</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 解密部分 -->
+        <div class="section">
+            <h2>🔓 解密</h2>
+            <div class="input-group">
+                <label for="decryptText">要解密的内容：</label>
+                <textarea id="decryptText" placeholder="请输入要解密的密文..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="decryptPassword">密码：</label>
+                <input type="password" id="decryptPassword" placeholder="请输入解密密码">
+            </div>
+            <div class="button-group">
+                <button class="decrypt-btn" onclick="decryptText()">解密</button>
+            </div>
+            <div class="result-group">
+                <label>解密结果：</label>
+                <div id="decryptResult" class="result-box"></div>
+                <div class="actions">
+                    <button class="copy-btn" onclick="copyResult('decryptResult')">复制</button>
+                    <button class="clear-btn" onclick="clearAll('decrypt')">清空</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 使用说明 -->
+        <div class="info">
+            <h3>💡 使用说明</h3>
+            <ul>
+                <li><strong>加密算法</strong>：使用 AES（Advanced Encryption Standard）对称加密算法</li>
+                <li><strong>加密库</strong>：CryptoJS</li>
+                <li><strong>输出格式</strong>：Base64编码</li>
+                <li><strong>安全提示</strong>：请妥善保管密码，丢失密码将无法解密内容</li>
+                <li><strong>URL编码</strong>：解密后会自动进行URL解码，支持中文和特殊字符</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 加密函数
+        function encryptText() {
+            const text = document.getElementById('encryptText').value;
+            const password = document.getElementById('encryptPassword').value;
+            const resultBox = document.getElementById('encryptResult');
+            
+            if (!text) {
+                showError(resultBox, '请输入要加密的内容！');
+                return;
+            }
+            if (!password) {
+                showError(resultBox, '请输入加密密码！');
+                return;
+            }
+            
+            try {
+                // 对文本进行URL编码（支持中文和特殊字符）
+                const encodedText = encodeURIComponent(text);
+                
+                // 使用AES加密
+                const encrypted = CryptoJS.AES.encrypt(encodedText, password).toString();
+                
+                showSuccess(resultBox, encrypted);
+            } catch (error) {
+                showError(resultBox, '加密失败：' + error.message);
+            }
+        }
+        
+        // 解密函数
+        function decryptText() {
+            const text = document.getElementById('decryptText').value;
+            const password = document.getElementById('decryptPassword').value;
+            const resultBox = document.getElementById('decryptResult');
+            
+            if (!text) {
+                showError(resultBox, '请输入要解密的内容！');
+                return;
+            }
+            if (!password) {
+                showError(resultBox, '请输入解密密码！');
+                return;
+            }
+            
+            try {
+                // 使用AES解密
+                const decrypted = CryptoJS.AES.decrypt(text, password);
+                const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8);
+                
+                if (!decryptedStr) {
+                    showError(resultBox, '解密失败！密码错误或密文格式不正确。');
+                    return;
+                }
+                
+                // URL解码
+                const decodedText = decodeURIComponent(decryptedStr);
+                showSuccess(resultBox, decodedText);
+            } catch (error) {
+                showError(resultBox, '解密失败：' + error.message);
+            }
+        }
+        
+        // 显示成功结果
+        function showSuccess(element, text) {
+            element.textContent = text;
+            element.className = 'result-box success';
+        }
+        
+        // 显示错误信息
+        function showError(element, message) {
+            element.textContent = message;
+            element.className = 'result-box error';
+        }
+        
+        // 复制结果
+        function copyResult(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            if (!text || element.classList.contains('error')) {
+                return;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('已复制到剪贴板！');
+            }).catch(err => {
+                console.error('复制失败：', err);
+                alert('复制失败，请手动复制');
+            });
+        }
+        
+        // 清空输入
+        function clearAll(type) {
+            if (type === 'encrypt') {
+                document.getElementById('encryptText').value = '';
+                document.getElementById('encryptPassword').value = '';
+                document.getElementById('encryptResult').textContent = '';
+                document.getElementById('encryptResult').className = 'result-box';
+            } else {
+                document.getElementById('decryptText').value = '';
+                document.getElementById('decryptPassword').value = '';
+                document.getElementById('decryptResult').textContent = '';
+                document.getElementById('decryptResult').className = 'result-box';
+            }
+        }
+    </script>
+</body>
+</html>
