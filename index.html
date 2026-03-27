@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 20px 100px;
+            line-height: 1.5;
+        }
+
+        /* ———— 苹果风格顶部导航 ———— */
+        .nav {
+            position: sticky;
+            top: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 16px 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            margin: 20px 0 40px;
+            text-align: center;
+            z-index: 999;
+        }
+
+        .nav a {
+            display: inline-block;
+            margin: 0 14px;
+            color: #1d1d1f;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav a:hover {
+            color: #007aff;
+            transform: scale(1.05);
+        }
+
+        /* ———— 苹果风标题 ———— */
+        .list-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin: 50px 0 20px;
+            scroll-margin-top: 100px;
+        }
+
+        /* ———— 苹果风卡片列表 ———— */
+        .numbered-link-list {
+            counter-reset: link-counter;
+            list-style: none;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 10px;
+        }
+
+        .numbered-link-list li {
+            position: relative;
+            padding-left: 36px;
+            margin: 16px 0;
+        }
+
+        /* ———— 自动编号样式 ———— */
+        .numbered-link-list li::before {
+            counter-increment: link-counter;
+            content: counter(link-counter);
+            position: absolute;
+            left: 0;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: #e1f0ff;
+            color: #007aff;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ———— 链接样式 ———— */
+        .numbered-link-list a {
+            color: #1d1d1f;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.2s ease;
+        }
+
+        .numbered-link-list a:hover {
+            color: #007aff;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 顶部导航 -->
+    <div class="nav">
+        <a href="#hot">热门链接</a>
+        <a href="#tools">实用工具</a>
+        <a href="#docs">官方文档</a>
+		<a href="#yuhua">雨花</a>
+    </div>
+
+    <!-- 列表 -->
+    <h2 class="list-title" id="hot">热门链接</h2>
+    <ul class="numbered-link-list">
+        <li><a href="https://www.xudadi.com" target="_blank">许大地的官方网址</a></li>
+        <li><a href="/webjpg/" target="_blank">图片在线批量处理工具</a></li>
+        <li><a href="/tool/htmleditor.html" target="_blank">Html编辑器</a></li>
+        
+    </ul>
+
+  <h2 class="list-title" id="yuhua">雨花</h2>
+    <ul class="numbered-link-list">
+        <li><a href="https://www.kdocs.cn/l/cmI60xDbB0Un" target="_blank">雨花包本链接</a></li>
+        <li><a href="/yuhua/baoben.html" target="_blank">包本处理工具</a></li>
+        <li><a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=2029979112450129923#wechat_redirect" target="_blank">雨花公众号文章</a></li>
+        <li><a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=3865997525819736066#wechat_redirect" target="_blank">雨花每周食谱</a></li>		
+		    <li><a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=1773154879981584386#wechat_redirect" target="_blank">雨花包本喜报</a></li>
+    </ul>
+
+    <h2 class="list-title" id="tools">实用工具</h2>
+    <ul class="numbered-link-list">
+        <li><a href="https://www.baidu.com/" target="_blank">百度搜索</a></li>
+        <li><a href="https://www.google.com/" target="_blank">谷歌搜索</a></li>
+        <li><a href="https://www.iconfont.cn/" target="_blank">阿里图标库</a></li>
+        <li><a href="https://tinypng.com/" target="_blank">图片压缩工具</a></li>
+    </ul>
+
+    <h2 class="list-title" id="docs">官方文档</h2>
+    <ul class="numbered-link-list">
+        <li><a href="https://nodejs.org/zh-cn/" target="_blank">Node.js 官方文档</a></li>
+        <li><a href="https://react.dev/" target="_blank">React 官方文档</a></li>
+        <li><a href="https://vuejs.org/" target="_blank">Vue.js 官方文档</a></li>
+    </ul>
+</body>
+</html>
