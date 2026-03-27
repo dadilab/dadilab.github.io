@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -105,7 +106,7 @@
         <button id="undoBtn" class="bg-warning text-white py-3 px-4 rounded-lg flex items-center justify-center btn-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none" disabled>
           <i class="fa fa-undo mr-2"></i>撤销
         </button>
-        <button id="downloadBtn" class="bg-dark text-white py-3 px-4 rounded-lg flex items-center justify-center btn-hover disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none" disabled>
+        <button id="downloadBtn" class="bg-dark text-white py-3 px-4 rounded-lg flex items-center justify-center btn-hover disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none" disabled>
           <i class="fa fa-download mr-2"></i>下载Excel
         </button>
       </div>
@@ -608,7 +609,7 @@
       
       selectedRows.forEach(rowIndex => {
         const rowElement = document.querySelector(`tr[data-row="${rowIndex}"]`);
-        if (rowElement) row.classList.add('selected-row');
+        if (rowElement) rowElement.classList.add('selected-row');
       });
     }
 
@@ -865,7 +866,7 @@
       showMessage('书名合并成功', 'success');
     }
 
-    // 一键合并所有符合条件的数据
+    // 一键合并所有符合条件的数据（已修复）
     function autoMergeAll() {
       saveToHistory();
       
@@ -879,13 +880,12 @@
       let totalNameGroups = 0;
       let totalNameItems = 0;
       
+      // 1. 合并同一个人、同一个班级的重复包本内容
       const contentGroups = {};
-      
       for (let rowIndex = 1; rowIndex < jsonData.length; rowIndex++) {
         if (displayData[rowIndex]?.checked) continue;
         
         const rowData = jsonData[rowIndex];
-        
         const dataClassCol = classColIndex - EXTRA_COLUMNS;
         const dataContentCol = bookContentColIndex - EXTRA_COLUMNS;
         const dataNameCol = nameColIndex - EXTRA_COLUMNS;
@@ -897,60 +897,50 @@
         if (!name || !className) continue;
         
         const groupKey = `${className}|${name}`;
-        
         if (!contentGroups[groupKey]) {
           contentGroups[groupKey] = {
-            className,
-            name,
-            bookContents: [],
-            rows: []
+            className, name, bookContents: [], rows: []
           };
         }
-        
         if (bookContent && !contentGroups[groupKey].bookContents.includes(bookContent)) {
           contentGroups[groupKey].bookContents.push(bookContent);
         }
-        
         contentGroups[groupKey].rows.push(rowIndex);
       }
       
+      // 执行内容合并
       Object.values(contentGroups).forEach(group => {
         if (group.bookContents.length <= 1) return;
-        
         const mergedContent = group.bookContents.join('、');
+        const firstRow = group.rows[0];
+        jsonData[firstRow][bookContentColIndex - EXTRA_COLUMNS] = mergedContent;
         
-        const firstRowIndex = group.rows[0];
-        const dataContentCol = bookContentColIndex - EXTRA_COLUMNS;
-        jsonData[firstRowIndex][dataContentCol] = mergedContent;
-        
-        group.rows.slice(1).forEach(rowIndex => {
-          jsonData[rowIndex][dataContentCol] = '';
+        group.rows.slice(1).forEach(row => {
+          jsonData[row][bookContentColIndex - EXTRA_COLUMNS] = '';
         });
         
         totalContentGroups++;
         totalContentItems += group.bookContents.length;
       });
       
-      let emptyContentRowsDeleted = 0;
+      // 删除空内容行
+      let emptyContentRows = 0;
       for (let i = jsonData.length - 1; i >= 1; i--) {
         if (displayData[i]?.checked) continue;
-        
-        const dataContentCol = bookContentColIndex - EXTRA_COLUMNS;
-        const content = jsonData[i][dataContentCol]?.toString().trim() || '';
-        if (!content) {
+        const c = jsonData[i][bookContentColIndex - EXTRA_COLUMNS]?.toString().trim() || '';
+        if (!c) {
           jsonData.splice(i, 1);
           displayData.splice(i, 1);
-          emptyContentRowsDeleted++;
+          emptyContentRows++;
         }
       }
       
+      // 2. 合并同一个班级+同一个内容的姓名
       const nameGroups = {};
-      
-      for (let rowIndex = 1; rowIndex < jsonData.length; i++) {
+      for (let rowIndex = 1; rowIndex < jsonData.length; rowIndex++) {
         if (displayData[rowIndex]?.checked) continue;
         
         const rowData = jsonData[rowIndex];
-        
         const dataClassCol = classColIndex - EXTRA_COLUMNS;
         const dataContentCol = bookContentColIndex - EXTRA_COLUMNS;
         const dataNameCol = nameColIndex - EXTRA_COLUMNS;
@@ -960,58 +950,50 @@
         const name = rowData[dataNameCol]?.toString().trim() || '';
         
         if (!name || !bookContent) continue;
-        
         const groupKey = `${className}|${bookContent}`;
         
         if (!nameGroups[groupKey]) {
-          nameGroups[groupKey] = {
-            className,
-            bookContent,
-            names: [],
-            rows: []
-          };
+          nameGroups[groupKey] = { className, bookContent, names: [], rows: [] };
         }
-        
         nameGroups[groupKey].names.push(name);
         nameGroups[groupKey].rows.push(rowIndex);
       }
       
+      // 执行姓名合并
       Object.values(nameGroups).forEach(group => {
         if (group.names.length <= 1) return;
         
-        let mergedName = '';
+        let mergedName;
         if (group.names.length === 1) {
-          mergedName = `${group.names[0]}（1位）`;
+          mergedName = group.names[0];
         } else {
-          mergedName = group.names.slice(0, -1).join('、') + 
-                      `、${group.names[group.names.length - 1]}等${group.names.length}位`;
+          mergedName = group.names.slice(0, -1).join('、') + `、${group.names[group.names.length - 1]}等${group.names.length}位`;
         }
         
-        const firstRowIndex = group.rows[0];
-        const dataNameCol = nameColIndex - EXTRA_COLUMNS;
-        jsonData[firstRowIndex][dataNameCol] = mergedName;
+        const firstRow = group.rows[0];
+        jsonData[firstRow][nameColIndex - EXTRA_COLUMNS] = mergedName;
         
-        group.rows.slice(1).forEach(rowIndex => {
-          jsonData[rowIndex][dataNameCol] = '';
+        group.rows.slice(1).forEach(row => {
+          jsonData[row][nameColIndex - EXTRA_COLUMNS] = '';
         });
         
         totalNameGroups++;
         totalNameItems += group.names.length;
       });
       
-      let emptyNameRowsDeleted = 0;
+      // 删除空姓名行
+      let emptyNameRows = 0;
       for (let i = jsonData.length - 1; i >= 1; i--) {
         if (displayData[i]?.checked) continue;
-        
-        const dataNameCol = nameColIndex - EXTRA_COLUMNS;
-        const name = jsonData[i][dataNameCol]?.toString().trim() || '';
-        if (!name) {
+        const n = jsonData[i][nameColIndex - EXTRA_COLUMNS]?.toString().trim() || '';
+        if (!n) {
           jsonData.splice(i, 1);
           displayData.splice(i, 1);
-          emptyNameRowsDeleted++;
+          emptyNameRows++;
         }
       }
       
+      // 重新编号
       for (let i = 1; i < displayData.length; i++) {
         displayData[i].index = i;
       }
@@ -1019,30 +1001,18 @@
       renderTable();
       updateUndoButton();
       
-      let message = '';
+      // 提示信息
+      let msg = '';
+      const totalDel = emptyContentRows + emptyNameRows;
       if (totalContentGroups === 0 && totalNameGroups === 0) {
-        const totalDeleted = emptyContentRowsDeleted + emptyNameRowsDeleted;
-        if (totalDeleted > 0) {
-          message = `未找到需要合并的数据，但已删除 ${totalDeleted} 个空行`;
-        } else {
-          message = '未找到需要合并的数据（已排除勾选的行）';
-        }
-        showMessage(message, 'info');
+        msg = totalDel > 0 ? `未找到可合并数据，已清理 ${totalDel} 行空数据` : '未找到需要合并的数据';
       } else {
-        message = '一键合并完成：';
-        if (totalContentGroups > 0) {
-          message += `合并 ${totalContentGroups} 组包本内容（共 ${totalContentItems} 个）`;
-        }
-        if (totalNameGroups > 0) {
-          if (totalContentGroups > 0) message += '，';
-          message += `合并 ${totalNameGroups} 组姓名（共 ${totalNameItems} 个）`;
-        }
-        const totalDeleted = emptyContentRowsDeleted + emptyNameRowsDeleted;
-        if (totalDeleted > 0) {
-          message += `，同时删除了 ${totalDeleted} 个空行`;
-        }
-        showMessage(message, 'success');
+        msg = '一键合并完成：';
+        if (totalContentGroups > 0) msg += `合并 ${totalContentGroups} 组内容`;
+        if (totalNameGroups > 0) msg += `，合并 ${totalNameGroups} 组姓名`;
+        if (totalDel > 0) msg += `，删除 ${totalDel} 行空数据`;
       }
+      showMessage(msg, 'success');
     }
 
     // 删除选中的行
