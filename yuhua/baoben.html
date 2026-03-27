@@ -1044,23 +1044,53 @@
       showMessage(`已成功删除 ${rowCount} 行数据`, 'success');
     }
 
-    // 下载Excel（下载的就是排序后的数据）
-    function downloadExcel() {
-      if (!jsonData || jsonData.length === 0) return;
+    // // 下载Excel（下载的就是排序后的数据）
+    // function downloadExcel() {
+    //   if (!jsonData || jsonData.length === 0) return;
       
-      try {
-        const newWorksheet = XLSX.utils.aoa_to_sheet(jsonData);
-        const newWorkbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, '排序后的数据');
-        XLSX.writeFile(newWorkbook, '已排序_处理后的表格.xlsx');
+    //   try {
+    //     const newWorksheet = XLSX.utils.aoa_to_sheet(jsonData);
+    //     const newWorkbook = XLSX.utils.book_new();
+    //     XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, '排序后的数据');
+    //     XLSX.writeFile(newWorkbook, '已排序_处理后的表格.xlsx');
         
-        showMessage('排序后的文件已下载', 'success');
-      } catch (error) {
-        showMessage('文件生成失败', 'error');
-        console.error('文件生成错误:', error);
-      }
-    }
+    //     showMessage('排序后的文件已下载', 'success');
+    //   } catch (error) {
+    //     showMessage('文件生成失败', 'error');
+    //     console.error('文件生成错误:', error);
+    //   }
+    // }
 
+
+    // 下载Excel（下载的就是排序后的数据）
+function downloadExcel() {
+  if (!jsonData || jsonData.length === 0) return;
+  
+  try {
+    const newWorksheet = XLSX.utils.aoa_to_sheet(jsonData);
+    const newWorkbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, '排序后的数据');
+    
+    // 生成时间戳：YYYYMMDDHHmmss
+    const now = new Date();
+    const timestamp = now.getFullYear().toString() +
+      (now.getMonth() + 1).toString().padStart(2, '0') +
+      now.getDate().toString().padStart(2, '0') +
+      now.getHours().toString().padStart(2, '0') +
+      now.getMinutes().toString().padStart(2, '0') +
+      now.getSeconds().toString().padStart(2, '0');
+    
+    // 下载文件
+    XLSX.writeFile(newWorkbook, `${timestamp}已排序_处理后的表格.xlsx`);
+    
+    showMessage('排序后的文件已下载', 'success');
+  } catch (error) {
+    showMessage('文件生成失败', 'error');
+    console.error('文件生成错误:', error);
+  }
+}
+
+    
     // 显示消息提示
     function showMessage(text, type = 'info') {
       const message = document.createElement('div');
