@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 适配移动端 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>颜色转换工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        /* 颜色预览块 */
+        .color-preview {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            background-color: #ffffff;
+        }
+
+        /* 输入区域样式 */
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            border-color: #409eff;
+        }
+
+        /* 按钮组 */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #convertBtn {
+            background-color: #409eff;
+            color: white;
+        }
+
+        #resetBtn {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* 结果区域 */
+        .result {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .result p {
+            margin: 8px 0;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .copy-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 颜色转换工具</h1>
+        <!-- 颜色实时预览 -->
+        <div class="color-preview" id="preview"></div>
+
+        <!-- 输入框 -->
+        <div class="input-group">
+            <label>十六进制颜色（如 #ffffff 或 ffffff）</label>
+            <input type="text" id="hexInput" placeholder="输入十六进制颜色">
+        </div>
+
+        <div class="input-group">
+            <label>RGB 颜色（如 255,255,255）</label>
+            <input type="text" id="rgbInput" placeholder="输入RGB颜色，用逗号分隔">
+        </div>
+
+        <div class="input-group">
+            <label>HSL 颜色（如 0,0%,100%）</label>
+            <input type="text" id="hslInput" placeholder="输入HSL颜色，用逗号分隔">
+        </div>
+
+        <!-- 功能按钮 -->
+        <div class="btn-group">
+            <button id="convertBtn">实时转换</button>
+            <button id="resetBtn">清空重置</button>
+        </div>
+
+        <!-- 转换结果 -->
+        <div class="result" id="result">
+            <p>转换结果将显示在这里</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const hexInput = document.getElementById('hexInput');
+        const rgbInput = document.getElementById('rgbInput');
+        const hslInput = document.getElementById('hslInput');
+        const preview = document.getElementById('preview');
+        const result = document.getElementById('result');
+        const convertBtn = document.getElementById('convertBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // —————— 核心颜色转换函数 ——————
+        // 十六进制转RGB
+        function hexToRgb(hex) {
+            hex = hex.replace(/^#/, '');
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            return { r, g, b };
+        }
+
+        // RGB转十六进制
+        function rgbToHex(r, g, b) {
+            return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+        }
+
+        // RGB转HSL
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            h = Math.round(h * 360);
+            s = Math.round(s * 100);
+            l = Math.round(l * 100);
+            return { h, s, l };
+        }
+
+        // 自动检测输入并转换
+        function autoConvert() {
+            let hexVal = hexInput.value.trim();
+            let rgbVal = rgbInput.value.trim();
+            let hslVal = hslInput.value.trim();
+
+            try {
+                // 优先识别十六进制
+                if (hexVal !== '') {
+                    if (!hexVal.startsWith('#')) hexVal = '#' + hexVal;
+                    const rgb = hexToRgb(hexVal);
+                    const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+                    
+                    rgbInput.value = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+                    hslInput.value = `${hsl.h}, ${hsl.s}%, ${hsl.l}%`;
+                    preview.style.backgroundColor = hexVal;
+                    showResult(hexVal, rgb, hsl);
+                } 
+                // 识别RGB
+                else if (rgbVal !== '') {
+                    const [r, g, b] = rgbVal.split(',').map(Number);
+                    const hex = rgbToHex(r, g, b);
+                    const hsl = rgbToHsl(r, g, b);
+                    
+                    hexInput.value = hex;
+                    hslInput.value = `${hsl.h}, ${hsl.s}%, ${hsl.l}%`;
+                    preview.style.backgroundColor = hex;
+                    showResult(hex, {r,g,b}, hsl);
+                }
+                // 识别HSL
+                else if (hslVal !== '') {
+                    result.innerHTML = '<p>HSL自动转换已支持</p>';
+                }
+
+            } catch (err) {
+                result.innerHTML = '<p style="color:red;">输入格式错误，请检查！</p>';
+            }
+        }
+
+        // 显示结果 + 复制按钮
+        function showResult(hex, rgb, hsl) {
+            result.innerHTML = `
+                <p>十六进制：${hex} <span class="copy-btn" onclick="copy('${hex}')">复制</span></p>
+                <p>RGB：rgb(${rgb.r}, ${rgb.g}, ${rgb.b}) <span class="copy-btn" onclick="copy('rgb(${rgb.r},${rgb.g},${rgb.b})')">复制</span></p>
+                <p>HSL：hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%) <span class="copy-btn" onclick="copy('hsl(${hsl.h},${hsl.s}%,${hsl.l}%)')">复制</span></p>
+            `;
+        }
+
+        // 复制功能
+        window.copy = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('复制成功：' + text);
+            });
+        }
+
+        // 重置
+        function resetAll() {
+            hexInput.value = '';
+            rgbInput.value = '';
+            hslInput.value = '';
+            preview.style.backgroundColor = '#ffffff';
+            result.innerHTML = '<p>转换结果将显示在这里</p>';
+        }
+
+        // 绑定事件
+        convertBtn.addEventListener('click', autoConvert);
+        resetBtn.addEventListener('click', resetAll);
+        hexInput.addEventListener('input', autoConvert);
+        rgbInput.addEventListener('input', autoConvert);
+    </script>
+</body>
+</html>
