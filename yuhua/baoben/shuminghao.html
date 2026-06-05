@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excel书名号添加工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+    background: #f0f4f8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+  }
+  h1 {
+    font-size: 22px;
+    color: #1a3a5c;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #6b7a8d;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+    padding: 24px 28px;
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 18px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #2563eb;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-title .step-badge {
+    background: #2563eb;
+    color: #fff;
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  /* 粘贴区 */
+  .paste-area {
+    width: 100%;
+    min-height: 90px;
+    border: 2px dashed #93c5fd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    color: #374151;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #f8faff;
+    font-family: inherit;
+  }
+  .paste-area:focus { border-color: #2563eb; background: #fff; }
+
+  /* 工具栏 */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .btn {
+    padding: 8px 20px;
+    border-radius: 7px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.18s, transform 0.1s;
+    user-select: none;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: #2563eb;
+    color: #fff;
+  }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+  .btn-success {
+    background: #16a34a;
+    color: #fff;
+  }
+  .btn-success:hover { background: #15803d; }
+  .btn-success:disabled { background: #86efac; cursor: not-allowed; }
+  .btn-secondary {
+    background: #e5e7eb;
+    color: #374151;
+  }
+  .btn-secondary:hover { background: #d1d5db; }
+  .btn-danger {
+    background: #ef4444;
+    color: #fff;
+  }
+  .btn-danger:hover { background: #dc2626; }
+  .btn-sm {
+    padding: 5px 12px;
+    font-size: 13px;
+    border-radius: 5px;
+    font-weight: 500;
+  }
+
+  /* 状态提示 */
+  .status-bar {
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    display: none;
+  }
+  .status-bar.info { display: block; background: #dbeafe; color: #1e40af; }
+  .status-bar.success { display: block; background: #dcfce7; color: #15803d; }
+  .status-bar.warning { display: block; background: #fef3c7; color: #92400e; }
+  .status-bar.error { display: block; background: #fee2e2; color: #b91c1c; }
+
+  /* 表格包裹 */
+  .table-wrapper {
+    overflow: auto;
+    max-height: 500px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }
+  table {
+    border-collapse: collapse;
+    min-width: 100%;
+    font-size: 14px;
+    table-layout: auto;
+  }
+  thead th {
+    background: #1e3a5f;
+    color: #fff;
+    padding: 8px 12px;
+    text-align: center;
+    font-weight: 600;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    border: 1px solid #2d5280;
+  }
+  thead th.row-no-col {
+    width: 48px;
+    min-width: 48px;
+    max-width: 48px;
+  }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  tbody tr:hover { background: #eff6ff; }
+  tbody td {
+    padding: 6px 10px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    white-space: nowrap;
+    min-width: 60px;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background 0.1s;
+    user-select: none;
+  }
+  tbody td.row-no {
+    background: #f1f5f9;
+    color: #64748b;
+    text-align: center;
+    font-size: 12px;
+    cursor: default;
+    min-width: 40px;
+    max-width: 48px;
+  }
+  /* 选中状态 */
+  tbody td.selected {
+    background: #bfdbfe !important;
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
+  }
+  /* 已加书名号高亮 */
+  tbody td.marked {
+    color: #be123c;
+    font-weight: 600;
+  }
+  tbody td.selected.marked {
+    background: #fecdd3 !important;
+  }
+
+  /* 选择提示 */
+  .select-hint {
+    font-size: 12px;
+    color: #6b7a8d;
+    margin-top: 6px;
+  }
+  kbd {
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 12px;
+    font-family: inherit;
+    color: #374151;
+  }
+
+  /* 输出预览 */
+  .output-preview {
+    background: #f8faff;
+    border: 1px solid #c7d8f0;
+    border-radius: 8px;
+    padding: 12px;
+    min-height: 60px;
+    font-size: 14px;
+    color: #374151;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+
+  .copy-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  /* 操作历史 */
+  .history-list {
+    list-style: none;
+    padding: 0;
+    font-size: 13px;
+    color: #374151;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .history-list li {
+    padding: 4px 6px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .history-list li:last-child { border-bottom: none; }
+  .history-badge {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 16px; }
+    .btn { padding: 7px 13px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>📚 Excel 书名号添加工具</h1>
+<p class="subtitle">将 Excel 数据粘贴进来，选中需要添加书名号的单元格，点击按钮一键处理</p>
+
+<!-- 第一步：粘贴 -->
+<div class="card">
+  <div class="section-title">
+    <span class="step-badge">1</span>
+    从 Excel 复制数据后粘贴到此处
+  </div>
+  <textarea id="pasteInput" class="paste-area"
+    placeholder="在 Excel 中选中区域 → Ctrl+C 复制 → 在此处 Ctrl+V 粘贴..."
+    rows="5"></textarea>
+  <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+    <button class="btn btn-primary" onclick="parseAndRender()">📊 解析 / 刷新表格</button>
+    <button class="btn btn-secondary" onclick="clearAll()">🗑️ 清空重置</button>
+  </div>
+</div>
+
+<!-- 第二步：操作表格 -->
+<div class="card" id="tableCard" style="display:none;">
+  <div class="section-title">
+    <span class="step-badge">2</span>
+    点击选中要加书名号的单元格，再点击执行
+  </div>
+  <div id="statusBar" class="status-bar info">请点击选中目标单元格（支持 Ctrl/Shift 多选）</div>
+
+  <div class="toolbar">
+    <button class="btn btn-primary" id="btnAddMark" onclick="addBookMark()" disabled>
+      《》添加书名号
+    </button>
+    <button class="btn btn-danger btn-sm" id="btnRemoveMark" onclick="removeBookMark()" disabled>
+      移除书名号
+    </button>
+    <button class="btn btn-secondary btn-sm" onclick="selectAll()">全选当前列</button>
+    <button class="btn btn-secondary btn-sm" onclick="clearSelection()">取消选中</button>
+    <span id="selCount" style="font-size:13px;color:#2563eb;font-weight:600;"></span>
+  </div>
+
+  <div class="table-wrapper">
+    <table id="dataTable">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <p class="select-hint">
+    💡 提示：单击选中单格，<kbd>Ctrl</kbd>+单击切换选中，<kbd>Shift</kbd>+单击连续选中，<kbd>Ctrl+A</kbd> 全选当前焦点列
+  </p>
+</div>
+
+<!-- 第三步：复制结果 -->
+<div class="card" id="resultCard" style="display:none;">
+  <div class="section-title">
+    <span class="step-badge">3</span>
+    复制结果回 Excel
+  </div>
+  <div id="outputPreview" class="output-preview"></div>
+  <div class="copy-row">
+    <button class="btn btn-success" onclick="copyResult()">📋 复制全表数据（可直接粘贴回 Excel）</button>
+    <span id="copyTip" style="font-size:13px;color:#15803d;display:none;">✅ 已复制！请在 Excel 中 Ctrl+V 粘贴</span>
+  </div>
+</div>
+
+<!-- 操作历史 -->
+<div class="card" id="historyCard" style="display:none;">
+  <div class="section-title" style="margin-bottom:8px;">
+    <span class="step-badge" style="background:#6366f1;">✦</span>
+    操作历史
+  </div>
+  <ul class="history-list" id="historyList"></ul>
+</div>
+
+<script>
+// ===================== 数据模型 =====================
+let tableData = [];       // 二维数组，原始数据
+let headers = [];         // 表头（列标 A B C …）
+let selectedCells = new Set(); // "row,col" 字符串集合
+let lastClickedCol = -1;  // 最后点击的列（用于全选列功能）
+let lastClickedRow = -1;  // 用于 Shift 连续选中
+let historyLog = [];
+
+// ===================== 解析 & 渲染 =====================
+function parseAndRender() {
+  const raw = document.getElementById('pasteInput').value;
+  if (!raw.trim()) {
+    showStatus('请先在上方粘贴 Excel 数据！', 'warning');
+    document.getElementById('tableCard').style.display = 'none';
+    return;
+  }
+  // 按行分割（兼容 \r\n 和 \n）
+  const lines = raw.split(/\r?\n/).filter(l => l.trim() !== '');
+  if (lines.length === 0) {
+    showStatus('未检测到有效数据，请重新粘贴', 'error');
+    return;
+  }
+  // 解析 TSV（Excel 复制默认用 Tab 分隔）
+  tableData = lines.map(line => line.split('\t'));
+  // 对齐列数
+  const colCount = Math.max(...tableData.map(r => r.length));
+  tableData = tableData.map(row => {
+    while (row.length < colCount) row.push('');
+    return row;
+  });
+  // 生成列标
+  headers = [];
+  for (let i = 0; i < colCount; i++) {
+    headers.push(colIndexToLetter(i));
+  }
+  selectedCells.clear();
+  lastClickedCol = -1;
+  lastClickedRow = -1;
+  renderTable();
+  updateButtons();
+  document.getElementById('tableCard').style.display = 'block';
+  document.getElementById('resultCard').style.display = 'none';
+  showStatus(`✅ 已加载 ${tableData.length} 行 × ${colCount} 列。请点击选中要添加书名号的单元格。`, 'info');
+  renderOutput();
+}
+
+function colIndexToLetter(n) {
+  let s = '';
+  n++;
+  while (n > 0) {
+    n--;
+    s = String.fromCharCode(65 + (n % 26)) + s;
+    n = Math.floor(n / 26);
+  }
+  return s;
+}
+
+function renderTable() {
+  const thead = document.getElementById('thead');
+  const tbody = document.getElementById('tbody');
+  const colCount = headers.length;
+
+  // 表头
+  let thHTML = '<tr><th class="row-no-col">#</th>';
+  headers.forEach(h => { thHTML += `<th>${h}</th>`; });
+  thHTML += '</tr>';
+  thead.innerHTML = thHTML;
+
+  // 表体
+  let tbHTML = '';
+  tableData.forEach((row, ri) => {
+    tbHTML += `<tr>`;
+    tbHTML += `<td class="row-no">${ri + 1}</td>`;
+    row.forEach((cell, ci) => {
+      const key = `${ri},${ci}`;
+      const selClass = selectedCells.has(key) ? ' selected' : '';
+      const markedClass = isMarked(cell) ? ' marked' : '';
+      const escaped = escapeHtml(cell);
+      tbHTML += `<td class="${selClass}${markedClass}" data-row="${ri}" data-col="${ci}" onclick="cellClick(event, ${ri}, ${ci})" title="${escaped}">${escaped}</td>`;
+    });
+    tbHTML += `</tr>`;
+  });
+  tbody.innerHTML = tbHTML;
+}
+
+function isMarked(val) {
+  return typeof val === 'string' && val.startsWith('《') && val.endsWith('》');
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ===================== 单元格交互 =====================
+function cellClick(e, ri, ci) {
+  const key = `${ri},${ci}`;
+  if (e.shiftKey && lastClickedRow >= 0) {
+    // Shift：连续选中同列
+    const col = lastClickedCol >= 0 ? lastClickedCol : ci;
+    const minRow = Math.min(lastClickedRow, ri);
+    const maxRow = Math.max(lastClickedRow, ri);
+    for (let r = minRow; r <= maxRow; r++) {
+      selectedCells.add(`${r},${col}`);
+    }
+    lastClickedRow = ri;
+    lastClickedCol = col;
+  } else if (e.ctrlKey || e.metaKey) {
+    // Ctrl：切换
+    if (selectedCells.has(key)) {
+      selectedCells.delete(key);
+    } else {
+      selectedCells.add(key);
+      lastClickedRow = ri;
+      lastClickedCol = ci;
+    }
+  } else {
+    // 单击：只选这一格（若已选且是唯一选中，则取消）
+    if (selectedCells.size === 1 && selectedCells.has(key)) {
+      selectedCells.clear();
+      lastClickedRow = -1;
+      lastClickedCol = -1;
+    } else {
+      selectedCells.clear();
+      selectedCells.add(key);
+      lastClickedRow = ri;
+      lastClickedCol = ci;
+    }
+  }
+  refreshCellStyles();
+  updateButtons();
+}
+
+function refreshCellStyles() {
+  const tds = document.querySelectorAll('#dataTable tbody td[data-row]');
+  tds.forEach(td => {
+    const ri = td.dataset.row;
+    const ci = td.dataset.col;
+    const key = `${ri},${ci}`;
+    const cell = tableData[ri][ci];
+    td.className = (selectedCells.has(key) ? 'selected' : '') + (isMarked(cell) ? ' marked' : '');
+  });
+  const n = selectedCells.size;
+  document.getElementById('selCount').textContent = n > 0 ? `已选中 ${n} 个单元格` : '';
+}
+
+// 全选当前焦点列（或上次点击的列）
+function selectAll() {
+  if (lastClickedCol < 0) {
+    showStatus('请先点击某列的任意单元格，再点击"全选当前列"', 'warning');
+    return;
+  }
+  const ci = lastClickedCol;
+  selectedCells.clear();
+  tableData.forEach((_, ri) => { selectedCells.add(`${ri},${ci}`); });
+  refreshCellStyles();
+  updateButtons();
+  showStatus(`已全选 ${headers[ci]} 列（共 ${tableData.length} 格）`, 'info');
+}
+
+function clearSelection() {
+  selectedCells.clear();
+  lastClickedRow = -1;
+  lastClickedCol = -1;
+  refreshCellStyles();
+  updateButtons();
+  showStatus('已取消全部选中', 'info');
+}
+
+// Ctrl+A 快捷键
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'a' && document.getElementById('tableCard').style.display !== 'none') {
+    e.preventDefault();
+    selectAll();
+  }
+});
+
+// ===================== 按钮逻辑 =====================
+function updateButtons() {
+  const n = selectedCells.size;
+  document.getElementById('btnAddMark').disabled = n === 0;
+  document.getElementById('btnRemoveMark').disabled = n === 0;
+}
+
+function addBookMark() {
+  if (selectedCells.size === 0) return;
+  let count = 0;
+  selectedCells.forEach(key => {
+    const [ri, ci] = key.split(',').map(Number);
+    const val = tableData[ri][ci];
+    if (!isMarked(val)) {
+      tableData[ri][ci] = '《' + val + '》';
+      count++;
+    }
+  });
+  addHistory('添加书名号', count);
+  showStatus(`✅ 已为 ${count} 个单元格添加书名号（已有书名号的跳过）`, 'success');
+  renderTable();
+  refreshCellStyles();
+  renderOutput();
+  document.getElementById('resultCard').style.display = 'block';
+}
+
+function removeBookMark() {
+  if (selectedCells.size === 0) return;
+  let count = 0;
+  selectedCells.forEach(key => {
+    const [ri, ci] = key.split(',').map(Number);
+    const val = tableData[ri][ci];
+    if (isMarked(val)) {
+      tableData[ri][ci] = val.slice(1, -1);
+      count++;
+    }
+  });
+  addHistory('移除书名号', count);
+  showStatus(`已从 ${count} 个单元格移除书名号`, 'info');
+  renderTable();
+  refreshCellStyles();
+  renderOutput();
+}
+
+// ===================== 输出 & 复制 =====================
+function renderOutput() {
+  const tsv = tableData.map(row => row.join('\t')).join('\n');
+  const prev = document.getElementById('outputPreview');
+  prev.textContent = tsv.length > 2000 ? tsv.slice(0, 2000) + '\n…（预览截断，复制时为完整内容）' : tsv;
+}
+
+function copyResult() {
+  const tsv = tableData.map(row => row.join('\t')).join('\n');
+  navigator.clipboard.writeText(tsv).then(() => {
+    const tip = document.getElementById('copyTip');
+    tip.style.display = 'inline';
+    setTimeout(() => { tip.style.display = 'none'; }, 3000);
+  }).catch(() => {
+    // 降级方案
+    const ta = document.createElement('textarea');
+    ta.value = tsv;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const tip = document.getElementById('copyTip');
+    tip.style.display = 'inline';
+    setTimeout(() => { tip.style.display = 'none'; }, 3000);
+  });
+}
+
+// ===================== 历史记录 =====================
+function addHistory(action, count) {
+  historyLog.unshift({ action, count, time: new Date().toLocaleTimeString() });
+  if (historyLog.length > 20) historyLog.pop();
+  const ul = document.getElementById('historyList');
+  ul.innerHTML = historyLog.map(h =>
+    `<li><span class="history-badge">${h.action}</span> 处理了 <b>${h.count}</b> 个单元格 <span style="color:#94a3b8;margin-left:auto;">${h.time}</span></li>`
+  ).join('');
+  document.getElementById('historyCard').style.display = 'block';
+}
+
+// ===================== 工具 =====================
+function showStatus(msg, type) {
+  const bar = document.getElementById('statusBar');
+  bar.textContent = msg;
+  bar.className = 'status-bar ' + type;
+}
+
+function clearAll() {
+  document.getElementById('pasteInput').value = '';
+  tableData = [];
+  headers = [];
+  selectedCells.clear();
+  lastClickedRow = -1;
+  lastClickedCol = -1;
+  document.getElementById('tableCard').style.display = 'none';
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('historyCard').style.display = 'none';
+  historyLog = [];
+}
+</script>
+</body>
+</html>
