@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>导航</title>
-	<script>
+    <script>
 var _hmt = _hmt || [];
 (function() {
   var hm = document.createElement("script");
   hm.src = "https://hm.baidu.com/hm.js?bd4b296780080a3ed1cec76ce390b1ad";
-  var s = document.getElementsByTagName("script")[0]; 
+  var s = document.getElementsByTagName("script")[0];
   s.parentNode.insertBefore(hm, s);
 })();
 </script>
@@ -20,101 +20,169 @@ var _hmt = _hmt || [];
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
         }
 
         body {
-            background-color: #f5f7fa;
-            max-width: 700px;
+            background-color: #f0f2f5;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 0 20px 100px;
+            padding: 12px 16px 60px;
             line-height: 1.5;
+            color: #1d1d1f;
         }
 
-        /* ———— 苹果风格顶部导航 ———— */
+        /* ———— 顶部导航 ———— */
         .nav {
             position: sticky;
-            top: 20px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 16px 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            margin: 20px 0 40px;
+            top: 8px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 14px;
+            padding: 10px 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            margin: 8px 0 20px;
             text-align: center;
             z-index: 999;
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            flex-wrap: wrap;
         }
 
         .nav a {
             display: inline-block;
-            margin: 0 14px;
-            color: #1d1d1f;
+            padding: 6px 14px;
+            color: #555;
             text-decoration: none;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 500;
+            border-radius: 8px;
             transition: all 0.2s ease;
         }
 
         .nav a:hover {
             color: #007aff;
-            transform: scale(1.05);
+            background: rgba(0, 122, 255, 0.08);
         }
 
-        /* ———— 苹果风标题 ———— */
-        .list-title {
-            font-size: 24px;
+        /* ———— 分类区块 ———— */
+        .section {
+            margin-bottom: 16px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 10px 4px;
+        }
+
+        .section-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-size: 17px;
             font-weight: 600;
             color: #1d1d1f;
-            margin: 50px 0 20px;
-            scroll-margin-top: 100px;
         }
 
-        /* ———— 苹果风卡片列表 ———— */
-        .numbered-link-list {
-            counter-reset: link-counter;
-            list-style: none;
+        .section-count {
+            font-size: 12px;
+            color: #999;
+            background: #f0f0f0;
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+
+        /* ———— 链接卡片网格 ———— */
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 8px;
+        }
+
+        .link-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             background: #ffffff;
-            border-radius: 18px;
-            padding: 28px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-            margin-bottom: 10px;
+            border-radius: 12px;
+            padding: 10px 14px;
+            text-decoration: none;
+            color: #1d1d1f;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.04);
         }
 
-        .numbered-link-list li {
-            position: relative;
-            padding-left: 36px;
-            margin: 16px 0;
-        }
-
-        /* ———— 自动编号样式 ———— */
-        .numbered-link-list li::before {
-            counter-increment: link-counter;
-            content: counter(link-counter);
-            position: absolute;
-            left: 0;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background-color: #e1f0ff;
+        .link-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             color: #007aff;
-            font-size: 13px;
+            border-color: rgba(0, 122, 255, 0.2);
+        }
+
+        .link-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: #f0f4ff;
+            color: #007aff;
+            font-size: 12px;
             font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
-        /* ———— 链接样式 ———— */
-        .numbered-link-list a {
-            color: #1d1d1f;
-            text-decoration: none;
-            font-size: 16px;
-            transition: color 0.2s ease;
+        .link-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
         }
 
-        .numbered-link-list a:hover {
+        .link-arrow {
+            font-size: 12px;
+            color: #ccc;
+            flex-shrink: 0;
+            transition: color 0.2s;
+        }
+
+        .link-card:hover .link-arrow {
             color: #007aff;
+        }
+
+        /* ———— 分类配色 ———— */
+        .cat-hot .section-icon { background: #fff3e0; }
+        .cat-yuhua .section-icon { background: #e8f5e9; }
+        .cat-tools .section-icon { background: #e3f2fd; }
+        .cat-game .section-icon { background: #fce4ec; }
+
+        .cat-hot .link-num { background: #fff3e0; color: #f57c00; }
+        .cat-yuhua .link-num { background: #e8f5e9; color: #2e7d32; }
+        .cat-tools .link-num { background: #e3f2fd; color: #1565c0; }
+        .cat-game .link-num { background: #fce4ec; color: #c62828; }
+
+        /* ———— 响应式 ———— */
+        @media (max-width: 600px) {
+            body { padding: 8px 10px 40px; }
+            .link-grid { grid-template-columns: 1fr; }
+            .nav { padding: 8px 10px; gap: 2px; }
+            .nav a { padding: 5px 10px; font-size: 13px; }
         }
     </style>
 </head>
@@ -122,69 +190,250 @@ var _hmt = _hmt || [];
 <body>
     <!-- 顶部导航 -->
     <div class="nav">
-        <a href="#hot">热门链接</a>
-        <a href="#yuhua">雨花</a>
-        <a href="#tools">实用工具</a>
-        <a href="#game">娱乐</a>
+        <a href="#hot">📌 热门</a>
+        <a href="#yuhua">🌿 雨花</a>
+        <a href="#tools">🔧 工具</a>
+        <a href="#game">🎮 娱乐</a>
     </div>
 
-    <!-- 列表 -->
-    <h2 class="list-title" id="hot">热门链接</h2>
-    <ul class="numbered-link-list">
-        <li><a href="https://www.xudadi.com" target="_blank">许大地的官方网址</a></li>
-        <li><a href="/webjpg/" target="_blank">图片在线批量处理工具</a></li>
-        <li><a href="/tool/htmleditor.html" target="_blank">Html编辑器</a></li>
+    <!-- 热门链接 -->
+    <div class="section cat-hot" id="hot">
+        <div class="section-header">
+            <div class="section-icon">📌</div>
+            <div class="section-title">热门链接</div>
+            <div class="section-count">3 个</div>
+        </div>
+        <div class="link-grid">
+            <a class="link-card" href="https://www.xudadi.com" target="_blank">
+                <span class="link-num">1</span>
+                <span class="link-text">许大地的官方网址</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/webjpg/" target="_blank">
+                <span class="link-num">2</span>
+                <span class="link-text">图片在线批量处理工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/htmleditor.html" target="_blank">
+                <span class="link-num">3</span>
+                <span class="link-text">Html编辑器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+        </div>
+    </div>
 
-    </ul>
+    <!-- 雨花 -->
+    <div class="section cat-yuhua" id="yuhua">
+        <div class="section-header">
+            <div class="section-icon">🌿</div>
+            <div class="section-title">雨花</div>
+            <div class="section-count">7 个</div>
+        </div>
+        <div class="link-grid">
+            <a class="link-card" href="https://www.kdocs.cn/l/cmI60xDbB0Un" target="_blank">
+                <span class="link-num">1</span>
+                <span class="link-text">雨花包本链接</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/yuhua/baoben/baoben.html" target="_blank">
+                <span class="link-num">2</span>
+                <span class="link-text">包本处理工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/yuhua/baoben/shuminghao.html" target="_blank">
+                <span class="link-num">3</span>
+                <span class="link-text">包本书名号处理工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/yuhua/baoben/duanhang.html" target="_blank">
+                <span class="link-num">4</span>
+                <span class="link-text">包本断行处理工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=2029979112450129923#wechat_redirect" target="_blank">
+                <span class="link-num">5</span>
+                <span class="link-text">雨花公众号文章</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=3865997525819736066#wechat_redirect" target="_blank">
+                <span class="link-num">6</span>
+                <span class="link-text">雨花每周食谱</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=1773154879981584386#wechat_redirect" target="_blank">
+                <span class="link-num">7</span>
+                <span class="link-text">雨花包本喜报</span>
+                <span class="link-arrow">↗</span>
+            </a>
+        </div>
+    </div>
 
-    <h2 class="list-title" id="yuhua">雨花</h2>
-    <ul class="numbered-link-list">
-        <li><a href="https://www.kdocs.cn/l/cmI60xDbB0Un" target="_blank">雨花包本链接</a></li>
-        <li><a href="/yuhua/baoben/baoben.html" target="_blank">包本处理工具</a></li>
-		<li><a href="/yuhua/baoben/shuminghao.html" target="_blank">包本书名号处理工具</a></li>
-		<li><a href="/yuhua/baoben/duanhang.html" target="_blank">包本断行处理工具</a></li>
-        <li><a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=2029979112450129923#wechat_redirect" target="_blank">雨花公众号文章</a></li>
-        <li><a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=3865997525819736066#wechat_redirect" target="_blank">雨花每周食谱</a></li>
-        <li><a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=1773154879981584386#wechat_redirect" target="_blank">雨花包本喜报</a></li>
-    </ul>
+    <!-- 实用工具 -->
+    <div class="section cat-tools" id="tools">
+        <div class="section-header">
+            <div class="section-icon">🔧</div>
+            <div class="section-title">实用工具</div>
+            <div class="section-count">24 个</div>
+        </div>
+        <div class="link-grid">
+            <a class="link-card" href="/tool/720vr.html" target="_blank">
+                <span class="link-num">1</span>
+                <span class="link-text">720VR查看器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/aes_crypto_tool.html" target="_blank">
+                <span class="link-num">2</span>
+                <span class="link-text">AES加密解密工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/aimoqiu.html" target="_blank">
+                <span class="link-num">3</span>
+                <span class="link-text">AI摸球模拟平台</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/amount-converter.html" target="_blank">
+                <span class="link-num">4</span>
+                <span class="link-text">金额大小写转换</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/amount-in-words.html" target="_blank">
+                <span class="link-num">5</span>
+                <span class="link-text">财务金额大小写转换</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/baobenduanhang.html" target="_blank">
+                <span class="link-num">6</span>
+                <span class="link-text">包本断行</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/base64convert.html" target="_blank">
+                <span class="link-num">7</span>
+                <span class="link-text">base64转换工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/color-conversion.html" target="_blank">
+                <span class="link-num">8</span>
+                <span class="link-text">颜色转换工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/excel-processor.html" target="_blank">
+                <span class="link-num">9</span>
+                <span class="link-text">Excel表格处理器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/excelcelladdcustomchar.html" target="_blank">
+                <span class="link-num">10</span>
+                <span class="link-text">Excel表格自定义字符处理器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/excel_splitter.html" target="_blank">
+                <span class="link-num">11</span>
+                <span class="link-text">通用Excel列内容拆分工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/folder-generator.html" target="_blank">
+                <span class="link-num">12</span>
+                <span class="link-text">文件夹生成器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/hexconvert.html" target="_blank">
+                <span class="link-num">13</span>
+                <span class="link-text">进制转换工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/htmleditor.html" target="_blank">
+                <span class="link-num">14</span>
+                <span class="link-text">html编辑器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/ImageCropping.html" target="_blank">
+                <span class="link-num">15</span>
+                <span class="link-text">图片裁剪工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/img-yasuo-online.html" target="_blank">
+                <span class="link-num">16</span>
+                <span class="link-text">图片在线压缩</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/link-editor.html" target="_blank">
+                <span class="link-num">17</span>
+                <span class="link-text">链接编辑器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/moqiu.html" target="_blank">
+                <span class="link-num">18</span>
+                <span class="link-text">摸球模拟平台</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/shipuchuli.html" target="_blank">
+                <span class="link-num">19</span>
+                <span class="link-text">食谱处理工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/text-avatar-generation.html" target="_blank">
+                <span class="link-num">20</span>
+                <span class="link-text">文字头像生成器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/time-calc.html" target="_blank">
+                <span class="link-num">21</span>
+                <span class="link-text">保质期时间计算器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/tree-nav.html" target="_blank">
+                <span class="link-num">22</span>
+                <span class="link-text">树状导航目录</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/userpasswordmanager.html" target="_blank">
+                <span class="link-num">23</span>
+                <span class="link-text">用户名密码管理器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/zizeng.html" target="_blank">
+                <span class="link-num">24</span>
+                <span class="link-text">自增数字插入工具</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/zitie/" target="_blank">
+                <span class="link-num">25</span>
+                <span class="link-text">字帖生成器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/tool/timer" target="_blank">
+                <span class="link-num">26</span>
+                <span class="link-text">多功能计时器</span>
+                <span class="link-arrow">↗</span>
+            </a>
+        </div>
+    </div>
 
-    <h2 class="list-title" id="tools">实用工具</h2>
-    <ul class="numbered-link-list">
-        <li><a href="/tool/720vr.html" target="_blank">720VR查看器</a></li>
-        <li><a href="/tool/aes_crypto_tool.html" target="_blank">AES加密解密工具</a></li>
-        <li><a href="/tool/aimoqiu.html" target="_blank">AI摸球模拟平台</a></li>
-        <li><a href="/tool/amount-converter.html" target="_blank">金额大小写转换</a></li>
-        <li><a href="/tool/amount-in-words.html" target="_blank">财务金额大小写转换</a></li>
-        <li><a href="/tool/baobenduanhang.html" target="_blank">包本断行</a></li>
-        <li><a href="/tool/base64convert.html" target="_blank">base64转换工具</a></li>
-        <li><a href="/tool/color-conversion.html" target="_blank">颜色转换工具</a></li>
-        <li><a href="/tool/excel-processor.html" target="_blank">Excel表格处理器</a></li>
-        <li><a href="/tool/excelcelladdcustomchar.html" target="_blank">Excel表格自定义字符处理器</a></li>
-        <li><a href="/tool/excel_splitter.html" target="_blank">通用Excel列内容拆分工具</a></li>
-        <li><a href="/tool/folder-generator.html" target="_blank">文件夹生成器</a></li>
-        <li><a href="/tool/hexconvert.html" target="_blank">进制转换工具</a></li>
-        <li><a href="/tool/htmleditor.html" target="_blank">html编辑器</a></li>
-        <li><a href="/tool/ImageCropping.html" target="_blank">图片裁剪工具</a></li>
-        <li><a href="/tool/img-yasuo-online.html" target="_blank">图片在线压缩</a></li>
-        <li><a href="/tool/link-editor.html" target="_blank">链接编辑器</a></li>
-        <li><a href="/tool/moqiu.html" target="_blank">摸球模拟平台</a></li>
-        <li><a href="/tool/shipuchuli.html" target="_blank">食谱处理工具</a></li>
-        <li><a href="/tool/text-avatar-generation.html" target="_blank">文字头像生成器</a></li>
-        <li><a href="/tool/time-calc.html" target="_blank">保质期时间计算器</a></li>
-        <li><a href="/tool/tree-nav.html" target="_blank">树状导航目录</a></li>
-        <li><a href="/tool/userpasswordmanager.html" target="_blank">用户名密码管理器</a></li>
-        <li><a href="/tool/zizeng.html" target="_blank">自增数字插入工具</a></li>
-        <li><a href="/tool/zitie/" target="_blank">字帖生成器</a></li>
-        <li><a href="/tool/timer" target="_blank">多功能计时器</a></li>
-
-    </ul>
-
-    <h2 class="list-title" id="game">娱乐</h2>
-    <ul class="numbered-link-list">
-        <li><a href="/game/chinese-chess.html" target="_blank">中国象棋</a></li>
-        <li><a href="/game/color-select.html" target="_blank">十六宫格找不同颜色</a></li>
-        <li><a href="/game/snake/index.html" target="_blank">大战AI贪吃蛇</a></li>
-    </ul>
+    <!-- 娱乐 -->
+    <div class="section cat-game" id="game">
+        <div class="section-header">
+            <div class="section-icon">🎮</div>
+            <div class="section-title">娱乐</div>
+            <div class="section-count">3 个</div>
+        </div>
+        <div class="link-grid">
+            <a class="link-card" href="/game/chinese-chess.html" target="_blank">
+                <span class="link-num">1</span>
+                <span class="link-text">中国象棋</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/game/color-select.html" target="_blank">
+                <span class="link-num">2</span>
+                <span class="link-text">十六宫格找不同颜色</span>
+                <span class="link-arrow">↗</span>
+            </a>
+            <a class="link-card" href="/game/snake/index.html" target="_blank">
+                <span class="link-num">3</span>
+                <span class="link-text">大战AI贪吃蛇</span>
+                <span class="link-arrow">↗</span>
+            </a>
+        </div>
+    </div>
 </body>
 
 </html>
