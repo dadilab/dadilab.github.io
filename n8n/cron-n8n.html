@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>n8n Cron 表达式生成器</title>
+<style>
+  :root {
+    --bg: #1a1f2e;
+    --card: #242b3d;
+    --card-hover: #2a3347;
+    --primary: #ff6b6b;
+    --primary-hover: #ff5252;
+    --accent: #4fc3f7;
+    --text: #e8ecf1;
+    --text-secondary: #9aa4b8;
+    --border: #363f54;
+    --radius: 12px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 16px;
+  }
+  .container {
+    width: 100%;
+    max-width: 780px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .header .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .header .logo img { height: 36px; }
+  .header .logo h1 {
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ff6b6b, #ffa726);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p { color: var(--text-secondary); font-size: 14px; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    border: 1px solid var(--border);
+  }
+
+  /* n8n style tabs / modes */
+  .mode-tabs {
+    display: flex;
+    gap: 4px;
+    background: #1a1f2e;
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 24px;
+  }
+  .mode-tab {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .mode-tab:hover { color: var(--text); }
+  .mode-tab.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255,107,107,0.3);
+  }
+
+  /* Quick presets - n8n style chips */
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .preset-btn {
+    padding: 7px 18px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .preset-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(79,195,247,0.08);
+  }
+  .preset-btn.active {
+    border-color: var(--primary);
+    color: #fff;
+    background: rgba(255,107,107,0.15);
+    box-shadow: 0 0 0 1px rgba(255,107,107,0.3);
+  }
+  .preset-btn .icon { font-size: 16px; }
+
+  /* Fields */
+  .fields-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .field-group {
+    background: #1a1f2e;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    transition: border-color 0.15s;
+  }
+  .field-group:focus-within { border-color: var(--accent); }
+  .field-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .field-group label code {
+    font-size: 10px;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    color: var(--accent);
+  }
+  .field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field-row select, .field-row input {
+    width: 100%;
+    padding: 7px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    background: var(--card);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field-row select:focus, .field-row input:focus { border-color: var(--accent); }
+  .field-row input[type="number"] { -moz-appearance: textfield; }
+  .field-row input[type="number"]::-webkit-outer-spin-button,
+  .field-row input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .field-row select option { background: var(--card); }
+
+  /* Result */
+  .result-area {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-top: 4px;
+    position: relative;
+  }
+  .result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,107,107,0.15);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,107,107,0.2);
+  }
+  .cron-display {
+    font-family: "SF Mono", "Fira Code", "JetBrains Mono", "Consolas", monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 3px;
+    word-break: break-all;
+    line-height: 1.3;
+  }
+  .cron-description {
+    font-size: 14px;
+    color: var(--accent);
+    margin-top: 8px;
+  }
+  .result-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .action-btn.primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .action-btn.primary:hover { background: var(--primary-hover); }
+  .action-btn.secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .action-btn.secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .action-btn.success { background: #34d399; color: #0d1117; }
+
+  /* n8n Config Preview */
+  .config-preview {
+    margin-top: 16px;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: none;
+  }
+  .config-preview.visible { display: block; }
+  .config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+  }
+  .config-header span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .config-header button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .config-header button:hover { border-color: var(--accent); color: var(--accent); }
+  .config-body {
+    padding: 14px 16px;
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 300px;
+    overflow: auto;
+  }
+  .config-body .key { color: #f92672; }
+  .config-body .string { color: #e6db74; }
+  .config-body .number { color: #ae81ff; }
+  .config-body .boolean { color: #a6e22e; }
+
+  /* Error */
+  .error-msg {
+    color: var(--primary);
+    font-size: 13px;
+    margin-top: 6px;
+    display: none;
+    background: rgba(255,107,107,0.08);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,107,107,0.15);
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .fields-grid { grid-template-columns: repeat(3, 1fr); }
+    .card { padding: 18px; }
+    .cron-display { font-size: 22px; }
+    .mode-tab { font-size: 12px; padding: 6px 8px; }
+  }
+  @media (max-width: 400px) {
+    .fields-grid { grid-template-columns: 1fr; }
+    .presets { gap: 6px; }
+    .preset-btn { padding: 5px 12px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <rect x="2" y="2" width="32" height="32" rx="8" fill="#ff6b6b" opacity="0.2"/>
+        <rect x="6" y="6" width="24" height="24" rx="6" fill="#ff6b6b" opacity="0.4"/>
+        <path d="M18 10v8l5 3" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="18" cy="18" r="8" stroke="#fff" stroke-width="2" fill="none"/>
+      </svg>
+      <h1>n8n Cron 生成器</h1>
+    </div>
+    <p>为 n8n 工作流定时触发器生成 Cron 表达式 · 一键复制 n8n 配置</p>
+  </div>
+
+  <div class="card">
+    <!-- 模式切换 -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="visual">🎯 可视模式</button>
+      <button class="mode-tab" data-mode="expert">⌨️ 专家模式</button>
+    </div>
+
+    <!-- 快捷预设 -->
+    <div class="presets" id="presets">
+      <button class="preset-btn active" data-preset="daily"><span class="icon">📅</span> 每天</button>
+      <button class="preset-btn" data-preset="hourly"><span class="icon">🕐</span> 每小时</button>
+      <button class="preset-btn" data-preset="every-minute"><span class="icon">⚡</span> 每分钟</button>
+      <button class="preset-btn" data-preset="weekly"><span class="icon">📆</span> 每周</button>
+      <button class="preset-btn" data-preset="biweekly"><span class="icon">2️⃣</span> 每两周</button>
+      <button class="preset-btn" data-preset="monthly"><span class="icon">📅</span> 每月</button>
+      <button class="preset-btn" data-preset="weekday"><span class="icon">💼</span> 工作日</button>
+      <button class="preset-btn" data-preset="every-5min"><span class="icon">5️⃣</span> 每5分钟</button>
+      <button class="preset-btn" data-preset="every-30min"><span class="icon">⏰</span> 每30分钟</button>
+      <button class="preset-btn" data-preset="midnight"><span class="icon">🌙</span> 每天午夜</button>
+    </div>
+
+    <!-- 可视模式：字段输入 -->
+    <div id="visual-mode">
+      <div class="fields-grid" style="grid-template-columns: repeat(6, 1fr);">
+        <!-- 秒 (Second) - n8n 专用 -->
+        <div class="field-group">
+          <label>秒 <code>second</code></label>
+          <div class="field-row">
+            <select id="second-type" class="field-type">
+              <option value="number" selected>指定</option>
+              <option value="every">每秒</option>
+              <option value="step">间隔</option>
+            </select>
+            <input type="number" id="second-value" min="0" max="59" value="0" placeholder="0-59">
+            <input type="number" id="second-step" min="1" max="30" value="5" placeholder="步长" style="display:none;">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>分钟 <code>minute</code></label>
+          <div class="field-row">
+            <select id="minute-type" class="field-type">
+              <option value="number">指定</option>
+              <option value="every">每分钟</option>
+              <option value="range">范围</option>
+              <option value="step">间隔</option>
+            </select>
+            <input type="number" id="minute-value" min="0" max="59" value="0" placeholder="0-59">
+            <input type="number" id="minute-range-end" min="0" max="59" value="30" placeholder="至" style="display:none;">
+            <input type="number" id="minute-step" min="1" max="59" value="5" placeholder="步长" style="display:none;">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>小时 <code>hour</code></label>
+          <div class="field-row">
+            <select id="hour-type" class="field-type">
+              <option value="number">指定</option>
+              <option value="every">每小时</option>
+              <option value="range">范围</option>
+              <option value="step">间隔</option>
+            </select>
+            <input type="number" id="hour-value" min="0" max="23" value="9" placeholder="0-23">
+            <input type="number" id="hour-range-end" min="0" max="23" value="18" placeholder="至" style="display:none;">
+            <input type="number" id="hour-step" min="1" max="23" value="2" placeholder="步长" style="display:none;">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>日 <code>day</code></label>
+          <div class="field-row">
+            <select id="day-type" class="field-type">
+              <option value="every">每天</option>
+              <option value="number">指定</option>
+              <option value="range">范围</option>
+              <option value="step">间隔</option>
+            </select>
+            <input type="number" id="day-value" min="1" max="31" value="1" placeholder="1-31" style="display:none;">
+            <input type="number" id="day-range-end" min="1" max="31" value="15" placeholder="至" style="display:none;">
+            <input type="number" id="day-step" min="1" max="31" value="2" placeholder="步长" style="display:none;">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>月份 <code>month</code></label>
+          <div class="field-row">
+            <select id="month-type" class="field-type">
+              <option value="every">每月</option>
+              <option value="number">指定</option>
+              <option value="range">范围</option>
+              <option value="step">间隔</option>
+            </select>
+            <input type="number" id="month-value" min="1" max="12" value="1" placeholder="1-12" style="display:none;">
+            <input type="number" id="month-range-end" min="1" max="12" value="6" placeholder="至" style="display:none;">
+            <input type="number" id="month-step" min="1" max="12" value="3" placeholder="步长" style="display:none;">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>星期 <code>dow</code></label>
+          <div class="field-row">
+            <select id="dow-type" class="field-type">
+              <option value="every">每天</option>
+              <option value="number">指定</option>
+              <option value="range">范围</option>
+              <option value="step">间隔</option>
+            </select>
+            <select id="dow-value" style="display:none;">
+              <option value="0">周日 (0)</option>
+              <option value="1" selected>周一 (1)</option>
+              <option value="2">周二 (2)</option>
+              <option value="3">周三 (3)</option>
+              <option value="4">周四 (4)</option>
+              <option value="5">周五 (5)</option>
+              <option value="6">周六 (6)</option>
+              <option value="7">周日 (7)</option>
+            </select>
+            <select id="dow-range-end" style="display:none;">
+              <option value="0">周日 (0)</option>
+              <option value="1">周一 (1)</option>
+              <option value="2">周二 (2)</option>
+              <option value="3">周三 (3)</option>
+              <option value="4">周四 (4)</option>
+              <option value="5" selected>周五 (5)</option>
+              <option value="6">周六 (6)</option>
+              <option value="7">周日 (7)</option>
+            </select>
+            <input type="number" id="dow-step" min="1" max="7" value="2" placeholder="步长" style="display:none;">
+          </div>
+        </div>
+      </div>
+
+      <!-- 冲突选项 -->
+      <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">
+          <input type="checkbox" id="dow-force" style="accent-color:var(--accent);"> 强制使用星期（忽略日冲突）
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;">
+          <input type="checkbox" id="day-force" style="accent-color:var(--accent);"> 强制使用日（忽略星期冲突）
+        </label>
+      </div>
+    </div>
+
+    <!-- 专家模式：直接输入 -->
+    <div id="expert-mode" style="display:none;margin-bottom:20px;">
+      <div style="background:#1a1f2e;border-radius:8px;padding:16px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">
+          <strong style="color:var(--text);">直接输入 Cron 表达式</strong>
+          <span style="margin-left:8px;">格式：<code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;">秒 分 时 日 月 星期</code>（n8n 6 字段）</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="expert-input" value="0 0 9 * * *" placeholder="0 0 9 * * *"
+            style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:6px;font-size:16px;font-family:'SF Mono','Fira Code','Consolas',monospace;background:var(--card);color:#fff;outline:none;letter-spacing:1px;">
+          <button id="expert-parse" class="action-btn primary" style="white-space:nowrap;">🔄 解析</button>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--text-secondary);line-height:1.7;">
+          <span style="color:var(--accent);">*</span> 任意 &nbsp;|&nbsp; <span style="color:var(--accent);">,</span> 列表 &nbsp;|&nbsp; <span style="color:var(--accent);">-</span> 范围 &nbsp;|&nbsp; <span style="color:var(--accent);">/</span> 间隔 &nbsp;|&nbsp; 如：<code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;">0 0,15,30,45 9-18 * * 1-5</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-area">
+      <div class="result-badge">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#ff6b6b" stroke-width="1.2"/><path d="M7 4v3.5l2.5 1.5" stroke="#ff6b6b" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Cron 表达式
+      </div>
+      <div class="cron-display" id="cron-display">0 0 9 * * *</div>
+      <div class="cron-description" id="cron-desc">⏰ 每天 09:00 执行</div>
+
+      <div class="result-actions">
+        <button class="action-btn primary" id="copy-cron">📋 复制 Cron</button>
+        <button class="action-btn secondary" id="toggle-config">⚙️ 显示 n8n 配置</button>
+        <button class="action-btn secondary" id="copy-config" style="display:none;">📋 复制 n8n 配置</button>
+      </div>
+
+      <div class="error-msg" id="error-msg"></div>
+
+      <!-- n8n Config JSON Preview -->
+      <div class="config-preview" id="config-preview">
+        <div class="config-header">
+          <span>⚙️ n8n 节点配置 (JSON)</span>
+          <button id="copy-config-btn">📋 复制</button>
+        </div>
+        <div class="config-body" id="config-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    在 n8n 中使用：添加 <strong style="color:var(--accent);">Schedule Trigger</strong> 节点 → 选择 <strong style="color:var(--accent);">Cron Expression</strong> → 粘贴表达式<br>
+    格式：<code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;color:var(--accent);">[秒] [分] [时] [日] [月] [星期]</code>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ============ DOM Refs ============
+  const $ = id => document.getElementById(id);
+
+  const second = { type: $('second-type'), value: $('second-value'), step: $('second-step') };
+  const minute = { type: $('minute-type'), value: $('minute-value'), rangeEnd: $('minute-range-end'), step: $('minute-step') };
+  const hour   = { type: $('hour-type'),   value: $('hour-value'),   rangeEnd: $('hour-range-end'),   step: $('hour-step') };
+  const day    = { type: $('day-type'),    value: $('day-value'),    rangeEnd: $('day-range-end'),    step: $('day-step') };
+  const month  = { type: $('month-type'),  value: $('month-value'),  rangeEnd: $('month-range-end'),  step: $('month-step') };
+  const dow    = { type: $('dow-type'),    value: $('dow-value'),    rangeEnd: $('dow-range-end'),    step: $('dow-step') };
+  const fields = { second, minute, hour, day, month, dow };
+
+  const cronDisplay = $('cron-display');
+  const cronDesc = $('cron-desc');
+  const errorMsg = $('error-msg');
+  const copyCronBtn = $('copy-cron');
+  const toggleConfigBtn = $('toggle-config');
+  const copyConfigBtn = $('copy-config');
+  const configPreview = $('config-preview');
+  const configBody = $('config-body');
+  const copyConfigBtn2 = $('copy-config-btn');
+
+  const visualMode = $('visual-mode');
+  const expertMode = $('expert-mode');
+  const expertInput = $('expert-input');
+  const expertParse = $('expert-parse');
+
+  const modeTabs = document.querySelectorAll('.mode-tab');
+  const presetBtns = document.querySelectorAll('.preset-btn');
+
+  const dowForce = $('dow-force');
+  const dayForce = $('day-force');
+
+  const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  const monthNames = ['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+  // ============ Helpers ============
+  function updateFieldVisibility(f) {
+    const t = f.type.value;
+    f.value.style.display = (t === 'number' || t === 'range' || t === 'step') ? '' : 'none';
+    if (f.rangeEnd) f.rangeEnd.style.display = t === 'range' ? '' : 'none';
+    if (f.step) f.step.style.display = t === 'step' ? '' : 'none';
+  }
+
+  // Init visibility
+  Object.values(fields).forEach(f => updateFieldVisibility(f));
+
+  // Bind type switches
+  Object.values(fields).forEach(f => {
+    f.type.addEventListener('change', () => { updateFieldVisibility(f); generateVisual(); });
+  });
+
+  // ============ Generate from Visual ============
+  function getFieldCron(fieldObj, label, minVal, maxVal, valLabels) {
+    const type = fieldObj.type.value;
+    let cron = '*';
+
+    switch (type) {
+      case 'number': {
+        let v = parseInt(fieldObj.value.value);
+        if (isNaN(v) || v < minVal || v > maxVal) {
+          if (fieldObj.value.style.display !== 'none') throw new Error(`${label} 须在 ${minVal}-${maxVal} 之间`);
+          cron = '*';
+        } else { cron = String(v); }
+        break;
+      }
+      case 'every': cron = '*'; break;
+      case 'range': {
+        let s = parseInt(fieldObj.value.value);
+        let e = parseInt(fieldObj.rangeEnd.value);
+        if (isNaN(s) || isNaN(e) || s < minVal || s > maxVal || e < minVal || e > maxVal) throw new Error(`${label} 范围须在 ${minVal}-${maxVal}`);
+        cron = `${s}-${e}`;
+        break;
+      }
+      case 'step': {
+        let s = parseInt(fieldObj.value.value);
+        let st = parseInt(fieldObj.step.value);
+        if (isNaN(s) || s < minVal || s > maxVal || isNaN(st) || st < 1) throw new Error(`${label} 值 ${minVal}-${maxVal}，步长 ≥1`);
+        cron = `${s}/${st}`;
+        break;
+      }
+    }
+    return cron;
+  }
+
+  function generateVisual() {
+    try {
+      errorMsg.style.display = 'none';
+      const s  = getFieldCron(second, '秒', 0, 59);
+      const m  = getFieldCron(minute, '分钟', 0, 59);
+      const h  = getFieldCron(hour, '小时', 0, 23);
+      const d  = getFieldCron(day, '日', 1, 31);
+      const mo = getFieldCron(month, '月份', 1, 12);
+      const dw = getFieldCron(dow, '星期', 0, 7);
+
+      // 冲突检测
+      const dayIsStar = d === '*';
+      const dowIsStar = dw === '*';
+      if (!dayIsStar && !dowIsStar && !dowForce.checked && !dayForce.checked) {
+        // 提示但不阻止
+      }
+
+      const expression = [s, m, h, d, mo, dw].join(' ');
+      cronDisplay.textContent = expression;
+      cronDesc.textContent = '⏰ ' + buildReadable(s, m, h, d, mo, dw);
+      updateConfigPreview(expression);
+    } catch (e) {
+      errorMsg.textContent = '⚠️ ' + e.message;
+      errorMsg.style.display = 'block';
+      cronDisplay.textContent = '—';
+      cronDesc.textContent = '参数有误，请检查输入';
+    }
+  }
+
+  // ============ Generate from Expert Mode ============
+  function parseExpertInput(cronStr) {
+    const parts = cronStr.trim().split(/\s+/);
+    if (parts.length !== 6) {
+      throw new Error('n8n Cron 表达式需要 6 个字段（秒 分 时 日 月 星期），当前有 ' + parts.length + ' 个');
+    }
+    return parts;
+  }
+
+  function expertToFields(cronStr) {
+    const parts = parseExpertInput(cronStr);
+    const display = parts.join(' ');
+    cronDisplay.textContent = display;
+
+    // Try to parse and give human-readable description
+    const desc = buildReadable(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]);
+    cronDesc.textContent = '⏰ ' + desc;
+    updateConfigPreview(display);
+  }
+
+  // ============ Build Readable ============
+  function buildReadable(s, m, h, d, mo, dw) {
+    const allStar = [s,m,h,d,mo,dw].every(p => p === '*');
+    if (allStar) return '每秒执行';
+
+    // Second
+    let secStr = '';
+    if (s === '*') secStr = '';
+    else if (s.includes('/')) secStr = `每 ${s.split('/')[1]} 秒`;
+    else if (s !== '0') secStr = `${s} 秒`;
+
+    // Minute
+    let minStr = '';
+    if (m === '*') minStr = '';
+    else if (m.includes('/')) minStr = `每 ${m.split('/')[1]} 分钟`;
+    else if (m.includes('-')) minStr = `${m} 分`;
+    else minStr = `${m} 分`;
+
+    // Hour
+    let hourStr = '';
+    if (h === '*') hourStr = '';
+    else if (h.includes('/')) hourStr = `每 ${h.split('/')[1]} 小时`;
+    else if (h.includes('-')) hourStr = `${h} 点`;
+    else hourStr = `${h} 点`;
+
+    // Time part
+    let timeStr = '';
+    if (s === '0' || s === '*') {
+      if (m === '*' && h === '*') timeStr = '';
+      else if (m === '*') timeStr = hourStr;
+      else if (h === '*') timeStr = `每${minStr}`;
+      else timeStr = `${hourStr} ${minStr}`;
+    } else {
+      if (m === '*' && h === '*') timeStr = `第 ${secStr}`;
+      else if (m === '*') timeStr = `${hourStr} 第 ${secStr}`;
+      else if (h === '*') timeStr = `每${minStr} 第 ${secStr}`;
+      else timeStr = `${hourStr} ${minStr} 第 ${secStr}`;
+    }
+
+    // Date part
+    let dateStr = '每天';
+    const dStar = d === '*';
+    const moStar = mo === '*';
+    const dwStar = dw === '*';
+
+    if (!moStar && !dStar && dwStar) dateStr = `每年 ${monthNames[parseInt(mo)]||mo} ${d} 号`;
+    else if (moStar && !dStar && dwStar) dateStr = `每月 ${d} 号`;
+    else if (!moStar && dStar && dwStar) dateStr = `每年 ${monthNames[parseInt(mo)]||mo}`;
+    else if (moStar && dStar && !dwStar) dateStr = `每${dayNames[parseInt(dw)]||'?'}`;
+    else if (!moStar && dStar && !dwStar) dateStr = `${monthNames[parseInt(mo)]||mo} 每${dayNames[parseInt(dw)]||'?'}`;
+    else if (moStar && !dStar && !dwStar) dateStr = `每月 ${d} 号 且每${dayNames[parseInt(dw)]||'?'}`;
+
+    if (dateStr === '每天' && timeStr === '') return '每秒执行';
+    if (dateStr === '每天') return `每天 ${timeStr} 执行`;
+    if (timeStr === '') return `${dateStr} 执行`;
+    return `${dateStr} ${timeStr} 执行`.replace(/\s+/g,' ');
+  }
+
+  // ============ n8n Config Preview ============
+  function updateConfigPreview(expression) {
+    const name = cronDesc.textContent.replace(/^⏰ /, '') || '每天 09:00 执行';
+    const nodeConfig = {
+      name: 'Schedule Trigger',
+      type: 'n8n-nodes-base.scheduleTrigger',
+      parameters: {
+        rule: {
+          interval: [{
+            field: 'cronExpression',
+            expression: expression
+          }]
+        }
+      }
+    };
+
+    configBody.textContent = JSON.stringify(nodeConfig, null, 2);
+  }
+
+  // ============ Presets ============
+  const presets = {
+    'every-minute': { second: ['number',0], minute: ['every'], hour: ['every'], day: ['every'], month: ['every'], dow: ['every'] },
+    'hourly':       { second: ['number',0], minute: ['number',0], hour: ['every'], day: ['every'], month: ['every'], dow: ['every'] },
+    'daily':        { second: ['number',0], minute: ['number',0], hour: ['number',9], day: ['every'], month: ['every'], dow: ['every'] },
+    'weekly':       { second: ['number',0], minute: ['number',0], hour: ['number',9], day: ['every'], month: ['every'], dow: ['number',1] },
+    'biweekly':     { second: ['number',0], minute: ['number',0], hour: ['number',9], day: ['range',1,14], month: ['every'], dow: ['every'] },
+    'monthly':      { second: ['number',0], minute: ['number',0], hour: ['number',9], day: ['number',1], month: ['every'], dow: ['every'] },
+    'weekday':      { second: ['number',0], minute: ['number',0], hour: ['number',9], day: ['every'], month: ['every'], dow: ['range',1,5] },
+    'every-5min':   { second: ['number',0], minute: ['step',0,5], hour: ['every'], day: ['every'], month: ['every'], dow: ['every'] },
+    'every-30min':  { second: ['number',0], minute: ['step',0,30], hour: ['every'], day: ['every'], month: ['every'], dow: ['every'] },
+    'midnight':     { second: ['number',0], minute: ['number',0], hour: ['number',0], day: ['every'], month: ['every'], dow: ['every'] },
+  };
+
+  const fieldMap = { second, minute, hour, day, month, dow };
+
+  function applyPreset(name) {
+    const cfg = presets[name];
+    if (!cfg) return;
+
+    for (const [key, vals] of Object.entries(cfg)) {
+      const f = fieldMap[key];
+      f.type.value = vals[0];
+      if (f.value) f.value.value = vals[1] !== undefined ? vals[1] : '';
+      if (f.rangeEnd) f.rangeEnd.value = vals[2] !== undefined ? vals[2] : '';
+      if (f.step) f.step.value = vals[2] !== undefined ? vals[2] : '';
+      updateFieldVisibility(f);
+    }
+    generateVisual();
+  }
+
+  // Preset buttons
+  presetBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      presetBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      switchMode('visual');
+      applyPreset(this.dataset.preset);
+    });
+  });
+
+  // ============ Mode Switching ============
+  function switchMode(mode) {
+    modeTabs.forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    visualMode.style.display = mode === 'visual' ? '' : 'none';
+    expertMode.style.display = mode === 'expert' ? '' : 'none';
+  }
+
+  modeTabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const mode = this.dataset.mode;
+      switchMode(mode);
+      if (mode === 'expert') {
+        expertInput.value = cronDisplay.textContent !== '—' ? cronDisplay.textContent : '0 9 * * *';
+        try { expertToFields(expertInput.value); } catch(e) {}
+        errorMsg.style.display = 'none';
+      }
+    });
+  });
+
+  // Expert parse
+  expertParse.addEventListener('click', function() {
+    try {
+      errorMsg.style.display = 'none';
+      expertToFields(expertInput.value);
+    } catch (e) {
+      errorMsg.textContent = '⚠️ ' + e.message;
+      errorMsg.style.display = 'block';
+    }
+  });
+
+  expertInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') expertParse.click();
+  });
+
+  // ============ Copy Cron ============
+  let copyTimer = null;
+  copyCronBtn.addEventListener('click', function() {
+    const text = cronDisplay.textContent;
+    if (!text || text === '—') return;
+    navigator.clipboard.writeText(text).then(() => {
+      copyCronBtn.textContent = '✅ 已复制';
+      copyCronBtn.style.background = '#34d399';
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => {
+        copyCronBtn.textContent = '📋 复制 Cron';
+        copyCronBtn.style.background = '';
+      }, 2000);
+    }).catch(() => fallbackCopy(text));
+  });
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    copyCronBtn.textContent = '✅ 已复制';
+    copyCronBtn.style.background = '#34d399';
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
+      copyCronBtn.textContent = '📋 复制 Cron';
+      copyCronBtn.style.background = '';
+    }, 2000);
+  }
+
+  // ============ Toggle n8n Config ============
+  toggleConfigBtn.addEventListener('click', function() {
+    const isVisible = configPreview.classList.toggle('visible');
+    toggleConfigBtn.textContent = isVisible ? '🙈 隐藏配置' : '⚙️ 显示 n8n 配置';
+    copyConfigBtn.style.display = isVisible ? '' : 'none';
+  });
+
+  function copyConfigText() {
+    const text = configBody.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      copyConfigBtn2.textContent = '✅ 已复制';
+      setTimeout(() => { copyConfigBtn2.textContent = '📋 复制'; }, 2000);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      copyConfigBtn2.textContent = '✅ 已复制';
+      setTimeout(() => { copyConfigBtn2.textContent = '📋 复制'; }, 2000);
+    });
+  }
+
+  copyConfigBtn.addEventListener('click', copyConfigText);
+  copyConfigBtn2.addEventListener('click', copyConfigText);
+
+  // ============ Bind Input Changes ============
+  document.querySelectorAll('#visual-mode select, #visual-mode input').forEach(el => {
+    el.addEventListener('change', generateVisual);
+    el.addEventListener('input', generateVisual);
+  });
+  [dowForce, dayForce].forEach(cb => {
+    cb.addEventListener('change', generateVisual);
+  });
+
+  // ============ Init ============
+  generateVisual();
+  updateConfigPreview('0 0 9 * * *');
+})();
+</script>
+</body>
+</html>
