@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cron 表达式转换工具</title>
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --primary: #4f6ef7;
+    --primary-hover: #3b57d9;
+    --text: #1a2332;
+    --text-secondary: #6b7a8f;
+    --border: #dce2ec;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+  }
+  .container {
+    width: 100%;
+    max-width: 720px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .header h1 span { background: var(--primary); color: #fff; font-size: 14px; padding: 2px 10px; border-radius: 6px; font-weight: 500; }
+  .header p { color: var(--text-secondary); font-size: 14px; margin-top: 6px; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+  }
+
+  /* Quick presets */
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .preset-btn {
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: #fff;
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .preset-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* Fields */
+  .fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+    margin-bottom: 20px;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .field-group label code {
+    font-size: 11px;
+    background: #f0f2f5;
+    padding: 0 6px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+  }
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .field-row select, .field-row input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field-row select:focus, .field-row input:focus { border-color: var(--primary); }
+  .field-row input[type="number"] { width: 100%; }
+  .field-row input::placeholder { color: #b0b8c8; }
+  .field-row .suffix { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+
+  /* Special toggles */
+  .special-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .special-row label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .special-row input[type="checkbox"] {
+    accent-color: var(--primary);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  /* Result */
+  .result-area {
+    background: #f7f9fc;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 4px;
+  }
+  .result-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+  .cron-display {
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 2px;
+    word-break: break-all;
+  }
+  .cron-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+  .copy-btn {
+    margin-top: 10px;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .copy-btn:hover { background: var(--primary-hover); }
+  .copy-btn.copied { background: #34d399; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .footer a { color: var(--primary); text-decoration: none; }
+
+  /* Error */
+  .error-msg { color: #ef4444; font-size: 13px; margin-top: 4px; display: none; }
+
+  /* Responsive */
+  @media (max-width: 540px) {
+    .fields-grid { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+    .cron-display { font-size: 18px; }
+    .special-row { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>⏰ Cron 表达式生成器 <span>v1.0</span></h1>
+    <p>填写时间参数，自动生成标准 Cron 表达式</p>
+  </div>
+
+  <div class="card">
+    <!-- 快捷预设 -->
+    <div class="presets">
+      <button class="preset-btn" data-preset="every-minute">每分钟</button>
+      <button class="preset-btn" data-preset="hourly">每小时</button>
+      <button class="preset-btn" data-preset="daily">每天</button>
+      <button class="preset-btn" data-preset="weekly">每周</button>
+      <button class="preset-btn" data-preset="monthly">每月</button>
+      <button class="preset-btn" data-preset="yearly">每年</button>
+      <button class="preset-btn" data-preset="weekday">工作日</button>
+    </div>
+
+    <div class="fields-grid">
+      <!-- 分钟 -->
+      <div class="field-group">
+        <label>分钟 <code>minute</code></label>
+        <div class="field-row">
+          <select id="minute-type">
+            <option value="number">指定值</option>
+            <option value="every">每分钟</option>
+            <option value="range">范围</option>
+            <option value="step">间隔</option>
+          </select>
+          <input type="number" id="minute-value" min="0" max="59" value="0" placeholder="0-59">
+          <input type="number" id="minute-range-end" min="0" max="59" value="30" placeholder="结束" style="display:none;">
+          <input type="number" id="minute-step" min="1" max="59" value="5" placeholder="步长" style="display:none;">
+        </div>
+      </div>
+
+      <!-- 小时 -->
+      <div class="field-group">
+        <label>小时 <code>hour</code></label>
+        <div class="field-row">
+          <select id="hour-type">
+            <option value="number">指定值</option>
+            <option value="every">每小时</option>
+            <option value="range">范围</option>
+            <option value="step">间隔</option>
+          </select>
+          <input type="number" id="hour-value" min="0" max="23" value="9" placeholder="0-23">
+          <input type="number" id="hour-range-end" min="0" max="23" value="18" placeholder="结束" style="display:none;">
+          <input type="number" id="hour-step" min="1" max="23" value="2" placeholder="步长" style="display:none;">
+        </div>
+      </div>
+
+      <!-- 日 -->
+      <div class="field-group">
+        <label>日 <code>day</code></label>
+        <div class="field-row">
+          <select id="day-type">
+            <option value="number">指定值</option>
+            <option value="every">每天</option>
+            <option value="range">范围</option>
+            <option value="step">间隔</option>
+          </select>
+          <input type="number" id="day-value" min="1" max="31" value="1" placeholder="1-31">
+          <input type="number" id="day-range-end" min="1" max="31" value="15" placeholder="结束" style="display:none;">
+          <input type="number" id="day-step" min="1" max="31" value="2" placeholder="步长" style="display:none;">
+        </div>
+      </div>
+
+      <!-- 月份 -->
+      <div class="field-group">
+        <label>月份 <code>month</code></label>
+        <div class="field-row">
+          <select id="month-type">
+            <option value="number">指定值</option>
+            <option value="every">每月</option>
+            <option value="range">范围</option>
+            <option value="step">间隔</option>
+          </select>
+          <input type="number" id="month-value" min="1" max="12" value="1" placeholder="1-12">
+          <input type="number" id="month-range-end" min="1" max="12" value="6" placeholder="结束" style="display:none;">
+          <input type="number" id="month-step" min="1" max="12" value="3" placeholder="步长" style="display:none;">
+        </div>
+      </div>
+
+      <!-- 星期 -->
+      <div class="field-group">
+        <label>星期 <code>dow</code></label>
+        <div class="field-row">
+          <select id="dow-type">
+            <option value="number">指定值</option>
+            <option value="every">每天</option>
+            <option value="range">范围</option>
+            <option value="step">间隔</option>
+          </select>
+          <select id="dow-value">
+            <option value="0">周日 (0)</option>
+            <option value="1" selected>周一 (1)</option>
+            <option value="2">周二 (2)</option>
+            <option value="3">周三 (3)</option>
+            <option value="4">周四 (4)</option>
+            <option value="5">周五 (5)</option>
+            <option value="6">周六 (6)</option>
+            <option value="7">周日 (7)</option>
+          </select>
+          <select id="dow-range-end" style="display:none;">
+            <option value="0">周日 (0)</option>
+            <option value="1">周一 (1)</option>
+            <option value="2">周二 (2)</option>
+            <option value="3">周三 (3)</option>
+            <option value="4">周四 (4)</option>
+            <option value="5" selected>周五 (5)</option>
+            <option value="6">周六 (6)</option>
+            <option value="7">周日 (7)</option>
+          </select>
+          <input type="number" id="dow-step" min="1" max="7" value="2" placeholder="步长" style="display:none;">
+        </div>
+      </div>
+
+      <!-- 年份 (扩展字段) -->
+      <div class="field-group">
+        <label>年份 <code class="optional">year</code> <span style="font-size:11px;color:#b0b8c8;">(可选)</span></label>
+        <div class="field-row">
+          <select id="year-type">
+            <option value="every">每年</option>
+            <option value="number">指定值</option>
+          </select>
+          <input type="number" id="year-value" min="1970" max="2100" value="2026" placeholder="2026" style="display:none;">
+        </div>
+      </div>
+    </div>
+
+    <!-- 星期/日互斥提示 -->
+    <div class="special-row">
+      <label><input type="checkbox" id="dow-force"> 强制设置星期（忽略日的冲突）</label>
+      <label><input type="checkbox" id="day-force"> 强制设置日（忽略星期冲突）</label>
+    </div>
+
+    <!-- Result -->
+    <div class="result-area">
+      <div class="result-label">Cron 表达式</div>
+      <div class="cron-display" id="cron-display">0 9 1 1 *</div>
+      <div class="cron-description" id="cron-desc">每年 1 月 1 日 09:00 执行</div>
+      <button class="copy-btn" id="copy-btn">📋 复制表达式</button>
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 说明 -->
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+      <strong style="color:var(--text);">📖 格式说明：</strong><br>
+      <code style="background:#f0f2f5;padding:1px 6px;border-radius:4px;">* * * * *</code>
+      <span style="margin:0 4px;">→</span>
+      分钟 小时 日 月 星期
+      <span style="margin:0 8px;color:var(--border);">|</span>
+      <code style="background:#f0f2f5;padding:1px 6px;border-radius:4px;">* * * * * 2026</code>
+      <span style="margin:0 4px;">→</span>
+      含年份（非标准扩展）
+    </div>
+  </div>
+
+  <div class="footer">
+    支持标准 5 字段及 6 字段（含年份）Cron 格式
+  </div>
+</div>
+
+<script>
+(function() {
+  // DOM refs
+  const fields = {};
+
+  function $(id) { return document.getElementById(id); }
+
+  // Minute
+  fields.minute = {
+    type: $('minute-type'),
+    value: $('minute-value'),
+    rangeEnd: $('minute-range-end'),
+    step: $('minute-step')
+  };
+  // Hour
+  fields.hour = {
+    type: $('hour-type'),
+    value: $('hour-value'),
+    rangeEnd: $('hour-range-end'),
+    step: $('hour-step')
+  };
+  // Day
+  fields.day = {
+    type: $('day-type'),
+    value: $('day-value'),
+    rangeEnd: $('day-range-end'),
+    step: $('day-step')
+  };
+  // Month
+  fields.month = {
+    type: $('month-type'),
+    value: $('month-value'),
+    rangeEnd: $('month-range-end'),
+    step: $('month-step')
+  };
+  // DOW
+  fields.dow = {
+    type: $('dow-type'),
+    value: $('dow-value'),
+    rangeEnd: $('dow-range-end'),
+    step: $('dow-step')
+  };
+  // Year
+  fields.year = {
+    type: $('year-type'),
+    value: $('year-value')
+  };
+
+  const cronDisplay = $('cron-display');
+  const cronDesc = $('cron-desc');
+  const copyBtn = $('copy-btn');
+  const errorMsg = $('error-msg');
+
+  const dowForce = $('dow-force');
+  const dayForce = $('day-force');
+
+  const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  const monthNames = ['', '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+
+  // ---- 切换 type 时显示/隐藏对应输入 ----
+  function bindTypeSwitch(fieldObj) {
+    fieldObj.type.addEventListener('change', function() {
+      updateFieldVisibility(fieldObj);
+      generate();
+    });
+  }
+
+  function updateFieldVisibility(f) {
+    const type = f.type.value;
+    // value: shown for number/range/step
+    f.value.style.display = (type === 'number' || type === 'range' || type === 'step') ? '' : 'none';
+    // rangeEnd: shown for range
+    if (f.rangeEnd) f.rangeEnd.style.display = type === 'range' ? '' : 'none';
+    // step: shown for step
+    if (f.step) f.step.style.display = type === 'step' ? '' : 'none';
+  }
+
+  Object.values(fields).forEach(f => {
+    if (f.type) {
+      bindTypeSwitch(f);
+      // Re-run visibility on load
+      updateFieldVisibility(f);
+    }
+  });
+
+  // ---- 读取单个字段的 cron 片段 + 描述 ----
+  function getFieldCron(fieldObj, label, minVal, maxVal, valLabels) {
+    const type = fieldObj.type.value;
+    let cron = '*';
+    let desc = '';
+
+    switch (type) {
+      case 'number': {
+        let v = parseInt(fieldObj.value.value);
+        if (isNaN(v) || v < minVal || v > maxVal) {
+          if (fieldObj.value.style.display !== 'none') {
+            throw new Error(`${label} 须在 ${minVal}-${maxVal} 之间`);
+          }
+          cron = '*';
+          desc = `任意${label}`;
+        } else {
+          cron = String(v);
+          desc = valLabels ? (valLabels[v] || v) : v;
+        }
+        break;
+      }
+      case 'every': {
+        cron = '*';
+        desc = `任意${label}`;
+        break;
+      }
+      case 'range': {
+        let s = parseInt(fieldObj.value.value);
+        let e = parseInt(fieldObj.rangeEnd.value);
+        if (isNaN(s) || isNaN(e) || s < minVal || s > maxVal || e < minVal || e > maxVal) {
+          throw new Error(`${label} 范围须在 ${minVal}-${maxVal} 之间`);
+        }
+        cron = `${s}-${e}`;
+        desc = `${label} ${s} 到 ${e}`;
+        break;
+      }
+      case 'step': {
+        let s = parseInt(fieldObj.value.value);
+        let st = parseInt(fieldObj.step.value);
+        if (isNaN(s) || s < minVal || s > maxVal || isNaN(st) || st < 1) {
+          throw new Error(`${label} 起始值须在 ${minVal}-${maxVal}，步长须 ≥ 1`);
+        }
+        cron = `${s}/${st}`;
+        desc = `每 ${st} ${label} 从 ${s} 开始`;
+        break;
+      }
+    }
+    return { cron, desc };
+  }
+
+  // ---- 生成 ----
+  function generate() {
+    try {
+      errorMsg.style.display = 'none';
+      let parts = [];
+      let descParts = [];
+
+      // 分钟
+      let m = getFieldCron(fields.minute, '分钟', 0, 59);
+      parts.push(m.cron);
+      descParts.push(m.desc === '任意分钟' ? '' : `第 ${m.desc} 分钟`);
+
+      // 小时
+      let h = getFieldCron(fields.hour, '小时', 0, 23);
+      parts.push(h.cron);
+      descParts.push(h.desc === '任意小时' ? '' : `${h.desc} 点`);
+
+      // 日
+      let d = getFieldCron(fields.day, '日', 1, 31);
+      parts.push(d.cron);
+      descParts.push(d.desc === '任意日' ? '' : `${d.desc} 号`);
+
+      // 月
+      let mo = getFieldCron(fields.month, '月份', 1, 12, monthNames);
+      parts.push(mo.cron);
+      descParts.push(mo.desc === '任意月份' ? '' : `${mo.desc}`);
+
+      // 星期
+      let dowLabels = {};
+      for (let i = 0; i <= 6; i++) dowLabels[i] = dayNames[i];
+      dowLabels[7] = '周日';
+      let dw = getFieldCron(fields.dow, '星期', 0, 7, dowLabels);
+      parts.push(dw.cron);
+      descParts.push(dw.desc === '任意星期' ? '' : `${dw.desc}`);
+
+      // 冲突检测
+      const dayIsStar = d.cron === '*';
+      const dowIsStar = dw.cron === '*';
+      if (!dayIsStar && !dowIsStar && !dowForce.checked && !dayForce.checked) {
+        // 同时设置了日和星期，提醒用户
+        // 但不阻止生成
+      }
+
+      // 年份
+      let yearCron = '';
+      let yearDesc = '';
+      if (fields.year.type.value === 'number') {
+        let y = parseInt(fields.year.value.value);
+        if (!isNaN(y) && y >= 1970 && y <= 2100) {
+          yearCron = ' ' + y;
+          yearDesc = `${y} 年`;
+        }
+      }
+
+      // 拼接 cron
+      let expression = parts.join(' ') + yearCron;
+      cronDisplay.textContent = expression;
+
+      // 生成可读描述
+      let readable = buildReadable(parts, descParts, yearDesc);
+      cronDesc.textContent = readable;
+
+    } catch (e) {
+      errorMsg.textContent = '⚠️ ' + e.message;
+      errorMsg.style.display = 'block';
+      cronDisplay.textContent = '—';
+      cronDesc.textContent = '参数有误，请检查输入';
+    }
+  }
+
+  function buildReadable(parts, descParts, yearDesc) {
+    // parts: [minute, hour, day, month, dow]
+    // descParts: [minute desc, hour desc, day desc, month desc, dow desc]
+    let timeStr = '';
+    const minCron = parts[0];
+    const hourCron = parts[1];
+    const dayCron = parts[2];
+    const monthCron = parts[3];
+    const dowCron = parts[4];
+
+    const minDesc = descParts[0];
+    const hourDesc = descParts[1];
+    const dayDesc = descParts[2];
+    const monthDesc = descParts[3];
+    const dowDesc = descParts[4];
+
+    // 检测常见模式
+    const allStar = parts.slice(0,5).every(p => p === '*');
+    if (allStar) {
+      return yearDesc ? `${yearDesc}每分钟执行` : '每分钟执行';
+    }
+
+    // 检测 "每X分钟" 模式
+    let result = '';
+
+    // 处理时间部分
+    let timeBlock = '';
+
+    // 分钟
+    let minReadable = '';
+    if (minCron === '*') {
+      minReadable = '每分钟';
+    } else if (minCron.includes('/')) {
+      let step = minCron.split('/')[1];
+      minReadable = `每 ${step} 分钟`;
+    } else if (minCron.includes('-')) {
+      minReadable = `${minCron} 分`;
+    } else {
+      minReadable = `${minCron} 分`;
+    }
+
+    // 小时
+    let hourReadable = '';
+    if (hourCron === '*' && minCron !== '*') {
+      hourReadable = '每小时';
+    } else if (hourCron === '*') {
+      hourReadable = '';
+    } else if (hourCron.includes('/')) {
+      let step = hourCron.split('/')[1];
+      hourReadable = `每 ${step} 小时`;
+    } else if (hourCron.includes('-')) {
+      hourReadable = `${hourCron} 点`;
+    } else {
+      hourReadable = `${hourCron} 点`;
+    }
+
+    // 组装时间
+    if (minCron === '*' && hourCron === '*') {
+      timeBlock = '';
+    } else if (minCron === '*') {
+      timeBlock = hourReadable;
+    } else if (hourCron === '*') {
+      timeBlock = minReadable;
+    } else {
+      timeBlock = `${hourReadable} ${minReadable}`;
+    }
+
+    // 日期部分
+    let dateBlock = '';
+
+    const dayEvery = dayCron === '*';
+    const monthEvery = monthCron === '*';
+    const dowEvery = dowCron === '*';
+
+    if (!monthEvery && !dayEvery && dowEvery) {
+      // 指定月和日
+      dateBlock = `${monthDesc} ${dayDesc}`;
+    } else if (monthEvery && !dayEvery && dowEvery) {
+      dateBlock = `每月 ${dayDesc}`;
+    } else if (!monthEvery && dayEvery && dowEvery) {
+      dateBlock = `每年 ${monthDesc}`;
+    } else if (monthEvery && dayEvery && !dowEvery) {
+      dateBlock = `每${dowDesc}`;
+    } else if (!monthEvery && dayEvery && !dowEvery) {
+      dateBlock = `${monthDesc} 每${dowDesc}`;
+    } else if (monthEvery && !dayEvery && !dowEvery) {
+      dateBlock = `每月 ${dayDesc} 且每${dowDesc}`;
+    } else if (!monthEvery && !dayEvery && !dowEvery) {
+      dateBlock = `${monthDesc} ${dayDesc} 且每${dowDesc}`;
+      if (!dowForce.checked && !dayForce.checked) {
+        dateBlock += '（注意：日和星期同时指定会取并集）';
+      }
+    } else {
+      // every everything
+      dateBlock = '每天';
+    }
+
+    // 有个特殊情况：分和时明确，但没有日期模式
+    if (dateBlock === '每天' && timeBlock === '') {
+      result = '每分钟执行';
+    } else if (dateBlock === '每天') {
+      result = `每天 ${timeBlock} 执行`;
+    } else if (dateBlock === '') {
+      result = `${timeBlock} 执行`;
+    } else if (timeBlock === '') {
+      result = `${dateBlock} 执行`;
+    } else {
+      result = `${dateBlock} ${timeBlock} 执行`;
+    }
+
+    if (yearDesc) {
+      result = yearDesc + ' ' + result;
+    }
+
+    // 替换多余空格
+    result = result.replace(/\s+/g, ' ').trim();
+    return result;
+  }
+
+  // ---- 输入事件绑定 ----
+  function bindInputs() {
+    const allInputs = document.querySelectorAll('select, input');
+    allInputs.forEach(el => {
+      // 某些输入页面加载时触发了 change，现在再绑一次
+      el.addEventListener('change', generate);
+      el.addEventListener('input', generate);
+    });
+  }
+  bindInputs();
+
+  // ---- 快捷预设 ----
+  function applyPreset(name) {
+    // Reset all to default first
+    const defaults = {
+      minute: { type: 'number', value: 0 },
+      hour: { type: 'number', value: 9 },
+      day: { type: 'number', value: 1 },
+      month: { type: 'number', value: 1 },
+      dow: { type: 'every', value: '1' },
+      year: { type: 'every', value: '2026' }
+    };
+
+    function resetField(fieldObj, defaultVal) {
+      fieldObj.type.value = defaultVal.type || 'every';
+      if (fieldObj.value) fieldObj.value.value = defaultVal.value || '*';
+      updateFieldVisibility(fieldObj);
+    }
+
+    resetField(fields.minute, defaults.minute);
+    resetField(fields.hour, defaults.hour);
+    resetField(fields.day, defaults.day);
+    resetField(fields.month, defaults.month);
+    resetField(fields.dow, defaults.dow);
+    resetField(fields.year, defaults.year);
+
+    // Now apply preset
+    switch (name) {
+      case 'every-minute':
+        fields.minute.type.value = 'every';
+        fields.hour.type.value = 'every';
+        fields.day.type.value = 'every';
+        fields.month.type.value = 'every';
+        fields.dow.type.value = 'every';
+        break;
+      case 'hourly':
+        fields.minute.type.value = 'number';
+        fields.minute.value.value = 0;
+        fields.hour.type.value = 'every';
+        fields.day.type.value = 'every';
+        fields.month.type.value = 'every';
+        fields.dow.type.value = 'every';
+        break;
+      case 'daily':
+        fields.minute.type.value = 'number';
+        fields.minute.value.value = 0;
+        fields.hour.type.value = 'number';
+        fields.hour.value.value = 9;
+        fields.day.type.value = 'every';
+        fields.month.type.value = 'every';
+        fields.dow.type.value = 'every';
+        break;
+      case 'weekly':
+        fields.minute.type.value = 'number';
+        fields.minute.value.value = 0;
+        fields.hour.type.value = 'number';
+        fields.hour.value.value = 9;
+        fields.day.type.value = 'every';
+        fields.month.type.value = 'every';
+        fields.dow.type.value = 'number';
+        fields.dow.value.value = '1'; // Monday
+        break;
+      case 'monthly':
+        fields.minute.type.value = 'number';
+        fields.minute.value.value = 0;
+        fields.hour.type.value = 'number';
+        fields.hour.value.value = 9;
+        fields.day.type.value = 'number';
+        fields.day.value.value = 1;
+        fields.month.type.value = 'every';
+        fields.dow.type.value = 'every';
+        break;
+      case 'yearly':
+        fields.minute.type.value = 'number';
+        fields.minute.value.value = 0;
+        fields.hour.type.value = 'number';
+        fields.hour.value.value = 9;
+        fields.day.type.value = 'number';
+        fields.day.value.value = 1;
+        fields.month.type.value = 'number';
+        fields.month.value.value = 1;
+        fields.dow.type.value = 'every';
+        break;
+      case 'weekday':
+        fields.minute.type.value = 'number';
+        fields.minute.value.value = 0;
+        fields.hour.type.value = 'number';
+        fields.hour.value.value = 9;
+        fields.day.type.value = 'every';
+        fields.month.type.value = 'every';
+        fields.dow.type.value = 'range';
+        fields.dow.value.value = '1';
+        fields.dow.rangeEnd.value = '5';
+        break;
+    }
+
+    // Update visibility for all
+    Object.values(fields).forEach(f => updateFieldVisibility(f));
+    generate();
+  }
+
+  // Preset buttons
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      applyPreset(this.dataset.preset);
+    });
+  });
+
+  // ---- 复制 ----
+  copyBtn.addEventListener('click', function() {
+    const text = cronDisplay.textContent;
+    if (text && text !== '—') {
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = '✅ 已复制！';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = '📋 复制表达式';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        copyBtn.textContent = '✅ 已复制！';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = '📋 复制表达式';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  });
+
+  // ---- 初始生成 ----
+  generate();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全国重点高校信息 — 双一流 / 985 / 211 / C9</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 14px; line-height: 1.6;
+    background: #f5f6f8; color: #1a1a1a;
+    min-height: 100vh;
+  }
+  .page-header {
+    background: #fff; border-bottom: 1px solid #e8e9ec;
+    padding: 20px 28px 16px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .page-header h1 { font-size: 19px; font-weight: 600; color: #111; margin-bottom: 2px; }
+  .page-header p { font-size: 12px; color: #888; }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 9px 28px; background: #fff;
+    border-bottom: 1px solid #e8e9ec; font-size: 12px; color: #555;
+  }
+  .legend-section { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .legend-sep { color: #ddd; font-size: 13px; }
+  .toolbar {
+    background: #fff; border-bottom: 1px solid #e8e9ec;
+    padding: 9px 28px;
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    position: sticky; top: 84px; z-index: 99;
+  }
+  .toolbar input[type="text"] {
+    flex: 1; min-width: 180px; max-width: 260px;
+    padding: 5px 12px; border: 1px solid #dde0e6;
+    border-radius: 8px; font-size: 13px; outline: none;
+    background: #f9fafc; transition: border-color 0.15s;
+  }
+  .toolbar input[type="text"]:focus { border-color: #4a6cf7; background: #fff; }
+  .filter-group { display: flex; gap: 5px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 4px 11px; border-radius: 20px;
+    border: 1.5px solid #e0e3ec; background: #fff;
+    font-size: 11px; cursor: pointer;
+    transition: all 0.15s; color: #444; font-weight: 500;
+  }
+  .filter-btn:hover { border-color: #bbb; }
+  .filter-btn.active { color: #fff; border-color: transparent; }
+  .filter-btn[data-f="all"].active    { background: #374151; }
+  .filter-btn[data-f="C9"].active     { background: #7c3aed; }
+  .filter-btn[data-f="985"].active    { background: #d97706; }
+  .filter-btn[data-f="211"].active    { background: #0369a1; }
+  .filter-btn[data-f="双一流"].active { background: #059669; }
+  .filter-btn[data-f="博士"].active   { background: #be185d; }
+  .filter-sep { color: #ddd; font-size: 13px; align-self: center; }
+  .count-badge { margin-left: auto; font-size: 12px; color: #888; white-space: nowrap; }
+  /* Tags */
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 1px 6px; border-radius: 3px;
+    letter-spacing: 0.02em; white-space: nowrap;
+  }
+  .tag-C9     { background: #ede9fe; color: #5b21b6; }
+  .tag-985    { background: #fef3c7; color: #92400e; }
+  .tag-211    { background: #dbeafe; color: #1e40af; }
+  .tag-双一流 { background: #d1fae5; color: #065f46; }
+  /* Info chips */
+  .chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; padding: 1px 6px; border-radius: 3px;
+    white-space: nowrap; font-weight: 500;
+  }
+  .chip-type    { background: #f1f5f9; color: #475569; }
+  .chip-nature  { background: #fff7ed; color: #9a3412; }
+  .chip-phd     { background: #fff1f2; color: #9f1239; }
+  /* Main */
+  .main { padding: 18px 28px; max-width: 1480px; margin: 0 auto; }
+  /* Region */
+  .region-section { margin-bottom: 26px; }
+  .region-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e8e9ec;
+  }
+  .region-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .region-header h2 { font-size: 15px; font-weight: 600; color: #222; }
+  .region-count {
+    font-size: 11px; color: #888;
+    background: #f0f1f5; padding: 2px 8px; border-radius: 10px;
+  }
+  /* Province */
+  .province-subsection { margin-bottom: 16px; }
+  .province-header {
+    display: flex; align-items: baseline; gap: 8px;
+    margin-bottom: 8px; padding-left: 18px;
+    position: relative;
+  }
+  .province-header::before {
+    content: '';
+    position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #cbd5e1;
+  }
+  .province-header h3 {
+    font-size: 13px; font-weight: 600; color: #334155;
+  }
+  .province-sub-count {
+    font-size: 11px; color: #94a3b8;
+  }
+  /* Grid */
+  .uni-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 8px;
+  }
+  .uni-card {
+    background: #fff; border-radius: 8px;
+    border: 1px solid #e8e9ec;
+    padding: 10px 12px;
+    transition: border-color 0.15s, transform 0.1s;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .uni-card:hover { border-color: #b5bbcc; transform: translateY(-1px); }
+  .uni-card.hidden { display: none; }
+  .uni-name { font-size: 13px; font-weight: 600; color: #111; line-height: 1.35; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 3px; }
+  .info-row { display: flex; flex-wrap: wrap; gap: 4px; }
+  .uni-link { font-size: 10px; color: #5b8dee; text-decoration: none; word-break: break-all; }
+  .uni-link:hover { text-decoration: underline; }
+  /* Region colors */
+  .region-华北 .region-dot { background: #ef4444; }
+  .region-华东 .region-dot { background: #f97316; }
+  .region-华南 .region-dot { background: #eab308; }
+  .region-华中 .region-dot { background: #22c55e; }
+  .region-西部 .region-dot { background: #3b82f6; }
+  .region-东北 .region-dot { background: #8b5cf6; }
+  .region-西南 .region-dot { background: #ec4899; }
+  .empty-state { text-align: center; padding: 48px; color: #aaa; font-size: 14px; }
+  @media (max-width: 640px) {
+    .page-header, .legend, .toolbar, .main { padding-left: 14px; padding-right: 14px; }
+    .toolbar { top: 78px; }
+    .uni-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>全国重点高校信息</h1>
+  <p>双一流 · 985工程 · 211工程 · C9联盟 — 区域 → 省份 → 学校，三级分组</p>
+</header>
+
+<div class="legend">
+  <div class="legend-section">
+    <strong style="font-size:11px;color:#444">层次：</strong>
+    <span class="tag tag-C9">C9</span>C9联盟
+    <span class="tag tag-985">985</span>985工程
+    <span class="tag tag-211">211</span>211工程
+    <span class="tag tag-双一流">双一流</span>双一流
+  </div>
+  <span class="legend-sep">|</span>
+  <div class="legend-section">
+    <strong style="font-size:11px;color:#444">属性：</strong>
+    <span class="chip chip-type">学科类型</span>
+    <span class="chip chip-nature">办学性质</span>
+    <span class="chip chip-phd">博士点</span>
+  </div>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="searchInput" placeholder="搜索学校名称或省份…" oninput="applyFilters()">
+  <div class="filter-group">
+    <button class="filter-btn active" data-f="all"  onclick="setFilter('all')">全部</button>
+    <button class="filter-btn" data-f="C9"    onclick="setFilter('C9')">C9</button>
+    <button class="filter-btn" data-f="985"   onclick="setFilter('985')">985</button>
+    <button class="filter-btn" data-f="211"   onclick="setFilter('211')">211</button>
+    <button class="filter-btn" data-f="双一流" onclick="setFilter('双一流')">双一流</button>
+    <span class="filter-sep" style="margin:0 2px">|</span>
+    <button class="filter-btn" data-f="博士"  onclick="setFilter('博士')">有博士点</button>
+  </div>
+  <span class="count-badge" id="countBadge">共 0 所</span>
+</div>
+
+<main class="main" id="mainContent"></main>
+
+<script>
+// 数据字段：region区域 / province省份 / type学科类型 / nature办学性质 / phd博士点 / url官网 / tags层次标签
+const universities = [
+  // ══════════════════════════════════════════════ 华北 ══════════════════════════════════════════════
+  { region:"华北", province:"北京",   name:"北京大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.pku.edu.cn",       tags:["C9","985","211","双一流"] },
+  { region:"华北", province:"北京",   name:"清华大学",           type:"理工", nature:"公办", phd:true,  url:"https://www.tsinghua.edu.cn",  tags:["C9","985","211","双一流"] },
+  { region:"华北", province:"北京",   name:"中国人民大学",       type:"综合", nature:"公办", phd:true,  url:"https://www.ruc.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京航空航天大学",   type:"理工", nature:"公办", phd:true,  url:"https://www.buaa.edu.cn",      tags:["985","211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京理工大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.bit.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华北", province:"北京",   name:"中国农业大学",       type:"农林", nature:"公办", phd:true,  url:"https://www.cau.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京师范大学",       type:"师范", nature:"公办", phd:true,  url:"https://www.bnu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华北", province:"北京",   name:"中央民族大学",       type:"民族", nature:"公办", phd:true,  url:"https://www.muc.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京交通大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.bjtu.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京工业大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.bjut.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京科技大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.ustb.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京化工大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.buct.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京邮电大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.bupt.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京林业大学",       type:"农林", nature:"公办", phd:true,  url:"https://www.bjfu.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京中医药大学",     type:"医药", nature:"公办", phd:true,  url:"https://www.bucm.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"中央财经大学",       type:"财经", nature:"公办", phd:true,  url:"https://www.cufe.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"对外经济贸易大学",   type:"财经", nature:"公办", phd:true,  url:"https://www.uibe.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"北京外国语大学",     type:"语言", nature:"公办", phd:true,  url:"https://www.bfsu.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"中国传媒大学",       type:"艺术", nature:"公办", phd:true,  url:"https://www.cuc.edu.cn",       tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"中央音乐学院",       type:"艺术", nature:"公办", phd:true,  url:"https://www.ccom.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"中国政法大学",       type:"政法", nature:"公办", phd:true,  url:"https://www.cupl.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"北京",   name:"华北电力大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.ncepu.edu.cn",     tags:["211","双一流"] },
+  { region:"华北", province:"天津",   name:"南开大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.nankai.edu.cn",    tags:["985","211","双一流"] },
+  { region:"华北", province:"天津",   name:"天津大学",           type:"理工", nature:"公办", phd:true,  url:"https://www.tju.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华北", province:"天津",   name:"天津医科大学",       type:"医药", nature:"公办", phd:true,  url:"https://www.tmu.edu.cn",       tags:["211","双一流"] },
+  { region:"华北", province:"河北",   name:"河北工业大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.hebut.edu.cn",     tags:["211","双一流"] },
+  { region:"华北", province:"山西",   name:"太原理工大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.tyut.edu.cn",      tags:["211","双一流"] },
+  { region:"华北", province:"内蒙古", name:"内蒙古大学",         type:"综合", nature:"公办", phd:true,  url:"https://www.imu.edu.cn",       tags:["211","双一流"] },
+
+  // ══════════════════════════════════════════════ 华东 ══════════════════════════════════════════════
+  { region:"华东", province:"上海",   name:"复旦大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.fudan.edu.cn",     tags:["C9","985","211","双一流"] },
+  { region:"华东", province:"上海",   name:"上海交通大学",       type:"综合", nature:"公办", phd:true,  url:"https://www.sjtu.edu.cn",      tags:["C9","985","211","双一流"] },
+  { region:"华东", province:"上海",   name:"同济大学",           type:"理工", nature:"公办", phd:true,  url:"https://www.tongji.edu.cn",    tags:["985","211","双一流"] },
+  { region:"华东", province:"上海",   name:"华东师范大学",       type:"师范", nature:"公办", phd:true,  url:"https://www.ecnu.edu.cn",      tags:["985","211","双一流"] },
+  { region:"华东", province:"上海",   name:"上海财经大学",       type:"财经", nature:"公办", phd:true,  url:"https://www.shufe.edu.cn",     tags:["211","双一流"] },
+  { region:"华东", province:"上海",   name:"华东理工大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.ecust.edu.cn",     tags:["211","双一流"] },
+  { region:"华东", province:"上海",   name:"上海大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.shu.edu.cn",       tags:["211","双一流"] },
+  { region:"华东", province:"上海",   name:"东华大学",           type:"理工", nature:"公办", phd:true,  url:"https://www.dhu.edu.cn",       tags:["211","双一流"] },
+  { region:"华东", province:"上海",   name:"上海外国语大学",     type:"语言", nature:"公办", phd:true,  url:"https://www.shisu.edu.cn",     tags:["211","双一流"] },
+  { region:"华东", province:"浙江",   name:"浙江大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.zju.edu.cn",       tags:["C9","985","211","双一流"] },
+  { region:"华东", province:"江苏",   name:"南京大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.nju.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华东", province:"江苏",   name:"东南大学",           type:"理工", nature:"公办", phd:true,  url:"https://www.seu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华东", province:"江苏",   name:"河海大学",           type:"理工", nature:"公办", phd:true,  url:"https://www.hhu.edu.cn",       tags:["211","双一流"] },
+  { region:"华东", province:"江苏",   name:"南京航空航天大学",   type:"理工", nature:"公办", phd:true,  url:"https://www.nuaa.edu.cn",      tags:["211","双一流"] },
+  { region:"华东", province:"江苏",   name:"南京理工大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.njust.edu.cn",     tags:["211","双一流"] },
+  { region:"华东", province:"江苏",   name:"中国矿业大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.cumt.edu.cn",      tags:["211","双一流"] },
+  { region:"华东", province:"江苏",   name:"南京农业大学",       type:"农林", nature:"公办", phd:true,  url:"https://www.njau.edu.cn",      tags:["211","双一流"] },
+  { region:"华东", province:"江苏",   name:"南京师范大学",       type:"师范", nature:"公办", phd:true,  url:"https://www.njnu.edu.cn",      tags:["211","双一流"] },
+  { region:"华东", province:"江苏",   name:"苏州大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.suda.edu.cn",      tags:["211","双一流"] },
+  { region:"华东", province:"江苏",   name:"江南大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.jiangnan.edu.cn",  tags:["211","双一流"] },
+  { region:"华东", province:"安徽",   name:"中国科学技术大学",   type:"理工", nature:"公办", phd:true,  url:"https://www.ustc.edu.cn",      tags:["C9","985","211","双一流"] },
+  { region:"华东", province:"安徽",   name:"合肥工业大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.hfut.edu.cn",      tags:["211","双一流"] },
+  { region:"华东", province:"安徽",   name:"安徽大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.ahu.edu.cn",       tags:["211","双一流"] },
+  { region:"华东", province:"山东",   name:"山东大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.sdu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华东", province:"山东",   name:"中国海洋大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.ouc.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华东", province:"山东",   name:"中国石油大学（华东）",type:"理工", nature:"公办", phd:true,  url:"https://www.upc.edu.cn",       tags:["211","双一流"] },
+  { region:"华东", province:"福建",   name:"厦门大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.xmu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华东", province:"福建",   name:"福州大学",           type:"理工", nature:"公办", phd:true,  url:"https://www.fzu.edu.cn",       tags:["211","双一流"] },
+
+  // ══════════════════════════════════════════════ 华南 ══════════════════════════════════════════════
+  { region:"华南", province:"广东",   name:"中山大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.sysu.edu.cn",      tags:["985","211","双一流"] },
+  { region:"华南", province:"广东",   name:"华南理工大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.scut.edu.cn",      tags:["985","211","双一流"] },
+  { region:"华南", province:"广东",   name:"暨南大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.jnu.edu.cn",       tags:["211","双一流"] },
+  { region:"华南", province:"广东",   name:"华南师范大学",       type:"师范", nature:"公办", phd:true,  url:"https://www.scnu.edu.cn",      tags:["211","双一流"] },
+  { region:"华南", province:"广东",   name:"华南农业大学",       type:"农林", nature:"公办", phd:true,  url:"https://www.scau.edu.cn",      tags:["211","双一流"] },
+  { region:"华南", province:"广东",   name:"深圳大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.szu.edu.cn",       tags:["双一流"] },
+  { region:"华南", province:"广东",   name:"南方科技大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.sustech.edu.cn",   tags:["双一流"] },
+  { region:"华南", province:"广西",   name:"广西大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.gxu.edu.cn",       tags:["211","双一流"] },
+  { region:"华南", province:"海南",   name:"海南大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.hainu.edu.cn",     tags:["211","双一流"] },
+
+  // ══════════════════════════════════════════════ 华中 ══════════════════════════════════════════════
+  { region:"华中", province:"湖北",   name:"武汉大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.whu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华中", province:"湖北",   name:"华中科技大学",       type:"综合", nature:"公办", phd:true,  url:"https://www.hust.edu.cn",      tags:["985","211","双一流"] },
+  { region:"华中", province:"湖北",   name:"华中农业大学",       type:"农林", nature:"公办", phd:true,  url:"https://www.hzau.edu.cn",      tags:["985","211","双一流"] },
+  { region:"华中", province:"湖北",   name:"中南财经政法大学",   type:"财经", nature:"公办", phd:true,  url:"https://www.znufe.edu.cn",     tags:["211","双一流"] },
+  { region:"华中", province:"湖北",   name:"华中师范大学",       type:"师范", nature:"公办", phd:true,  url:"https://www.ccnu.edu.cn",      tags:["211","双一流"] },
+  { region:"华中", province:"湖北",   name:"中国地质大学（武汉）",type:"理工", nature:"公办", phd:true,  url:"https://www.cug.edu.cn",       tags:["211","双一流"] },
+  { region:"华中", province:"湖北",   name:"武汉理工大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.whut.edu.cn",      tags:["211","双一流"] },
+  { region:"华中", province:"湖南",   name:"中南大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.csu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华中", province:"湖南",   name:"湖南大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.hnu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"华中", province:"湖南",   name:"湖南师范大学",       type:"师范", nature:"公办", phd:true,  url:"https://www.hunnu.edu.cn",     tags:["211","双一流"] },
+  { region:"华中", province:"河南",   name:"郑州大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.zzu.edu.cn",       tags:["211","双一流"] },
+  { region:"华中", province:"江西",   name:"南昌大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.ncu.edu.cn",       tags:["211","双一流"] },
+
+  // ══════════════════════════════════════════════ 东北 ══════════════════════════════════════════════
+  { region:"东北", province:"黑龙江", name:"哈尔滨工业大学",     type:"理工", nature:"公办", phd:true,  url:"https://www.hit.edu.cn",       tags:["C9","985","211","双一流"] },
+  { region:"东北", province:"吉林",   name:"吉林大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.jlu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"东北", province:"辽宁",   name:"东北大学",           type:"理工", nature:"公办", phd:true,  url:"https://www.neu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"东北", province:"辽宁",   name:"大连理工大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.dlut.edu.cn",      tags:["985","211","双一流"] },
+  { region:"东北", province:"辽宁",   name:"辽宁大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.lnu.edu.cn",       tags:["211","双一流"] },
+  { region:"东北", province:"辽宁",   name:"大连海事大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.dlmu.edu.cn",      tags:["211","双一流"] },
+  { region:"东北", province:"吉林",   name:"东北师范大学",       type:"师范", nature:"公办", phd:true,  url:"https://www.nenu.edu.cn",      tags:["211","双一流"] },
+  { region:"东北", province:"吉林",   name:"延边大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.ybu.edu.cn",       tags:["211","双一流"] },
+  { region:"东北", province:"黑龙江", name:"哈尔滨工程大学",     type:"理工", nature:"公办", phd:true,  url:"https://www.hrbeu.edu.cn",     tags:["211","双一流"] },
+  { region:"东北", province:"黑龙江", name:"东北农业大学",       type:"农林", nature:"公办", phd:true,  url:"https://www.neau.edu.cn",      tags:["211","双一流"] },
+  { region:"东北", province:"黑龙江", name:"东北林业大学",       type:"农林", nature:"公办", phd:true,  url:"https://www.nefu.edu.cn",      tags:["211","双一流"] },
+
+  // ══════════════════════════════════════════════ 西部 ══════════════════════════════════════════════
+  { region:"西部", province:"陕西",   name:"西安交通大学",       type:"综合", nature:"公办", phd:true,  url:"https://www.xjtu.edu.cn",      tags:["C9","985","211","双一流"] },
+  { region:"西部", province:"陕西",   name:"西北工业大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.nwpu.edu.cn",      tags:["985","211","双一流"] },
+  { region:"西部", province:"陕西",   name:"西北农林科技大学",   type:"农林", nature:"公办", phd:true,  url:"https://www.nwsuaf.edu.cn",    tags:["985","211","双一流"] },
+  { region:"西部", province:"陕西",   name:"陕西师范大学",       type:"师范", nature:"公办", phd:true,  url:"https://www.snnu.edu.cn",      tags:["211","双一流"] },
+  { region:"西部", province:"陕西",   name:"西安电子科技大学",   type:"理工", nature:"公办", phd:true,  url:"https://www.xidian.edu.cn",    tags:["211","双一流"] },
+  { region:"西部", province:"陕西",   name:"长安大学",           type:"理工", nature:"公办", phd:true,  url:"https://www.chd.edu.cn",       tags:["211","双一流"] },
+  { region:"西部", province:"甘肃",   name:"兰州大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.lzu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"西部", province:"新疆",   name:"新疆大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.xju.edu.cn",       tags:["211","双一流"] },
+  { region:"西部", province:"宁夏",   name:"宁夏大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.nxu.edu.cn",       tags:["211","双一流"] },
+  { region:"西部", province:"青海",   name:"青海大学",           type:"综合", nature:"公办", phd:false, url:"https://www.qhu.edu.cn",       tags:["211","双一流"] },
+
+  // ══════════════════════════════════════════════ 西南 ══════════════════════════════════════════════
+  { region:"西南", province:"四川",   name:"四川大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.scu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"西南", province:"四川",   name:"电子科技大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.uestc.edu.cn",     tags:["985","211","双一流"] },
+  { region:"西南", province:"四川",   name:"西南交通大学",       type:"理工", nature:"公办", phd:true,  url:"https://www.swjtu.edu.cn",     tags:["211","双一流"] },
+  { region:"西南", province:"四川",   name:"西南财经大学",       type:"财经", nature:"公办", phd:true,  url:"https://www.swufe.edu.cn",     tags:["211","双一流"] },
+  { region:"西南", province:"重庆",   name:"重庆大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.cqu.edu.cn",       tags:["985","211","双一流"] },
+  { region:"西南", province:"重庆",   name:"西南大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.swu.edu.cn",       tags:["211","双一流"] },
+  { region:"西南", province:"云南",   name:"云南大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.ynu.edu.cn",       tags:["211","双一流"] },
+  { region:"西南", province:"贵州",   name:"贵州大学",           type:"综合", nature:"公办", phd:true,  url:"https://www.gzu.edu.cn",       tags:["211","双一流"] },
+  { region:"西南", province:"西藏",   name:"西藏大学",           type:"综合", nature:"公办", phd:false, url:"https://www.utibet.edu.cn",    tags:["211","双一流"] },
+];
+
+// 区域排序
+const regionOrder = ["华北","华东","华南","华中","东北","西部","西南"];
+
+let activeFilter = 'all';
+
+function tagHTML(tags) {
+  return tags.map(t => `<span class="tag tag-${t}">${t}</span>`).join('');
+}
+
+function cardHTML(u) {
+  const phd = u.phd
+    ? `<span class="chip chip-phd">博士点</span>`
+    : `<span class="chip" style="background:#f8fafc;color:#9ca3af">无博士点</span>`;
+  return `
+    <div class="uni-card"
+         data-name="${u.name}"
+         data-province="${u.province}"
+         data-tags="${u.tags.join(',')}"
+         data-phd="${u.phd ? '1' : '0'}">
+      <div class="uni-name">${u.name}</div>
+      <div class="tag-row">${tagHTML(u.tags)}</div>
+      <div class="info-row">
+        <span class="chip chip-type">${u.type}</span>
+        <span class="chip chip-nature">${u.nature}</span>
+        ${phd}
+      </div>
+      <a class="uni-link" href="${u.url}" target="_blank" rel="noopener">${u.url.replace('https://','')}</a>
+    </div>
+  `;
+}
+
+function buildUI() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+  regionOrder.forEach(region => {
+    const unis = universities.filter(u => u.region === region);
+    const section = document.createElement('section');
+    section.className = `region-section region-${region}`;
+    section.dataset.region = region;
+
+    // region header
+    const headerHTML = `
+      <div class="region-header">
+        <div class="region-dot"></div>
+        <h2>${region}地区</h2>
+        <span class="region-count" id="count-${region}">${unis.length} 所</span>
+      </div>
+    `;
+
+    // group by province
+    const provinceMap = new Map();
+    unis.forEach(u => {
+      if (!provinceMap.has(u.province)) provinceMap.set(u.province, []);
+      provinceMap.get(u.province).push(u);
+    });
+
+    let bodyHTML = '';
+    provinceMap.forEach((pUnis, province) => {
+      bodyHTML += `
+        <div class="province-subsection" data-province="${province}">
+          <div class="province-header">
+            <h3>${province}</h3>
+            <span class="province-sub-count" id="pcount-${region}-${province}">${pUnis.length} 所</span>
+          </div>
+          <div class="uni-grid">
+            ${pUnis.map(u => cardHTML(u)).join('')}
+          </div>
+        </div>
+      `;
+    });
+
+    section.innerHTML = headerHTML + bodyHTML;
+    main.appendChild(section);
+  });
+  applyFilters();
+}
+
+function setFilter(tag) {
+  activeFilter = tag;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.f === tag);
+  });
+  applyFilters();
+}
+
+function applyFilters() {
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  let total = 0;
+  const regionCounts = {};
+
+  regionOrder.forEach(region => {
+    let regionVisible = 0;
+    const section = document.querySelector(`.region-section[data-region="${region}"]`);
+    if (!section) return;
+
+    const subs = section.querySelectorAll('.province-subsection');
+    subs.forEach(sub => {
+      let provinceVisible = 0;
+      const cards = sub.querySelectorAll('.uni-card');
+      cards.forEach(card => {
+        const name = card.dataset.name.toLowerCase();
+        const province = card.dataset.province.toLowerCase();
+        const tags = card.dataset.tags.split(',');
+        const hasPhd = card.dataset.phd === '1';
+
+        let matchFilter = true;
+        if (activeFilter !== 'all') {
+          if (activeFilter === '博士') matchFilter = hasPhd;
+          else matchFilter = tags.includes(activeFilter);
+        }
+        const matchSearch = !query || name.includes(query) || province.includes(query);
+        const visible = matchFilter && matchSearch;
+        card.style.display = visible ? '' : 'none';
+        if (visible) { provinceVisible++; regionVisible++; total++; }
+      });
+
+      // update province sub count
+      const prv = sub.dataset.province;
+      const pCountEl = document.getElementById(`pcount-${region}-${prv}`);
+      if (pCountEl) pCountEl.textContent = `${provinceVisible} 所`;
+      sub.style.display = provinceVisible === 0 ? 'none' : '';
+    });
+
+    // update region count
+    const rCountEl = document.getElementById(`count-${region}`);
+    if (rCountEl) rCountEl.textContent = `${regionVisible} 所`;
+    section.style.display = regionVisible === 0 ? 'none' : '';
+  });
+
+  document.getElementById('countBadge').textContent = `共 ${total} 所`;
+
+  // empty state
+  const main = document.getElementById('mainContent');
+  let emptyEl = document.getElementById('emptyState');
+  if (total === 0 && !emptyEl) {
+    emptyEl = document.createElement('div');
+    emptyEl.id = 'emptyState';
+    emptyEl.className = 'empty-state';
+    emptyEl.textContent = '没有找到匹配的学校，换个关键词试试 ~';
+    main.appendChild(emptyEl);
+  } else if (total > 0 && emptyEl) {
+    emptyEl.remove();
+  }
+}
+
+buildUI();
+</script>
+</body>
+</html>

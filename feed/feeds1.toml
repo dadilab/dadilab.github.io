@@ -1,0 +1,104 @@
+[default]
+timeout = 300
+#waitUntil = "load"
+waitUntil = "networkidle"
+
+[cqgkld]
+title = "重庆市公考雷达"
+url = "https://www.gongkaoleida.com/area/2460-2461-0-2,3,59,78-124"
+entrySelector = "body > section > div.mdn-content-box.clearfix > div > div"
+titleSelector = "title"
+linkSelector = "notice-list > ul > li > h5 > a"
+dateSelector = "date"
+dateFormat = "yyyy-MM-dd"
+
+[cqsydw]
+title = "重庆市人社局-事业单位公开招聘"
+url = "https://rlsbj.cq.gov.cn/zwxx_182/sydw/sydwgkzp2024_490546/"
+entrySelector = "body > div.page-list.clearfix"
+titleSelector = "title"
+linkSelector = "ul.tab-item > li > a"
+dateSelector = "ul.tab-item > li > span"
+dateFormat = "yyyy-MM-dd"
+
+[cqsydwjqtks]
+title = "重庆市人社局-事业单位及其他考试"
+url = "https://rlsbj.cq.gov.cn/ywzl/rsks/sydwks/"
+entrySelector = "body > div.page-list.clearfix"
+titleSelector = "title"
+linkSelector = "ul.tab-item > li.clearfix > a"
+dateSelector = "ul.tab-item > li.clearfix > span"
+dateFormat = "yyyy-MM-dd"
+
+[cqgwy]
+title = "重庆市人社局-公务员考试"
+url = "https://rlsbj.cq.gov.cn/ywzl/rsks/gwyks/"
+entrySelector = "body > div.page-list.clearfix"
+titleSelector = "a.title"
+linkSelector = "ul.tab-item > li > a"
+dateSelector = "ul.tab-item > li > span"
+dateFormat = "yyyy-MM-dd"
+
+[cqshhfwks]
+title = "重庆市人社局-社会化服务考试"
+url = "https://rlsbj.cq.gov.cn/ywzl/rsks/shhfw/"
+entrySelector = "body > div.page-list.clearfix"
+titleSelector = "a.title"
+linkSelector = "ul.tab-item > li > a"
+dateSelector = "ul.tab-item > li > span"
+dateFormat = "yyyy-MM-dd"
+
+[cqgsxx]
+title = "重庆市人社局-公示信息"
+url = "https://rlsbj.cq.gov.cn/zwxx_182/gsxx/"
+entrySelector = "body > div.page-list.clearfix"
+titleSelector = "a.title"
+linkSelector = "body > div.page-list.clearfix > ul:nth-child(3) > li:nth-child(1) > a"
+dateSelector = "ul.tab-item > li > span"
+dateFormat = "yyyy-MM-dd"
+
+[cqgqzp]
+title = "重庆市国有资产监督管理委员会-国企招聘"
+url = "http://gzw.cq.gov.cn/gqzp/"
+entrySelector = "body > div.page-list.clearfix"
+titleSelector = "a.title"
+linkSelector = "body > div.page-list.clearfix > ul > li > a"
+dateSelector = "ul.tab-item > li"
+dateFormat = "yyyy-MM-dd"
+
+[cqsgqzp]
+title = "重庆市国资委国企招聘页面"
+url = "http://gzw.cq.gov.cn/gqzp/"
+entrySelector = "body"
+titleSelector = ".listConBox li h4 a"
+linkSelector = ".listConBox li h4 a"
+dateSelector = ".listConBox li span"
+dateFormat = "yyyy-MM-dd"
+
+[cqfenbi]
+title = "重庆粉笔招考"
+url = "https://www.fenbi.com/page/fenxiaozhaokao/25"
+entrySelector = "#zixun"
+titleSelector = "a.title"
+linkSelector = "#zixun > div.zixun-block > div"
+dateSelector = "#zixun > div.zixun-block > div > a > div.zhaokaoxinxi-item-info"
+dateFormat = "yyyy-MM-dd"
+
+[jinbiaochi]
+title = "金标尺重庆教师工作相关页面"
+url = "https://cq.jinbiaochi.com/jsgz/column_114/"
+entrySelector = "body" 
+titleSelector = ".article-item__title a" 
+linkSelector = ".article-item__title a" 
+dateSelector = ".article-item__meta span:nth-child(1)" 
+dateFormat = "yyyy-MM-dd" 
+
+[readblog]
+title = "读书博客"
+url = "https://bf.zzxworld.com/t/read"
+entrySelector = "#topic-posts > li > div > div.block-info > div"
+titleSelector = "#topic-posts > li > div > div.block-info > div"
+linkSelector = "#topic-posts > li > div > div.block-info > div > a"
+dateSelector = "#topic-posts > li > div > div.block-info > footer > time"
+dateFormat = "yyyy-MM-dd"
+
