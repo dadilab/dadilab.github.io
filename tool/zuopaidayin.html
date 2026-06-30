@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -168,8 +169,7 @@
     width: 100%; height: 100%;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    padding: 10px 28px; text-align: center; position: relative;
-    transition: padding 0.15s ease;
+    text-align: center; position: relative;
   }
   .section-back .section-content { transform: rotate(180deg); }
 
@@ -415,18 +415,30 @@
       <!-- Background -->
       <div class="panel-section">
         <h3>背景颜色</h3>
-        <div class="ctrl-row">
-          <div class="field-group">
+        <div class="ctrl-row" style="align-items:stretch;">
+          <div class="field-group" style="display:flex;flex-direction:column;gap:4px;">
             <label>正面</label>
-            <input type="color" id="f-bgf" value="#ffffff" oninput="up()">
+            <input type="color" id="f-bgf" value="#ffffff" oninput="up()" style="width:100%;">
+            <div class="ctrl-row" style="gap:4px;">
+              <input type="range" id="f-bgf-a" min="0" max="100" value="100" oninput="rv('bgf-a');up()" style="flex:1;">
+              <span class="range-val" id="v-bgf-a" style="min-width:30px;">100%</span>
+            </div>
           </div>
-          <div class="field-group">
+          <div class="field-group" style="display:flex;flex-direction:column;gap:4px;">
             <label>背面</label>
-            <input type="color" id="f-bgb" value="#ffffff" oninput="up()">
+            <input type="color" id="f-bgb" value="#ffffff" oninput="up()" style="width:100%;">
+            <div class="ctrl-row" style="gap:4px;">
+              <input type="range" id="f-bgb-a" min="0" max="100" value="100" oninput="rv('bgb-a');up()" style="flex:1;">
+              <span class="range-val" id="v-bgb-a" style="min-width:30px;">100%</span>
+            </div>
           </div>
-          <div class="field-group">
+          <div class="field-group" style="display:flex;flex-direction:column;gap:4px;">
             <label>支撑区</label>
-            <input type="color" id="f-bgs" value="#ffffff" oninput="up()">
+            <input type="color" id="f-bgs" value="#ffffff" oninput="up()" style="width:100%;">
+            <div class="ctrl-row" style="gap:4px;">
+              <input type="range" id="f-bgs-a" min="0" max="100" value="100" oninput="rv('bgs-a');up()" style="flex:1;">
+              <span class="range-val" id="v-bgs-a" style="min-width:30px;">100%</span>
+            </div>
           </div>
         </div>
       </div>
@@ -745,9 +757,9 @@ function selectTpl(el) {
   el.classList.add('active');
   const t = TPLS[el.dataset.tpl];
   if (t) {
-    $('f-bgf').value = t.bf;
-    $('f-bgb').value = t.bb;
-    $('f-bgs').value = t.bs;
+    $('f-bgf').value = t.bf;  $('f-bgf-a').value = 100;
+    $('f-bgb').value = t.bb;  $('f-bgb-a').value = 100;
+    $('f-bgs').value = t.bs;  $('f-bgs-a').value = 100;
     // 切换模板时清理背景图片
     if (bgB64) rmBgImg();
     up();
@@ -787,6 +799,18 @@ function loadBgImg(e) {
 function rmBgImg() {
   bgB64 = null; $('f-bg-img').value = ''; $('bg-pb').style.display = 'none'; up();
 }
+
+// ===== Color Helpers =====
+function hexToRgba(hex, alphaPct) {
+  const a = (parseInt(alphaPct) || 100) / 100;
+  if (a >= 1) return hex;
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2), 16);
+  const g = parseInt(h.substring(2,4), 16);
+  const b = parseInt(h.substring(4,6), 16);
+  return `rgba(${r},${g},${b},${a.toFixed(2)})`;
+}
+
 function getBgStyle(d) {
   if (!d.bgImage) return '';
   const mode = d.bgMode || 'cover';
@@ -820,17 +844,18 @@ function buildSectionHTML(data) {
   const tcT = tcTitle || '#000000';
   const tcO = tcOrg  || '#000000';
   const tcE = tcExtra || '#000000';
+  const m = parseInt(data.margin) || 28;
 
   // "topleft" is handled separately at section level; here we just build text block
   if (lp === 'topleft') {
-    let h = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;font-family:${ff};color:${tcN};text-align:center;">`;
+    let h = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:0 ${m}px;box-sizing:border-box;font-family:${ff};color:${tcN};text-align:center;">`;
     h += `<div class="pv-name" style="font-size:${nsz}px;color:${tcN};font-family:${ff};">${esc(name)}</div>`;
     if (title) h += `<div class="pv-title" style="font-size:${tsz}px;color:${tcT};font-family:${ff};">${esc(title)}</div>`;
     if (org)   h += `<div class="pv-org" style="font-size:${osz}px;color:${tcO};font-family:${ff};">${esc(org)}</div>`;
     if (extra) h += `<div class="pv-extra" style="font-size:${Math.max(10,osz*0.85)}px;color:${tcE};font-family:${ff};">${esc(extra)}</div>`;
     h += `</div>`;
     if (logo) {
-      const lOff = Math.max(8, parseInt(data.margin || 28) - 6);
+      const lOff = Math.max(8, m - 6);
       h += `<img src="${logo}" class="logo-corner-wrap" style="position:absolute;top:14px;left:${lOff}px;width:${lsz}px;height:${lsz}px;object-fit:contain;border-radius:4px;">`;
     }
     return h;
@@ -848,7 +873,7 @@ function buildSectionHTML(data) {
     }
   }
 
-  let h = `<div style="display:flex;flex-direction:${flexDir};align-items:center;justify-content:center;width:100%;height:100%;font-family:${ff};color:${tcN};text-align:center;">`;
+  let h = `<div style="display:flex;flex-direction:${flexDir};align-items:center;justify-content:center;width:100%;height:100%;padding:0 ${m}px;box-sizing:border-box;font-family:${ff};color:${tcN};text-align:center;">`;
   if (logo && lp === 'left') h += lhtml;
   h += '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">';
   if (logo && lp === 'top') h += lhtml;
@@ -937,8 +962,11 @@ function getFormData(overrides={}) {
     bgOpacity: $('f-bg-op').value,
     logo:  logoB64,
     bgf:   $('f-bgf').value,
+    bgfA:  $('f-bgf-a').value,
     bgb:   $('f-bgb').value,
+    bgbA:  $('f-bgb-a').value,
     bgs:   $('f-bgs').value,
+    bgsA:  $('f-bgs-a').value,
   };
 }
 
@@ -988,15 +1016,18 @@ function updatePreview() {
   cb.style.cssText = `position:absolute;left:${offX}px;top:${offY}px;width:${cw}px;height:${totalH}px;`;
 
   // Background helper: returns full background CSS including image+color
+  const rgbaBgf = hexToRgba(d.bgf, d.bgfA);
+  const rgbaBgb = hexToRgba(d.bgb, d.bgbA);
+  const rgbaBgs = hexToRgba(d.bgs, d.bgsA);
   const secBg = (color) => {
     const bgD = { ...d, sectionColor: color };
     return getBgStyle(bgD) || `background:${color};`;
   };
 
   // Position sections with background color+image
-  $('secB').style.cssText = `position:absolute;left:0;top:0;width:100%;height:${secH}px;${secBg(d.bgb)}display:flex;align-items:center;justify-content:center;overflow:hidden;`;
-  $('secF').style.cssText = `position:absolute;left:0;top:${secH}px;width:100%;height:${secH}px;${secBg(d.bgf)}display:flex;align-items:center;justify-content:center;overflow:hidden;`;
-  $('secS').style.cssText = `position:absolute;left:0;top:${bodyH}px;width:100%;height:${supH}px;background:${d.bgs};display:flex;align-items:center;justify-content:center;overflow:hidden;`;
+  $('secB').style.cssText = `position:absolute;left:0;top:0;width:100%;height:${secH}px;${secBg(rgbaBgb)}display:flex;align-items:center;justify-content:center;overflow:hidden;`;
+  $('secF').style.cssText = `position:absolute;left:0;top:${secH}px;width:100%;height:${secH}px;${secBg(rgbaBgf)}display:flex;align-items:center;justify-content:center;overflow:hidden;`;
+  $('secS').style.cssText = `position:absolute;left:0;top:${bodyH}px;width:100%;height:${supH}px;background:${rgbaBgs};display:flex;align-items:center;justify-content:center;overflow:hidden;`;
 
   // Position fold lines: fold-1 between back/front, fold-2 between body/support
   const foldOff = Math.max(4, parseInt(d.margin) || 15);
@@ -1016,11 +1047,6 @@ function updatePreview() {
     cutEl.style.cssText = 'display:none;';
   }
 
-  // Apply margins
-  document.querySelectorAll('.section-content').forEach(el => {
-    el.style.paddingLeft = marginPx;
-    el.style.paddingRight = marginPx;
-  });
 
   // Update dimension display
   const m = parseInt(d.margin) || 0;
@@ -1045,7 +1071,8 @@ function updatePreview() {
 
 function buildSupportHTML(d) {
   const base = d.tcName || '#000000';
-  return `<div class="support-inner">
+  const m = parseInt(d.margin) || 28;
+  return `<div class="support-inner" style="padding:0 ${m}px;box-sizing:border-box;">
     <div class="s-title" style="color:${base}80;">折叠支撑区</div>
     <div class="s-desc" style="color:${base}60;">沿虚线向内对折，使座牌可独立站立</div>
     <div class="s-foot" style="color:${base}50;">Power By lab.xudadi.cn 座牌打印工具</div>
@@ -1068,6 +1095,7 @@ function buildA4HTML(data) {
   const marginPx = (parseInt(data.margin) || 28) + 'px';
   const foldStyle = (data.showFold !== false) ? '' : 'style="display:none;"';
   const foldMm = ((parseInt(data.margin) || 28) * 0.353).toFixed(1) + 'mm';
+  const rgbaBgs = hexToRgba(data.bgs, data.bgsA);
 
   // Background image styles for each section
   const bgStyle = (color) => {
@@ -1109,7 +1137,7 @@ function buildA4HTML(data) {
     <div style="position:absolute;left:${offXmm};top:${offYmm};width:${totalWmm};height:${totalHmm};${cutStyles}">
       <!-- Back section (upside down) -->
       <div style="position:absolute;top:0;left:0;width:100%;height:${secHmm};${bgStyle(data.bgb)}display:flex;align-items:center;justify-content:center;overflow:hidden;">
-        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px ${marginPx};text-align:center;transform:rotate(180deg);position:relative;">
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-align:center;transform:rotate(180deg);position:relative;">
           ${backHTML}
         </div>
       </div>
@@ -1117,15 +1145,15 @@ function buildA4HTML(data) {
       <div ${foldStyle} style="position:absolute;top:${secHmm};left:${foldMm};right:${foldMm};border-top:1px dashed #999;z-index:20;"></div>
       <!-- Front section -->
       <div style="position:absolute;top:${secHmm};left:0;width:100%;height:${secHmm};${bgStyle(data.bgf)}display:flex;align-items:center;justify-content:center;overflow:hidden;">
-        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px ${marginPx};text-align:center;position:relative;">
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-align:center;position:relative;">
           ${frontHTML}
         </div>
       </div>
       <!-- Fold line 2 (between front & support) -->
       <div ${foldStyle} style="position:absolute;top:${bodyHmm};left:${foldMm};right:${foldMm};border-top:1px dashed #999;z-index:20;"></div>
       <!-- Support section -->
-      <div style="position:absolute;top:${bodyHmm};left:0;width:100%;height:${(supHCm * 10).toFixed(1)}mm;background:${data.bgs};display:flex;align-items:center;justify-content:center;overflow:hidden;">
-        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px ${marginPx};text-align:center;">
+      <div style="position:absolute;top:${bodyHmm};left:0;width:100%;height:${(supHCm * 10).toFixed(1)}mm;background:${rgbaBgs};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;text-align:center;">
           ${supportHTML}
         </div>
       </div>
@@ -1326,14 +1354,14 @@ function buildSectionPreviewMini(d, cw, bodyH, supH) {
   };
   return `
     <div style="position:absolute;top:0;left:0;width:100%;height:${secH}px;${miniBg(d.bgb)}display:flex;align-items:center;justify-content:center;overflow:hidden;">
-      <div style="transform:rotate(180deg);width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px ${d.margin||28}px;">${buildSectionHTML(d)}</div>
+      <div style="transform:rotate(180deg);width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px 0;">${buildSectionHTML(d)}</div>
     </div>
     <div style="position:absolute;top:${secH}px;left:15px;right:15px;border-top:1px dashed #bbb;z-index:20;"></div>
     <div style="position:absolute;top:${secH}px;left:0;width:100%;height:${secH}px;${miniBg(d.bgf)}display:flex;align-items:center;justify-content:center;overflow:hidden;">
-      <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px ${d.margin||28}px;">${buildSectionHTML(d)}</div>
+      <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px 0;">${buildSectionHTML(d)}</div>
     </div>
     <div style="position:absolute;top:${bodyH}px;left:15px;right:15px;border-top:1px dashed #bbb;z-index:20;"></div>
-    <div style="position:absolute;top:${bodyH}px;left:0;width:100%;height:${supH}px;background:${d.bgs};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+    <div style="position:absolute;top:${bodyH}px;left:0;width:100%;height:${supH}px;background:${hexToRgba(d.bgs, d.bgsA)};display:flex;align-items:center;justify-content:center;overflow:hidden;">
       ${buildSupportHTML(d)}
     </div>`;
 }
@@ -1366,7 +1394,7 @@ const DEFAULTS = {
   nsz:48, tsz:20, osz:16,
   tcName:'#000000', tcTitle:'#000000', tcOrg:'#000000', tcExtra:'#000000',
   ff:'\'Microsoft YaHei\',\'PingFang SC\',sans-serif',
-  bgf:'#ffffff', bgb:'#ffffff', bgs:'#ffffff',
+  bgf:'#ffffff', bgfA:100, bgb:'#ffffff', bgbA:100, bgs:'#ffffff', bgsA:100,
   cw:21, bodyH:19.8, sh:9.9, topOff:0,
   margin:28, showFold:true,
   cutLines:true, cutw:2,
@@ -1385,7 +1413,9 @@ function applyDefaults() {
   $v('nsz', DEFAULTS.nsz); $v('tsz', DEFAULTS.tsz); $v('osz', DEFAULTS.osz);
   $v('tc-name', DEFAULTS.tcName); $v('tc-title', DEFAULTS.tcTitle); $v('tc-org', DEFAULTS.tcOrg); $v('tc-extra', DEFAULTS.tcExtra);
   $v('ff', DEFAULTS.ff);
-  $v('bgf', DEFAULTS.bgf); $v('bgb', DEFAULTS.bgb); $v('bgs', DEFAULTS.bgs);
+  $v('bgf', DEFAULTS.bgf); $v('bgf-a', DEFAULTS.bgfA);
+  $v('bgb', DEFAULTS.bgb); $v('bgb-a', DEFAULTS.bgbA);
+  $v('bgs', DEFAULTS.bgs); $v('bgs-a', DEFAULTS.bgsA);
   $v('cw', DEFAULTS.cw); $v('bodyH', DEFAULTS.bodyH); $v('sh', DEFAULTS.sh); $v('topOff', DEFAULTS.topOff);
   $v('margin', DEFAULTS.margin); $v('margin-num', DEFAULTS.margin);
   $('f-show-fold').checked = DEFAULTS.showFold;
@@ -1417,7 +1447,9 @@ function saveSettings() {
       nsz: $('f-nsz').value, tsz: $('f-tsz').value, osz: $('f-osz').value,
       tcName: $('f-tc-name').value, tcTitle: $('f-tc-title').value, tcOrg: $('f-tc-org').value, tcExtra: $('f-tc-extra').value,
       ff: $('f-ff').value,
-      bgf: $('f-bgf').value, bgb: $('f-bgb').value, bgs: $('f-bgs').value,
+      bgf: $('f-bgf').value, bgfA: $('f-bgf-a').value,
+      bgb: $('f-bgb').value, bgbA: $('f-bgb-a').value,
+      bgs: $('f-bgs').value, bgsA: $('f-bgs-a').value,
       cw: $('f-cw').value, bodyH: $('f-bodyH').value, sh: $('f-sh').value, topOff: $('f-topOff').value,
       margin: $('f-margin').value,
       showFold: $('f-show-fold').checked,
@@ -1451,6 +1483,9 @@ function loadSettings() {
     if (s.bgf !== undefined) set('bgf', s.bgf);
     if (s.bgb !== undefined) set('bgb', s.bgb);
     if (s.bgs !== undefined) set('bgs', s.bgs);
+    if (s.bgfA !== undefined) set('bgf-a', s.bgfA);
+    if (s.bgbA !== undefined) set('bgb-a', s.bgbA);
+    if (s.bgsA !== undefined) set('bgs-a', s.bgsA);
     if (s.cw !== undefined) set('cw', s.cw);
     if (s.bodyH !== undefined) set('bodyH', s.bodyH);
     if (s.sh !== undefined) set('sh', s.sh);
