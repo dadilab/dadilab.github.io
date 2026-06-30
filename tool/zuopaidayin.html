@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -164,34 +163,42 @@
     position: absolute; left: 0; width: 100%;
     display: flex; align-items: center; justify-content: center; overflow: hidden;
   }
-  .section-back    { top: 0;        height: 280.66px; }
-  .section-front   { top: 280.66px; height: 280.66px; }
-  .section-support { top: 561.32px; height: 280.66px; }
 
   .section-content {
     width: 100%; height: 100%;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     padding: 10px 28px; text-align: center; position: relative;
+    transition: padding 0.15s ease;
   }
   .section-back .section-content { transform: rotate(180deg); }
 
   .fold-line {
     position: absolute; left: 15px; right: 15px;
     border-top: 2px dashed #b8c2d0; z-index: 20; pointer-events: none;
+    transition: opacity 0.15s ease;
   }
-  .fold-line-1 { top: 280.66px; }
-  .fold-line-2 { top: 561.32px; }
+  .fold-line.hidden { opacity: 0; pointer-events: none; }
 
-  .pv-name  { font-weight: 700; line-height: 1.15; word-break: break-all; max-width: 100%; }
+  /* Cut lines */
+  .cut-line-box {
+    position: absolute; pointer-events: none; z-index: 25;
+    border-style: dashed; border-color: #e74c3c; opacity: 0.7;
+  }
+
+  .pv-name  { font-weight: 700; line-height: 1.15; word-break: break-all; max-width: 100%; overflow: hidden; }
   .pv-title { font-weight: 500; line-height: 1.25; margin-top: 6px; max-width: 100%; }
   .pv-org   { font-weight: 400; line-height: 1.3;  margin-top: 4px; max-width: 100%; opacity: 0.88; }
   .pv-extra { margin-top: 8px; opacity: 0.7; }
 
-  .support-inner { text-align: center; line-height: 1.7; }
+  .support-inner {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; width: 100%; height: 100%;
+  }
   .support-inner .s-title { font-size: 13px; font-weight: 600; color: #888; }
-  .support-inner .s-desc  { font-size: 11px; color: #aaa; }
-  .support-inner .s-foot  { font-size: 9px;  color: #ccc; margin-top: 10px; }
+  .support-inner .s-desc  { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .support-inner .s-foot  { font-size: 8px;  color: #bbb; margin-top: 8px; }
 
   /* ===== Modals ===== */
   .modal-overlay {
@@ -214,14 +221,6 @@
   }
   .modal-close:hover { color: #333; }
   .modal-box h2 { font-size: 16px; color: #1a2a4a; margin-bottom: 18px; }
-
-  .tent-3d-wrap {
-    width: 100%; height: 380px;
-    display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(180deg, #dfe5f0 0%, #c8d0de 100%);
-    border-radius: 10px; margin-bottom: 16px;
-    position: relative; overflow: hidden;
-  }
 
   /* ===== Batch Print ===== */
   .batch-toolbar {
@@ -279,6 +278,7 @@
       page-break-after: always;
     }
     .fold-line { border-top: 1px dashed #999 !important; }
+    .cut-line-box { border-color: #999 !important; opacity: 0.6 !important; }
     /* logo-corner in print */
     .logo-corner-wrap { position: absolute !important; }
   }
@@ -298,7 +298,7 @@
 <header class="app-header">
   <h1>🪧 <span class="accent">座牌打印工具</span> — A4桌牌制作</h1>
   <div class="header-actions">
-    <button class="btn btn-outline" onclick="show3DPreview()">👁️ 3D预览</button>
+    <button class="btn btn-outline" onclick="resetAndClearCache()" title="重置所有设置并清空缓存">↺ 重置</button>
     <button class="btn btn-warning" onclick="showBatch()">📋 批量打印</button>
     <button class="btn btn-success" onclick="printTent()">🖨️ 一键打印</button>
   </div>
@@ -347,19 +347,31 @@
         <h3>文字内容</h3>
         <div class="field-group">
           <label>姓名 <span style="color:#e74c3c;">*</span></label>
-          <input type="text" id="f-name" value="张三" oninput="up()">
+          <div class="ctrl-row">
+            <input type="text" id="f-name" value="张三" oninput="saveAndUp()" style="flex:1;">
+            <input type="color" id="f-tc-name" value="#000000" oninput="saveAndUp()" title="姓名颜色" style="width:30px;height:28px;flex-shrink:0;padding:1px;cursor:pointer;border:1px solid #d0d5dd;border-radius:4px;">
+          </div>
         </div>
         <div class="field-group">
           <label>职位 / 头衔</label>
-          <input type="text" id="f-title" value="产品经理" oninput="up()">
+          <div class="ctrl-row">
+            <input type="text" id="f-title" value="产品经理" oninput="saveAndUp()" style="flex:1;">
+            <input type="color" id="f-tc-title" value="#000000" oninput="saveAndUp()" title="职位颜色" style="width:30px;height:28px;flex-shrink:0;padding:1px;cursor:pointer;border:1px solid #d0d5dd;border-radius:4px;">
+          </div>
         </div>
         <div class="field-group">
           <label>单位 / 公司</label>
-          <input type="text" id="f-org" value="XX科技有限公司" oninput="up()">
+          <div class="ctrl-row">
+            <input type="text" id="f-org" value="XX科技有限公司" oninput="saveAndUp()" style="flex:1;">
+            <input type="color" id="f-tc-org" value="#000000" oninput="saveAndUp()" title="单位颜色" style="width:30px;height:28px;flex-shrink:0;padding:1px;cursor:pointer;border:1px solid #d0d5dd;border-radius:4px;">
+          </div>
         </div>
         <div class="field-group">
           <label>附加信息（可选）</label>
-          <input type="text" id="f-extra" placeholder="如：分会场A / 第3组" oninput="up()">
+          <div class="ctrl-row">
+            <input type="text" id="f-extra" placeholder="如：分会场A / 第3组" oninput="saveAndUp()" style="flex:1;">
+            <input type="color" id="f-tc-extra" value="#000000" oninput="saveAndUp()" title="附加信息颜色" style="width:30px;height:28px;flex-shrink:0;padding:1px;cursor:pointer;border:1px solid #d0d5dd;border-radius:4px;">
+          </div>
         </div>
       </div>
 
@@ -380,8 +392,8 @@
         <div class="field-group">
           <label>姓名字号</label>
           <div class="ctrl-row">
-            <input type="range" id="f-nsz" min="18" max="120" value="44" oninput="rv('nsz');up()">
-            <span class="range-val" id="v-nsz">44px</span>
+            <input type="range" id="f-nsz" min="18" max="120" value="48" oninput="rv('nsz');up()">
+            <span class="range-val" id="v-nsz">48px</span>
           </div>
         </div>
         <div class="field-group">
@@ -397,10 +409,6 @@
             <input type="range" id="f-osz" min="8" max="48" value="16" oninput="rv('osz');up()">
             <span class="range-val" id="v-osz">16px</span>
           </div>
-        </div>
-        <div class="field-group">
-          <label>字体颜色</label>
-          <input type="color" id="f-tc" value="#000000" oninput="up()">
         </div>
       </div>
 
@@ -420,6 +428,158 @@
             <label>支撑区</label>
             <input type="color" id="f-bgs" value="#ffffff" oninput="up()">
           </div>
+        </div>
+      </div>
+
+      <!-- Background Image -->
+      <div class="panel-section">
+        <h3>背景图片</h3>
+        <div class="field-group">
+          <input type="file" id="f-bg-img" accept="image/*" onchange="loadBgImg(event)">
+        </div>
+        <div id="bg-pb" class="logo-preview-box" style="display:none;">
+          <img id="bg-preview" style="max-width:50px;max-height:50px;object-fit:cover;">
+          <button class="btn btn-sm btn-ghost" onclick="rmBgImg()">移除</button>
+        </div>
+        <div class="field-group" style="margin-top:8px;">
+          <label>填充模式</label>
+          <select id="f-bg-mode" onchange="up()">
+            <option value="cover">裁剪填充（填满区段，按比例裁剪）</option>
+            <option value="contain">缩放适应（完整显示，可能留白）</option>
+            <option value="stretch">自由拉伸（填满区段，可能变形）</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="f-bg-lock" checked onchange="up()" style="width:16px;height:16px;accent-color:#4a90d9;">
+            <span style="font-size:12px;color:#2c3e50;">锁定长宽比（自由拉伸时生效）</span>
+          </label>
+        </div>
+        <div class="field-group" id="bg-scale-group">
+          <label>自由拉伸 - 横向缩放</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-bg-sx" min="50" max="300" step="1" value="100" oninput="bgScaleChanged('sx')">
+            <span class="range-val" id="v-bg-sx">100%</span>
+          </div>
+        </div>
+        <div class="field-group" id="bg-scale-group-y">
+          <label>自由拉伸 - 纵向缩放</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-bg-sy" min="50" max="300" step="1" value="100" oninput="bgScaleChanged('sy')">
+            <span class="range-val" id="v-bg-sy">100%</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>水平偏移</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-bg-ox" min="-50" max="50" value="0" oninput="bgOffChanged('ox')">
+            <span class="range-val" id="v-bg-ox">0%</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>垂直偏移</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-bg-oy" min="-50" max="50" value="0" oninput="bgOffChanged('oy')">
+            <span class="range-val" id="v-bg-oy">0%</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>背景图片透明度</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-bg-op" min="0" max="100" value="100" oninput="bgOpChanged()">
+            <span class="range-val" id="v-bg-op">100%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Dimensions -->
+      <div class="panel-section">
+        <h3>卡片尺寸</h3>
+        <div class="field-group">
+          <label>卡片宽度</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-cw" min="9" max="21" step="0.1" value="21" oninput="cardSizeChanged()">
+            <span class="range-val" id="v-cw">21.0cm</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>卡片高度（不含底部支撑）</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-bodyH" min="7" max="28" step="0.1" value="19.8" oninput="cardSizeChanged()">
+            <span class="range-val" id="v-bodyH">19.8cm</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>底部支撑高度</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-sh" min="2" max="15" step="0.1" value="9.9" oninput="cardSizeChanged()">
+            <span class="range-val" id="v-sh">9.9cm</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>距顶部偏移（0=自动居中）</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-topOff" min="0" max="12" step="0.1" value="0" oninput="cardSizeChanged()">
+            <span class="range-val" id="v-topOff">自动</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page Margins -->
+      <div class="panel-section">
+        <h3>页边距</h3>
+        <div class="field-group">
+          <label>预设</label>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-sm btn-ghost" onclick="setMarginPreset(10)" style="flex:1;" id="mgn-preset-10">窄</button>
+            <button class="btn btn-sm btn-primary" onclick="setMarginPreset(28)" style="flex:1;" id="mgn-preset-28">适中</button>
+            <button class="btn btn-sm btn-ghost" onclick="setMarginPreset(50)" style="flex:1;" id="mgn-preset-50">宽</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>自定义</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-margin" min="0" max="80" value="28" oninput="marginSliderChanged()">
+            <input type="number" id="f-margin-num" min="0" max="80" value="28" style="width:52px;text-align:center;padding:5px 4px;border:1px solid #d0d5dd;border-radius:5px;font-size:12px;font-family:inherit;color:#2c3e50;" oninput="marginNumChanged()">
+            <span style="font-size:11px;color:#7f8c9b;min-width:20px;">px</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dimension Display -->
+      <div class="panel-section">
+        <h3>打印区域尺寸</h3>
+        <div class="hint-box" id="dim-display" style="padding:8px 12px;line-height:1.8;">
+          卡片 595×842px · 每区段高 281px
+        </div>
+      </div>
+
+      <!-- Cut Lines -->
+      <div class="panel-section">
+        <h3>✂️ 裁剪线</h3>
+        <div class="field-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="f-cutline" checked onchange="up()" style="width:16px;height:16px;accent-color:#e74c3c;">
+            <span style="font-size:12px;color:#2c3e50;">显示四周裁剪虚线</span>
+          </label>
+        </div>
+        <div class="field-group">
+          <label>虚线粗细</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-cutw" min="1" max="8" value="2" oninput="rv('cutw');up()">
+            <span class="range-val" id="v-cutw">2px</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fold Line Toggle -->
+      <div class="panel-section">
+        <h3>折叠引导线</h3>
+        <div class="field-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="f-show-fold" checked onchange="up()" style="width:16px;height:16px;accent-color:#4a90d9;">
+            <span style="font-size:12px;color:#2c3e50;">显示折叠虚线</span>
+          </label>
         </div>
       </div>
 
@@ -456,11 +616,17 @@
         <h3>📐 折叠说明</h3>
         <div class="hint-box">
           ① 将A4纸放入打印机，<strong>内容面朝上</strong>打印<br>
-          ② 沿第一条虚线（顶部）向<strong>后</strong>折叠<br>
-          ③ 沿第二条虚线（中部）向<strong>前</strong>折叠<br>
+          ② 沿第一条虚线向<strong>后</strong>折叠（背面→正面）<br>
+          ③ 沿第二条虚线向<strong>前</strong>折叠（正面→支撑）<br>
           ④ 底部支撑区向内对折，座牌即可站立<br><br>
-          <strong>建议：</strong>使用≥200g的A4厚纸效果最佳
+          <strong>建议：</strong>使用≥200g的A4厚纸效果最佳<br>
+          <strong>注意：</strong>部分打印机不支持0边距打印，卡片靠近纸张边缘的内容可能被裁切
         </div>
+      </div>
+
+      <!-- Reset -->
+      <div class="panel-section" style="margin-bottom:0;">
+        <button class="btn btn-sm btn-ghost" onclick="resetAll()" style="width:100%;">↺ 重置所有设置</button>
       </div>
 
     </div>
@@ -470,25 +636,14 @@
   <div class="preview-pane">
     <div class="preview-label">📄 实时预览 — A4 (210 × 297mm)</div>
     <div class="a4-sheet" id="a4s">
-      <div class="a4-section section-back"    id="secB"><div class="section-content" id="cB"></div></div>
-      <div class="fold-line fold-line-1"></div>
-      <div class="a4-section section-front"   id="secF"><div class="section-content" id="cF"></div></div>
-      <div class="fold-line fold-line-2"></div>
-      <div class="a4-section section-support" id="secS"><div class="section-content" id="cS"></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== 3D Preview Modal ===== -->
-<div class="modal-overlay" id="m3d">
-  <div class="modal-box">
-    <button class="modal-close" onclick="close3D()">&times;</button>
-    <h2>🪧 折叠效果 3D 预览</h2>
-    <div class="tent-3d-wrap">
-      <canvas id="cv3d" width="680" height="380"></canvas>
-    </div>
-    <div class="hint-box">
-      折叠后效果示意。打印前请确认内容无误，建议使用A4厚纸（≥200g）以获得最佳站立效果。
+      <div id="card-box">
+        <div class="a4-section section-back"    id="secB"><div class="section-content" id="cB"></div></div>
+        <div class="fold-line" id="fl1"></div>
+        <div class="a4-section section-front"   id="secF"><div class="section-content" id="cF"></div></div>
+        <div class="fold-line" id="fl2"></div>
+        <div class="a4-section section-support" id="secS"><div class="section-content" id="cS"></div></div>
+        <div class="cut-line-box" id="cutBox"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -571,17 +726,18 @@
 <script>
 // ===== Helpers =====
 const $ = id => document.getElementById(id);
-const up = () => updatePreview();
+const up = () => { updatePreview(); saveSettings(); };
+const saveAndUp = () => { updatePreview(); saveSettings(); };
 const rv = id => $('v-'+id).textContent = $('f-'+id).value + 'px';
 
 // ===== Templates =====
 const TPLS = {
-  white:   { bf:'#ffffff', bb:'#ffffff', bs:'#ffffff', tc:'#000000' },
-  classic: { bf:'#1a2a4a', bb:'#1a2a4a', bs:'#f0f2f5', tc:'#ffffff' },
-  elegant: { bf:'#111111', bb:'#111111', bs:'#1a1a1a', tc:'#d4af37' },
-  fresh:   { bf:'#e8f5e9', bb:'#e8f5e9', bs:'#f1f8f2', tc:'#1b5e20' },
-  warm:    { bf:'#fff3e0', bb:'#fff3e0', bs:'#fff8f0', tc:'#e65100' },
-  red:     { bf:'#b71c1c', bb:'#b71c1c', bs:'#f5e0e0', tc:'#ffffff' },
+  white:   { bf:'#ffffff', bb:'#ffffff', bs:'#ffffff' },
+  classic: { bf:'#1a2a4a', bb:'#1a2a4a', bs:'#f0f2f5' },
+  elegant: { bf:'#111111', bb:'#111111', bs:'#1a1a1a' },
+  fresh:   { bf:'#e8f5e9', bb:'#e8f5e9', bs:'#f1f8f2' },
+  warm:    { bf:'#fff3e0', bb:'#fff3e0', bs:'#fff8f0' },
+  red:     { bf:'#b71c1c', bb:'#b71c1c', bs:'#f5e0e0' },
 };
 
 function selectTpl(el) {
@@ -592,7 +748,8 @@ function selectTpl(el) {
     $('f-bgf').value = t.bf;
     $('f-bgb').value = t.bb;
     $('f-bgs').value = t.bs;
-    $('f-tc').value  = t.tc;
+    // 切换模板时清理背景图片
+    if (bgB64) rmBgImg();
     up();
   }
 }
@@ -614,27 +771,71 @@ function rmLogo() {
   logoB64 = null; $('f-logo').value = ''; $('logo-pb').style.display = 'none'; up();
 }
 
+// ===== Background Image =====
+let bgB64 = null;
+function loadBgImg(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    bgB64 = ev.target.result;
+    $('bg-preview').src = bgB64;
+    $('bg-pb').style.display = 'flex';
+    up();
+  };
+  r.readAsDataURL(f);
+}
+function rmBgImg() {
+  bgB64 = null; $('f-bg-img').value = ''; $('bg-pb').style.display = 'none'; up();
+}
+function getBgStyle(d) {
+  if (!d.bgImage) return '';
+  const mode = d.bgMode || 'cover';
+  const lock = d.bgLock !== false;
+  let size, ox, oy;
+
+  if (mode === 'stretch') {
+    const sx = parseInt(d.bgScaleX) || 100;
+    const sy = lock ? sx : (parseInt(d.bgScaleY) || 100);
+    size = sx + '% ' + sy + '%';
+    ox = ((parseInt(d.bgOffX) || 0) + 50) + '%';
+    oy = ((parseInt(d.bgOffY) || 0) + 50) + '%';
+  } else {
+    size = mode;
+    ox = ((parseInt(d.bgOffX) || 0) + 50) + '%';
+    oy = ((parseInt(d.bgOffY) || 0) + 50) + '%';
+  }
+
+  const opacity = parseInt(d.bgOpacity) || 100;
+  if (opacity < 100) {
+    const alpha = (1 - opacity / 100).toFixed(2);
+    return `background: linear-gradient(rgba(255,255,255,${alpha}),rgba(255,255,255,${alpha})), url(${d.bgImage}) no-repeat ${ox} ${oy}/${size};`;
+  }
+  return `background: url(${d.bgImage}) no-repeat ${ox} ${oy}/${size};`;
+}
+
 // ===== Build Section HTML =====
 function buildSectionHTML(data) {
-  // data: { name, title, org, extra, nsz, tsz, osz, tc, ff, lp, lsz, logo }
-  const { name, title, org, extra, nsz, tsz, osz, tc, ff, lp, lsz, logo } = data;
+  const { name, title, org, extra, nsz, tsz, osz, tcName, tcTitle, tcOrg, tcExtra, ff, lp, lsz, logo } = data;
+  const tcN = tcName || '#000000';
+  const tcT = tcTitle || '#000000';
+  const tcO = tcOrg  || '#000000';
+  const tcE = tcExtra || '#000000';
 
   // "topleft" is handled separately at section level; here we just build text block
   if (lp === 'topleft') {
-    let h = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;font-family:${ff};color:${tc};text-align:center;">`;
-    h += `<div class="pv-name" style="font-size:${nsz}px;color:${tc};font-family:${ff};">${esc(name)}</div>`;
-    if (title) h += `<div class="pv-title" style="font-size:${tsz}px;color:${tc};font-family:${ff};">${esc(title)}</div>`;
-    if (org)   h += `<div class="pv-org" style="font-size:${osz}px;color:${tc};font-family:${ff};">${esc(org)}</div>`;
-    if (extra) h += `<div class="pv-extra" style="font-size:${Math.max(10,osz*0.85)}px;color:${tc};font-family:${ff};">${esc(extra)}</div>`;
+    let h = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;font-family:${ff};color:${tcN};text-align:center;">`;
+    h += `<div class="pv-name" style="font-size:${nsz}px;color:${tcN};font-family:${ff};">${esc(name)}</div>`;
+    if (title) h += `<div class="pv-title" style="font-size:${tsz}px;color:${tcT};font-family:${ff};">${esc(title)}</div>`;
+    if (org)   h += `<div class="pv-org" style="font-size:${osz}px;color:${tcO};font-family:${ff};">${esc(org)}</div>`;
+    if (extra) h += `<div class="pv-extra" style="font-size:${Math.max(10,osz*0.85)}px;color:${tcE};font-family:${ff};">${esc(extra)}</div>`;
     h += `</div>`;
-    // Logo overlay top-left
     if (logo) {
-      h += `<img src="${logo}" class="logo-corner-wrap" style="position:absolute;top:14px;left:14px;width:${lsz}px;height:${lsz}px;object-fit:contain;border-radius:4px;">`;
+      const lOff = Math.max(8, parseInt(data.margin || 28) - 6);
+      h += `<img src="${logo}" class="logo-corner-wrap" style="position:absolute;top:14px;left:${lOff}px;width:${lsz}px;height:${lsz}px;object-fit:contain;border-radius:4px;">`;
     }
     return h;
   }
 
-  // Other positions
   const flexDir = lp === 'left' ? 'row' : 'column';
   let lhtml = '';
   if (logo) {
@@ -647,17 +848,59 @@ function buildSectionHTML(data) {
     }
   }
 
-  let h = `<div style="display:flex;flex-direction:${flexDir};align-items:center;justify-content:center;width:100%;height:100%;font-family:${ff};color:${tc};text-align:center;">`;
+  let h = `<div style="display:flex;flex-direction:${flexDir};align-items:center;justify-content:center;width:100%;height:100%;font-family:${ff};color:${tcN};text-align:center;">`;
   if (logo && lp === 'left') h += lhtml;
   h += '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">';
   if (logo && lp === 'top') h += lhtml;
-  h += `<div class="pv-name" style="font-size:${nsz}px;color:${tc};font-family:${ff};">${esc(name)}</div>`;
-  if (title) h += `<div class="pv-title" style="font-size:${tsz}px;color:${tc};font-family:${ff};">${esc(title)}</div>`;
-  if (org)   h += `<div class="pv-org" style="font-size:${osz}px;color:${tc};font-family:${ff};">${esc(org)}</div>`;
-  if (extra) h += `<div class="pv-extra" style="font-size:${Math.max(10,osz*0.85)}px;color:${tc};font-family:${ff};">${esc(extra)}</div>`;
+  h += `<div class="pv-name" style="font-size:${nsz}px;color:${tcN};font-family:${ff};">${esc(name)}</div>`;
+  if (title) h += `<div class="pv-title" style="font-size:${tsz}px;color:${tcT};font-family:${ff};">${esc(title)}</div>`;
+  if (org)   h += `<div class="pv-org" style="font-size:${osz}px;color:${tcO};font-family:${ff};">${esc(org)}</div>`;
+  if (extra) h += `<div class="pv-extra" style="font-size:${Math.max(10,osz*0.85)}px;color:${tcE};font-family:${ff};">${esc(extra)}</div>`;
   if (logo && lp === 'bottom') h += lhtml;
   h += '</div></div>';
   return h;
+}
+
+// ===== Card dimension helpers =====
+const PX_PER_CM = 595 / 21.0; // A4: 595px = 21cm
+function cmPx(cm) { return Math.round(parseFloat(cm) * PX_PER_CM); }
+
+function getCardLayout(data) {
+  const cw = cmPx(data.cardW || 21);
+  const bodyH = cmPx(data.bodyH || 19.8);
+  const supH = cmPx(data.supportH || 9.9);
+  const secH = bodyH / 2;
+  const totalH = bodyH + supH;
+  const offX = Math.round((595 - cw) / 2);
+  const topOff = parseFloat(data.topOff) || 0;
+  const offY = topOff > 0 ? cmPx(topOff) : Math.round((842 - totalH) / 2);
+  return { cw, bodyH, supH, secH, totalH, offX, offY };
+}
+
+function cardSizeChanged() {
+  $('v-cw').textContent = parseFloat($('f-cw').value).toFixed(1) + 'cm';
+  $('v-bodyH').textContent = parseFloat($('f-bodyH').value).toFixed(1) + 'cm';
+  $('v-sh').textContent = parseFloat($('f-sh').value).toFixed(1) + 'cm';
+  const off = parseFloat($('f-topOff').value) || 0;
+  $('v-topOff').textContent = off > 0 ? off.toFixed(1) + 'cm' : '自动';
+  up();
+}
+function bgOffChanged(axis) {
+  $('v-bg-' + axis).textContent = $('f-bg-' + axis).value + '%';
+  up();
+}
+function bgScaleChanged(axis) {
+  $('v-bg-' + axis).textContent = $('f-bg-' + axis).value + '%';
+  // Lock Y to X if aspect ratio locked
+  if (axis === 'sx' && $('f-bg-lock').checked) {
+    $('f-bg-sy').value = $('f-bg-sx').value;
+    $('v-bg-sy').textContent = $('f-bg-sx').value + '%';
+  }
+  up();
+}
+function bgOpChanged() {
+  $('v-bg-op').textContent = $('f-bg-op').value + '%';
+  up();
 }
 
 function getFormData(overrides={}) {
@@ -669,10 +912,29 @@ function getFormData(overrides={}) {
     nsz:   $('f-nsz').value,
     tsz:   $('f-tsz').value,
     osz:   $('f-osz').value,
-    tc:    $('f-tc').value,
+    tcName:  $('f-tc-name').value,
+    tcTitle: $('f-tc-title').value,
+    tcOrg:   $('f-tc-org').value,
+    tcExtra: $('f-tc-extra').value,
     ff:    $('f-ff').value,
     lp:    $('f-lp').value,
     lsz:   $('f-lsz').value,
+    margin: $('f-margin').value,
+    showFold: $('f-show-fold').checked,
+    cardW: $('f-cw').value,
+    bodyH: $('f-bodyH').value,
+    supportH: $('f-sh').value,
+    topOff: $('f-topOff').value,
+    cutLines: $('f-cutline').checked,
+    cutWidth: $('f-cutw').value,
+    bgImage: bgB64,
+    bgMode: $('f-bg-mode').value,
+    bgLock: $('f-bg-lock').checked,
+    bgOffX: $('f-bg-ox').value,
+    bgOffY: $('f-bg-oy').value,
+    bgScaleX: $('f-bg-sx').value,
+    bgScaleY: $('f-bg-sy').value,
+    bgOpacity: $('f-bg-op').value,
     logo:  logoB64,
     bgf:   $('f-bgf').value,
     bgb:   $('f-bgb').value,
@@ -684,12 +946,97 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// ===== Margin Helpers =====
+function setMarginPreset(val) {
+  document.querySelectorAll('[id^="mgn-preset-"]').forEach(b => b.className = 'btn btn-sm btn-ghost');
+  const btn = $('mgn-preset-'+val);
+  if (btn) btn.className = 'btn btn-sm btn-primary';
+  $('f-margin').value = val;
+  $('f-margin-num').value = val;
+  up();
+}
+function marginSliderChanged() {
+  const v = $('f-margin').value;
+  $('f-margin-num').value = v;
+  document.querySelectorAll('[id^="mgn-preset-"]').forEach(b => b.className = 'btn btn-sm btn-ghost');
+  const btn = $('mgn-preset-'+v);
+  if (btn) btn.className = 'btn btn-sm btn-primary';
+  up();
+}
+function marginNumChanged() {
+  let v = parseInt($('f-margin-num').value) || 0;
+  if (v < 0) v = 0;
+  if (v > 80) v = 80;
+  $('f-margin').value = v;
+  $('f-margin-num').value = v;
+  document.querySelectorAll('[id^="mgn-preset-"]').forEach(b => b.className = 'btn btn-sm btn-ghost');
+  const btn = $('mgn-preset-'+v);
+  if (btn) btn.className = 'btn btn-sm btn-primary';
+  up();
+}
+
 // ===== Update Preview =====
 function updatePreview() {
   const d = getFormData();
-  $('secF').style.background = d.bgf;
-  $('secB').style.background = d.bgb;
-  $('secS').style.background = d.bgs;
+
+  // Card layout
+  const { cw, bodyH, supH, secH, totalH, offX, offY } = getCardLayout(d);
+  const marginPx = d.margin + 'px';
+
+  // Position card-box
+  const cb = $('card-box');
+  cb.style.cssText = `position:absolute;left:${offX}px;top:${offY}px;width:${cw}px;height:${totalH}px;`;
+
+  // Background helper: returns full background CSS including image+color
+  const secBg = (color) => {
+    const bgD = { ...d, sectionColor: color };
+    return getBgStyle(bgD) || `background:${color};`;
+  };
+
+  // Position sections with background color+image
+  $('secB').style.cssText = `position:absolute;left:0;top:0;width:100%;height:${secH}px;${secBg(d.bgb)}display:flex;align-items:center;justify-content:center;overflow:hidden;`;
+  $('secF').style.cssText = `position:absolute;left:0;top:${secH}px;width:100%;height:${secH}px;${secBg(d.bgf)}display:flex;align-items:center;justify-content:center;overflow:hidden;`;
+  $('secS').style.cssText = `position:absolute;left:0;top:${bodyH}px;width:100%;height:${supH}px;background:${d.bgs};display:flex;align-items:center;justify-content:center;overflow:hidden;`;
+
+  // Position fold lines: fold-1 between back/front, fold-2 between body/support
+  const foldOff = Math.max(4, parseInt(d.margin) || 15);
+  $('fl1').style.cssText = `position:absolute;left:${foldOff}px;right:${foldOff}px;top:${secH}px;border-top:2px dashed #b8c2d0;z-index:20;pointer-events:none;`;
+  $('fl2').style.cssText = `position:absolute;left:${foldOff}px;right:${foldOff}px;top:${bodyH}px;border-top:2px dashed #b8c2d0;z-index:20;pointer-events:none;`;
+  $('fl1').classList.toggle('hidden', !d.showFold);
+  $('fl2').classList.toggle('hidden', !d.showFold);
+
+  // Cut lines (4-sided border on card-box)
+  const cutEl = $('cutBox');
+  if (d.cutLines) {
+    const cwVal = parseInt(d.cutWidth) || 2;
+    const innerW = cw - cwVal * 2;
+    const innerH = totalH - cwVal * 2;
+    cutEl.style.cssText = `position:absolute;left:${cwVal}px;top:${cwVal}px;width:${Math.max(0,innerW)}px;height:${Math.max(0,innerH)}px;pointer-events:none;z-index:25;border:${cwVal}px dashed #e74c3c;opacity:0.7;border-radius:1px;`;
+  } else {
+    cutEl.style.cssText = 'display:none;';
+  }
+
+  // Apply margins
+  document.querySelectorAll('.section-content').forEach(el => {
+    el.style.paddingLeft = marginPx;
+    el.style.paddingRight = marginPx;
+  });
+
+  // Update dimension display
+  const m = parseInt(d.margin) || 0;
+  const contentWpx = cw - m * 2;
+  const cwCm = (cw / PX_PER_CM).toFixed(1);
+  const bodyHCm = (bodyH / PX_PER_CM).toFixed(1);
+  const supHCm = (supH / PX_PER_CM).toFixed(1);
+  const topOffCm = parseFloat(d.topOff) || 0;
+  const offLabel = topOffCm > 0 ? `距顶 ${topOffCm.toFixed(1)}cm` : '自动居中';
+  $('dim-display').innerHTML =
+    `<strong>卡片</strong> ${cwCm}×${bodyHCm}cm ` +
+    `<span style="color:#999;">+ 支撑 ${supHCm}cm</span> · ` +
+    `<strong>每区段</strong> ${(secH / PX_PER_CM).toFixed(1)}cm ` +
+    `<span style="color:#e74c3c;">｜</span> ${offLabel} ` +
+    `<span style="color:#e74c3c;">｜</span> ` +
+    `<strong>内容区宽</strong> ${contentWpx}px`;
 
   $('cF').innerHTML = buildSectionHTML(d);
   $('cB').innerHTML = buildSectionHTML(d);
@@ -697,42 +1044,90 @@ function updatePreview() {
 }
 
 function buildSupportHTML(d) {
+  const base = d.tcName || '#000000';
   return `<div class="support-inner">
-    <div class="s-title" style="color:${d.tc}80;">折叠支撑区</div>
-    <div class="s-desc" style="color:${d.tc}60;">沿虚线向内对折，使座牌可独立站立</div>
-    <div class="s-foot" style="color:${d.tc}40;">座牌打印工具</div>
+    <div class="s-title" style="color:${base}80;">折叠支撑区</div>
+    <div class="s-desc" style="color:${base}60;">沿虚线向内对折，使座牌可独立站立</div>
+    <div class="s-foot" style="color:${base}50;">Power By lab.xudadi.cn 座牌打印工具</div>
   </div>`;
 }
 
 // ===== Build A4 HTML for print =====
 function buildA4HTML(data) {
-  const sectionH = '99.33mm'; // 297mm / 3
+  const cardWCm = parseFloat(data.cardW) || 21;
+  const bodyHCm = parseFloat(data.bodyH) || 19.8;
+  const supHCm = parseFloat(data.supportH) || 9.9;
+  const totalHCm = bodyHCm + supHCm;
+  const totalWmm = (cardWCm * 10).toFixed(1) + 'mm';
+  const totalHmm = (totalHCm * 10).toFixed(1) + 'mm';
+  const secHmm = (bodyHCm * 10 / 2).toFixed(1) + 'mm';
+  const bodyHmm = (bodyHCm * 10).toFixed(1) + 'mm';
+  const offXmm = ((210 - cardWCm * 10) / 2).toFixed(1) + 'mm';
+  const topOffCm = parseFloat(data.topOff) || 0;
+  const offYmm = topOffCm > 0 ? (topOffCm * 10).toFixed(1) + 'mm' : ((297 - totalHCm * 10) / 2).toFixed(1) + 'mm';
+  const marginPx = (parseInt(data.margin) || 28) + 'px';
+  const foldStyle = (data.showFold !== false) ? '' : 'style="display:none;"';
+  const foldMm = ((parseInt(data.margin) || 28) * 0.353).toFixed(1) + 'mm';
+
+  // Background image styles for each section
+  const bgStyle = (color) => {
+    if (!data.bgImage) return `background:${color};`;
+    const mode = data.bgMode || 'cover';
+    const lock = data.bgLock !== false;
+    let size, ox, oy;
+    if (mode === 'stretch') {
+      const sx = parseInt(data.bgScaleX) || 100;
+      const sy = lock ? sx : (parseInt(data.bgScaleY) || 100);
+      size = sx + '% ' + sy + '%';
+      ox = ((parseInt(data.bgOffX) || 0) + 50) + '%';
+      oy = ((parseInt(data.bgOffY) || 0) + 50) + '%';
+    } else {
+      size = mode;
+      ox = ((parseInt(data.bgOffX) || 0) + 50) + '%';
+      oy = ((parseInt(data.bgOffY) || 0) + 50) + '%';
+    }
+    const opacity = parseInt(data.bgOpacity) || 100;
+    if (opacity < 100) {
+      const alpha = (1 - opacity / 100).toFixed(2);
+      return `background: linear-gradient(rgba(255,255,255,${alpha}),rgba(255,255,255,${alpha})), url(${data.bgImage}) no-repeat ${ox} ${oy}/${size};`;
+    }
+    return `background: url(${data.bgImage}) no-repeat ${ox} ${oy}/${size};`;
+  };
 
   const frontHTML   = buildSectionHTML(data);
   const backHTML    = buildSectionHTML(data);
   const supportHTML = buildSupportHTML(data);
 
+  // Cut line border
+  let cutStyles = '';
+  if (data.cutLines) {
+    const cw = parseInt(data.cutWidth) || 2;
+    cutStyles = `border:${cw}px dashed #999;`;
+  }
+
   return `<div class="a4-print-sheet" style="width:210mm;height:297mm;position:relative;overflow:hidden;background:#fff;">
-    <!-- Back section (upside down) -->
-    <div style="position:absolute;top:0;left:0;width:100%;height:${sectionH};background:${data.bgb};display:flex;align-items:center;justify-content:center;overflow:hidden;">
-      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 28px;text-align:center;transform:rotate(180deg);position:relative;">
-        ${backHTML}
+    <div style="position:absolute;left:${offXmm};top:${offYmm};width:${totalWmm};height:${totalHmm};${cutStyles}">
+      <!-- Back section (upside down) -->
+      <div style="position:absolute;top:0;left:0;width:100%;height:${secHmm};${bgStyle(data.bgb)}display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px ${marginPx};text-align:center;transform:rotate(180deg);position:relative;">
+          ${backHTML}
+        </div>
       </div>
-    </div>
-    <!-- Fold line 1 -->
-    <div style="position:absolute;top:${sectionH};left:15mm;right:15mm;border-top:1px dashed #999;z-index:20;"></div>
-    <!-- Front section -->
-    <div style="position:absolute;top:${sectionH};left:0;width:100%;height:${sectionH};background:${data.bgf};display:flex;align-items:center;justify-content:center;overflow:hidden;">
-      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 28px;text-align:center;position:relative;">
-        ${frontHTML}
+      <!-- Fold line 1 (between back & front) -->
+      <div ${foldStyle} style="position:absolute;top:${secHmm};left:${foldMm};right:${foldMm};border-top:1px dashed #999;z-index:20;"></div>
+      <!-- Front section -->
+      <div style="position:absolute;top:${secHmm};left:0;width:100%;height:${secHmm};${bgStyle(data.bgf)}display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px ${marginPx};text-align:center;position:relative;">
+          ${frontHTML}
+        </div>
       </div>
-    </div>
-    <!-- Fold line 2 -->
-    <div style="position:absolute;top:calc(${sectionH} * 2);left:15mm;right:15mm;border-top:1px dashed #999;z-index:20;"></div>
-    <!-- Support section -->
-    <div style="position:absolute;top:calc(${sectionH} * 2);left:0;width:100%;height:${sectionH};background:${data.bgs};display:flex;align-items:center;justify-content:center;overflow:hidden;">
-      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 28px;text-align:center;">
-        ${supportHTML}
+      <!-- Fold line 2 (between front & support) -->
+      <div ${foldStyle} style="position:absolute;top:${bodyHmm};left:${foldMm};right:${foldMm};border-top:1px dashed #999;z-index:20;"></div>
+      <!-- Support section -->
+      <div style="position:absolute;top:${bodyHmm};left:0;width:100%;height:${(supHCm * 10).toFixed(1)}mm;background:${data.bgs};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px ${marginPx};text-align:center;">
+          ${supportHTML}
+        </div>
       </div>
     </div>
   </div>`;
@@ -743,73 +1138,6 @@ function printTent() {
   const d = getFormData();
   $('ps').innerHTML = buildA4HTML(d);
   setTimeout(() => window.print(), 150);
-}
-
-// ===== 3D Preview =====
-function show3DPreview() { $('m3d').classList.add('active'); draw3D(); }
-function close3D() { $('m3d').classList.remove('active'); }
-
-function draw3D() {
-  const c = $('cv3d');
-  const ctx = c.getContext('2d');
-  const W = c.width, H = c.height;
-  ctx.clearRect(0, 0, W, H);
-
-  const d = getFormData();
-  const name = d.name, title = d.title, org = d.org;
-  const nsz = parseInt(d.nsz);
-
-  const cw = 220, ch = 140, bh = 56;
-  const cx = W / 2, cy = H / 2 - 20;
-  const tableY = cy + ch * 0.32 + bh;
-
-  // Table surface
-  ctx.fillStyle = '#bec8d6';
-  ctx.fillRect(0, tableY, W, H - tableY);
-  ctx.fillStyle = '#a4b0c0';
-  ctx.fillRect(0, tableY, W, 3);
-
-  // Shadow
-  ctx.save(); ctx.globalAlpha = 0.1;
-  ctx.fillStyle = '#000';
-  ctx.beginPath(); ctx.ellipse(cx, tableY + 8, cw * 0.8, 12, 0, 0, Math.PI*2); ctx.fill();
-  ctx.restore();
-
-  const fAngle = -0.26;
-  const bAngle =  0.34;
-
-  drawFace3D(ctx, cx, cy - 6, cw, ch, fAngle, d.bgf, d.tc, name, title, org, nsz, false);
-  drawFace3D(ctx, cx, cy - 6, cw, ch, -bAngle, d.bgb, d.tc, name, title, org, nsz, true);
-
-  // Base
-  ctx.fillStyle = '#d8dce4';
-  ctx.fillRect(cx - cw/2, cy + ch * 0.32, cw, bh);
-  ctx.strokeStyle = '#b4b8c2'; ctx.lineWidth = 1;
-  ctx.strokeRect(cx - cw/2, cy + ch * 0.32, cw, bh);
-}
-
-function drawFace3D(ctx, x, y, w, h, angle, bg, tc, name, title, org, nsz, mirror) {
-  ctx.save();
-  ctx.translate(x, y); ctx.rotate(angle);
-  ctx.fillStyle = bg;
-  ctx.fillRect(-w/2, -h/2, w, h);
-  ctx.strokeStyle = 'rgba(0,0,0,0.13)'; ctx.lineWidth = 1.5;
-  ctx.strokeRect(-w/2, -h/2, w, h);
-
-  // Sheen
-  const g = ctx.createLinearGradient(0,-h/2,0,h/2);
-  g.addColorStop(0,'rgba(255,255,255,0.07)');
-  g.addColorStop(1,'rgba(0,0,0,0.04)');
-  ctx.fillStyle = g; ctx.fillRect(-w/2,-h/2,w,h);
-
-  ctx.fillStyle = tc; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  if (mirror) ctx.scale(-1,1);
-  const fs = Math.max(11, nsz * 0.28);
-  ctx.font = `bold ${fs}px Microsoft YaHei,PingFang SC,sans-serif`;
-  ctx.fillText(name, 0, -h*0.1);
-  if (title) { ctx.font = `${Math.max(8,fs*0.5)}px Microsoft YaHei,sans-serif`; ctx.fillText(title, 0, h*0.1); }
-  if (org)   { ctx.font = `${Math.max(7,fs*0.4)}px Microsoft YaHei,sans-serif`; ctx.fillText(org, 0, h*0.28); }
-  ctx.restore();
 }
 
 // ===== Batch Print =====
@@ -888,13 +1216,11 @@ function batchAppendNames() {
   batchNameInputChanged();
 }
 
-// Auto-sync textarea -> batchRows when printing
 function syncBatchFromTextarea() {
   const txt = ($('batch-name-input').value || '').trim();
   if (!txt) return;
   const lines = txt.split('\n').map(l => l.trim()).filter(l => l);
   if (!lines.length) return;
-  // 只覆盖表格行数跟文本区行数不匹配的情况
   if (lines.length !== batchRows.length || lines.some((n,i) => n !== batchRows[i].name)) {
     batchRows = lines.map(name => ({ name, title: '', org: '', extra: '' }));
     renderBatchTable();
@@ -922,7 +1248,7 @@ function renderBatchTable() {
 // Support paste from Excel (skip if pasting into the name textarea)
 document.addEventListener('paste', function(e) {
   if (!$('mbatch').classList.contains('active')) return;
-  if (e.target && e.target.id === 'batch-name-input') return; // 让姓名输入框正常粘贴
+  if (e.target && e.target.id === 'batch-name-input') return;
   const txt = (e.clipboardData || window.clipboardData).getData('text');
   if (!txt || !txt.includes('\n')) return;
   e.preventDefault();
@@ -950,27 +1276,20 @@ function batchPreviewAll() {
   container.innerHTML = '';
   valid.forEach((row, i) => {
     const d = getFormData(row);
+    const { cw, bodyH, supH, totalH } = getCardLayout(d);
+    const scaleFactor = 0.2;
     const mini = document.createElement('div');
     mini.style.cssText = 'display:inline-block;';
     const label = document.createElement('div');
     label.textContent = `#${i+1} ${row.name}`;
     label.style.cssText = 'font-size:11px;color:#999;text-align:center;margin-bottom:4px;';
-    // Mini A4 preview at 20% scale
     const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'width:119px;height:168px;position:relative;overflow:hidden;border:1px solid #e0e4ee;border-radius:3px;transform-origin:top left;box-shadow:0 1px 4px rgba(0,0,0,0.08);';
+    wrapper.style.cssText = 'position:relative;overflow:hidden;border:1px solid #e0e4ee;border-radius:3px;transform-origin:top left;box-shadow:0 1px 4px rgba(0,0,0,0.08);';
+    wrapper.style.width = Math.round(cw * scaleFactor) + 'px';
+    wrapper.style.height = Math.round(totalH * scaleFactor) + 'px';
     wrapper.innerHTML = `
-      <div style="position:absolute;top:0;left:0;width:595px;height:842px;background:#fff;transform:scale(0.2);transform-origin:top left;">
-        <div style="position:absolute;top:0;left:0;width:100%;height:280.66px;background:${d.bgb};display:flex;align-items:center;justify-content:center;overflow:hidden;">
-          <div style="transform:rotate(180deg);width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px 20px;">${buildSectionHTML(d)}</div>
-        </div>
-        <div style="position:absolute;top:280.66px;left:15px;right:15px;border-top:1px dashed #bbb;"></div>
-        <div style="position:absolute;top:280.66px;left:0;width:100%;height:280.66px;background:${d.bgf};display:flex;align-items:center;justify-content:center;overflow:hidden;">
-          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px 20px;">${buildSectionHTML(d)}</div>
-        </div>
-        <div style="position:absolute;top:561.32px;left:15px;right:15px;border-top:1px dashed #bbb;"></div>
-        <div style="position:absolute;top:561.32px;left:0;width:100%;height:280.66px;background:${d.bgs};display:flex;align-items:center;justify-content:center;overflow:hidden;">
-          ${buildSupportHTML(d)}
-        </div>
+      <div style="position:absolute;top:0;left:0;width:${cw}px;height:${totalH}px;background:#fff;transform:scale(${scaleFactor});transform-origin:top left;">
+        ${buildSectionPreviewMini(d, cw, bodyH, supH)}
       </div>
     `;
     mini.appendChild(label);
@@ -980,12 +1299,50 @@ function batchPreviewAll() {
   $('mbatch-preview').classList.add('active');
 }
 
+function buildSectionPreviewMini(d, cw, bodyH, supH) {
+  const secH = bodyH / 2;
+  const miniBg = (color) => {
+    if (!d.bgImage) return `background:${color};`;
+    const mode = d.bgMode || 'cover';
+    const lock = d.bgLock !== false;
+    let size, ox, oy;
+    if (mode === 'stretch') {
+      const sx = parseInt(d.bgScaleX) || 100;
+      const sy = lock ? sx : (parseInt(d.bgScaleY) || 100);
+      size = sx + '% ' + sy + '%';
+      ox = ((parseInt(d.bgOffX) || 0) + 50) + '%';
+      oy = ((parseInt(d.bgOffY) || 0) + 50) + '%';
+    } else {
+      size = mode;
+      ox = ((parseInt(d.bgOffX) || 0) + 50) + '%';
+      oy = ((parseInt(d.bgOffY) || 0) + 50) + '%';
+    }
+    const opacity = parseInt(d.bgOpacity) || 100;
+    if (opacity < 100) {
+      const alpha = (1 - opacity / 100).toFixed(2);
+      return `background: linear-gradient(rgba(255,255,255,${alpha}),rgba(255,255,255,${alpha})), url(${d.bgImage}) no-repeat ${ox} ${oy}/${size};`;
+    }
+    return `background: url(${d.bgImage}) no-repeat ${ox} ${oy}/${size};`;
+  };
+  return `
+    <div style="position:absolute;top:0;left:0;width:100%;height:${secH}px;${miniBg(d.bgb)}display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <div style="transform:rotate(180deg);width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px ${d.margin||28}px;">${buildSectionHTML(d)}</div>
+    </div>
+    <div style="position:absolute;top:${secH}px;left:15px;right:15px;border-top:1px dashed #bbb;z-index:20;"></div>
+    <div style="position:absolute;top:${secH}px;left:0;width:100%;height:${secH}px;${miniBg(d.bgf)}display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px ${d.margin||28}px;">${buildSectionHTML(d)}</div>
+    </div>
+    <div style="position:absolute;top:${bodyH}px;left:15px;right:15px;border-top:1px dashed #bbb;z-index:20;"></div>
+    <div style="position:absolute;top:${bodyH}px;left:0;width:100%;height:${supH}px;background:${d.bgs};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      ${buildSupportHTML(d)}
+    </div>`;
+}
+
 function batchPrint() {
   syncBatchFromTextarea();
   const valid = batchRows.filter(r => r.name.trim());
   if (!valid.length) { alert('请至少填写一行姓名'); return; }
 
-  // Build all pages
   let allHTML = '';
   valid.forEach((row) => {
     const d = getFormData(row);
@@ -993,7 +1350,6 @@ function batchPrint() {
   });
   $('ps').innerHTML = allHTML;
 
-  // Show count
   $('bprog').style.display = 'block';
   $('bprog-n').textContent = `${valid.length} 张`;
   $('bprog').querySelector('.prog-txt').textContent = '正在发送到打印机…';
@@ -1004,8 +1360,155 @@ function batchPrint() {
   }, 200);
 }
 
+// ===== Reset All =====
+const DEFAULTS = {
+  name:'张三', title:'产品经理', org:'XX科技有限公司', extra:'',
+  nsz:48, tsz:20, osz:16,
+  tcName:'#000000', tcTitle:'#000000', tcOrg:'#000000', tcExtra:'#000000',
+  ff:'\'Microsoft YaHei\',\'PingFang SC\',sans-serif',
+  bgf:'#ffffff', bgb:'#ffffff', bgs:'#ffffff',
+  cw:21, bodyH:19.8, sh:9.9, topOff:0,
+  margin:28, showFold:true,
+  cutLines:true, cutw:2,
+  bgMode:'cover', bgLock:true, bgOx:0, bgOy:0, bgSx:100, bgSy:100, bgOp:100,
+  lp:'topleft', lsz:60,
+};
+function resetAll() {
+  if (!confirm('确认重置所有设置为默认值？')) return;
+  applyDefaults();
+  saveSettings();
+  up();
+}
+function applyDefaults() {
+  const $v = (id, val) => { const el = $('f-'+id); if (el) { el.value = val; } };
+  $v('name', DEFAULTS.name); $v('title', DEFAULTS.title); $v('org', DEFAULTS.org); $v('extra', DEFAULTS.extra);
+  $v('nsz', DEFAULTS.nsz); $v('tsz', DEFAULTS.tsz); $v('osz', DEFAULTS.osz);
+  $v('tc-name', DEFAULTS.tcName); $v('tc-title', DEFAULTS.tcTitle); $v('tc-org', DEFAULTS.tcOrg); $v('tc-extra', DEFAULTS.tcExtra);
+  $v('ff', DEFAULTS.ff);
+  $v('bgf', DEFAULTS.bgf); $v('bgb', DEFAULTS.bgb); $v('bgs', DEFAULTS.bgs);
+  $v('cw', DEFAULTS.cw); $v('bodyH', DEFAULTS.bodyH); $v('sh', DEFAULTS.sh); $v('topOff', DEFAULTS.topOff);
+  $v('margin', DEFAULTS.margin); $v('margin-num', DEFAULTS.margin);
+  $('f-show-fold').checked = DEFAULTS.showFold;
+  $v('cutline'); if ($('f-cutline')) $('f-cutline').checked = DEFAULTS.cutLines;
+  $v('cutw', DEFAULTS.cutw);
+  $v('bg-mode', DEFAULTS.bgMode); $('f-bg-lock').checked = DEFAULTS.bgLock;
+  $v('bg-ox', DEFAULTS.bgOx); $v('bg-oy', DEFAULTS.bgOy);
+  $v('bg-sx', DEFAULTS.bgSx); $v('bg-sy', DEFAULTS.bgSy);
+  $v('bg-op', DEFAULTS.bgOp);
+  $v('lp', DEFAULTS.lp); $v('lsz', DEFAULTS.lsz);
+  if (logoB64) rmLogo();
+  if (bgB64) rmBgImg();
+  document.querySelectorAll('.tpl-item').forEach(i => i.classList.remove('active'));
+  const tpl = document.querySelector('.tpl-item[data-tpl="white"]');
+  if (tpl) tpl.classList.add('active');
+  document.querySelectorAll('[id^="mgn-preset-"]').forEach(b => b.className = 'btn btn-sm btn-ghost');
+  const mgn = $('mgn-preset-28');
+  if (mgn) mgn.className = 'btn btn-sm btn-primary';
+  updateValueDisplays();
+}
+
 // ===== Init =====
-updatePreview();
-</script>
+// ===== localStorage Persistence =====
+const STORAGE_KEY = 'tentCardSettings';
+function saveSettings() {
+  try {
+    const data = {
+      name: $('f-name').value, title: $('f-title').value, org: $('f-org').value, extra: $('f-extra').value,
+      nsz: $('f-nsz').value, tsz: $('f-tsz').value, osz: $('f-osz').value,
+      tcName: $('f-tc-name').value, tcTitle: $('f-tc-title').value, tcOrg: $('f-tc-org').value, tcExtra: $('f-tc-extra').value,
+      ff: $('f-ff').value,
+      bgf: $('f-bgf').value, bgb: $('f-bgb').value, bgs: $('f-bgs').value,
+      cw: $('f-cw').value, bodyH: $('f-bodyH').value, sh: $('f-sh').value, topOff: $('f-topOff').value,
+      margin: $('f-margin').value,
+      showFold: $('f-show-fold').checked,
+      cutLines: $('f-cutline').checked, cutw: $('f-cutw').value,
+      bgMode: $('f-bg-mode').value, bgLock: $('f-bg-lock').checked, bgOx: $('f-bg-ox').value, bgOy: $('f-bg-oy').value,
+      bgSx: $('f-bg-sx').value, bgSy: $('f-bg-sy').value, bgOp: $('f-bg-op').value,
+      lp: $('f-lp').value, lsz: $('f-lsz').value,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) { /* ignore storage errors */ }
+}
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    const set = (id, val) => { const el = $('f-'+id); if (el) el.value = val; };
+    const chk = (id, val) => { const el = $('f-'+id); if (el) el.checked = val; };
+    if (s.name !== undefined) set('name', s.name);
+    if (s.title !== undefined) set('title', s.title);
+    if (s.org !== undefined) set('org', s.org);
+    if (s.extra !== undefined) set('extra', s.extra);
+    if (s.nsz !== undefined) set('nsz', s.nsz);
+    if (s.tsz !== undefined) set('tsz', s.tsz);
+    if (s.osz !== undefined) set('osz', s.osz);
+    if (s.tcName !== undefined) set('tc-name', s.tcName);
+    if (s.tcTitle !== undefined) set('tc-title', s.tcTitle);
+    if (s.tcOrg !== undefined) set('tc-org', s.tcOrg);
+    if (s.tcExtra !== undefined) set('tc-extra', s.tcExtra);
+    if (s.ff !== undefined) set('ff', s.ff);
+    if (s.bgf !== undefined) set('bgf', s.bgf);
+    if (s.bgb !== undefined) set('bgb', s.bgb);
+    if (s.bgs !== undefined) set('bgs', s.bgs);
+    if (s.cw !== undefined) set('cw', s.cw);
+    if (s.bodyH !== undefined) set('bodyH', s.bodyH);
+    if (s.sh !== undefined) set('sh', s.sh);
+    if (s.topOff !== undefined) set('topOff', s.topOff);
+    if (s.margin !== undefined) { set('margin', s.margin); set('margin-num', s.margin); }
+    if (s.showFold !== undefined) chk('show-fold', s.showFold);
+    if (s.cutLines !== undefined) chk('cutline', s.cutLines);
+    if (s.cutw !== undefined) set('cutw', s.cutw);
+    if (s.bgMode !== undefined) set('bg-mode', s.bgMode);
+    if (s.bgLock !== undefined) chk('bg-lock', s.bgLock);
+    if (s.bgOx !== undefined) set('bg-ox', s.bgOx);
+    if (s.bgOy !== undefined) set('bg-oy', s.bgOy);
+    if (s.bgSx !== undefined) set('bg-sx', s.bgSx);
+    if (s.bgSy !== undefined) set('bg-sy', s.bgSy);
+    if (s.bgOp !== undefined) set('bg-op', s.bgOp);
+    if (s.lp !== undefined) set('lp', s.lp);
+    if (s.lsz !== undefined) set('lsz', s.lsz);
+  } catch(e) { /* ignore */ }
+}
+function updateValueDisplays() {
+  const v = (id) => {
+    const el = $('f-'+id);
+    if (!el) return;
+    if (el.type === 'range') {
+      const disp = $('v-'+id);
+      if (disp) {
+        if (id === 'cw' || id === 'bodyH' || id === 'sh' || id === 'topOff') {
+          disp.textContent = parseFloat(el.value).toFixed(1) + 'cm';
+        } else {
+          disp.textContent = el.value + 'px';
+        }
+      }
+    }
+  };
+  v('nsz'); v('tsz'); v('osz'); v('lsz'); v('cutw'); v('cw'); v('bodyH'); v('sh'); v('topOff');
+  v('bg-ox'); v('bg-oy'); v('bg-sx'); v('bg-sy');
+  $('v-bg-ox').textContent = $('f-bg-ox').value + '%';
+  $('v-bg-oy').textContent = $('f-bg-oy').value + '%';
+  $('v-bg-sx').textContent = $('f-bg-sx').value + '%';
+  $('v-bg-sy').textContent = $('f-bg-sy').value + '%';
+  $('v-bg-op').textContent = $('f-bg-op').value + '%';
+  const off = parseFloat($('f-topOff').value) || 0;
+  $('v-topOff').textContent = off > 0 ? off.toFixed(1) + 'cm' : '自动';
+  // Margin preset highlight
+  document.querySelectorAll('[id^="mgn-preset-"]').forEach(b => b.className = 'btn btn-sm btn-ghost');
+  const mgn = $('mgn-preset-'+$('f-margin').value);
+  if (mgn) mgn.className = 'btn btn-sm btn-primary';
+}
+function resetAndClearCache() {
+  if (!confirm('确认重置所有设置并清空本地缓存？')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  applyDefaults();
+  up();
+}
+
+// ===== Init =====
+loadSettings();
+updateValueDisplays();
+updatePreview();</script>
 </body>
 </html>
