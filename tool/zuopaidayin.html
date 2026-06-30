@@ -1,0 +1,1011 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>座牌打印工具 - A4桌牌制作</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #e2e6ed;
+    color: #2c3e50;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ===== Header ===== */
+  .app-header {
+    background: linear-gradient(135deg, #1a2a4a 0%, #2c3e6a 100%);
+    color: #fff;
+    padding: 0 28px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .app-header h1 { font-size: 17px; font-weight: 600; letter-spacing: 0.5px; }
+  .app-header h1 .accent { color: #6ab0f3; }
+  .header-actions { display: flex; gap: 10px; }
+
+  /* ===== Buttons ===== */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px; border: none; border-radius: 5px;
+    font-size: 13px; cursor: pointer; transition: all 0.2s;
+    font-family: inherit; font-weight: 500;
+  }
+  .btn-primary { background: #4a90d9; color: #fff; }
+  .btn-primary:hover { background: #3a7ec8; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(74,144,217,0.3); }
+  .btn-success { background: #27ae60; color: #fff; }
+  .btn-success:hover { background: #219a52; transform: translateY(-1px); }
+  .btn-warning { background: #e67e22; color: #fff; }
+  .btn-warning:hover { background: #d06011; transform: translateY(-1px); }
+  .btn-outline {
+    background: rgba(255,255,255,0.12); color: #fff;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .btn-outline:hover { background: rgba(255,255,255,0.22); }
+  .btn-ghost { background: #fff; color: #555; border: 1px solid #d0d5dd; }
+  .btn-ghost:hover { background: #f5f7fa; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-danger { background: #e74c3c; color: #fff; }
+  .btn-danger:hover { background: #c0392b; }
+
+  /* ===== Main Layout ===== */
+  .app-body { display: flex; height: calc(100vh - 54px); }
+
+  /* ===== Sidebar ===== */
+  .editor-panel {
+    width: 320px; min-width: 320px;
+    background: #fff;
+    border-right: 1px solid #d5dbe6;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  .editor-panel::-webkit-scrollbar { width: 5px; }
+  .editor-panel::-webkit-scrollbar-thumb { background: #c8cdd6; border-radius: 3px; }
+  .panel-inner { padding: 18px; flex: 1; }
+
+  .panel-section { margin-bottom: 20px; }
+  .panel-section h3 {
+    font-size: 13px; font-weight: 600; color: #1a2a4a;
+    margin-bottom: 10px; padding-left: 10px;
+    border-left: 3px solid #4a90d9; line-height: 1;
+  }
+
+  .field-group { margin-bottom: 12px; }
+  .field-group label {
+    display: block; font-size: 12px; color: #7f8c9b;
+    margin-bottom: 4px; font-weight: 500;
+  }
+  .field-group input[type="text"],
+  .field-group textarea,
+  .field-group select {
+    width: 100%; padding: 7px 10px;
+    border: 1px solid #d0d5dd; border-radius: 5px;
+    font-size: 13px; font-family: inherit;
+    color: #2c3e50; background: #fafbfd; transition: all 0.2s;
+  }
+  .field-group input[type="text"]:focus,
+  .field-group textarea:focus,
+  .field-group select:focus {
+    outline: none; border-color: #4a90d9;
+    box-shadow: 0 0 0 2px rgba(74,144,217,0.12); background: #fff;
+  }
+  .field-group textarea { resize: vertical; min-height: 32px; }
+
+  .ctrl-row { display: flex; gap: 8px; align-items: center; }
+  .ctrl-row .field-group { flex: 1; margin-bottom: 0; }
+  input[type="color"] {
+    width: 36px; height: 32px; border: 1px solid #d0d5dd;
+    border-radius: 5px; cursor: pointer; padding: 1px; background: #fff;
+  }
+  input[type="range"] { width: 100%; accent-color: #4a90d9; height: 4px; }
+  .range-val {
+    font-size: 11px; color: #7f8c9b; min-width: 38px; text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Template Grid */
+  .tpl-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .tpl-item {
+    border: 2px solid #e4e8ee; border-radius: 6px;
+    cursor: pointer; text-align: center; transition: all 0.2s;
+    background: #fafbfd; overflow: hidden;
+  }
+  .tpl-item:hover { border-color: #4a90d9; transform: translateY(-1px); }
+  .tpl-item.active { border-color: #4a90d9; background: #eef4fc; box-shadow: 0 0 0 1px #4a90d9; }
+  .tpl-swatch {
+    height: 36px; display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .tpl-label { font-size: 10px; color: #7f8c9b; padding: 3px 0 5px; }
+
+  input[type="file"] { font-size: 12px; color: #666; }
+  .logo-preview-box {
+    display: none; margin-top: 8px; padding: 8px; background: #f8f9fb;
+    border-radius: 6px; align-items: center; gap: 10px;
+  }
+  .logo-preview-box img { border-radius: 4px; border: 1px solid #ddd; }
+
+  .hint-box {
+    font-size: 11.5px; color: #7f8c9b; line-height: 1.7;
+    background: #f6f8fb; padding: 12px 14px; border-radius: 7px;
+    border: 1px solid #e8ecf2;
+  }
+  .hint-box strong { color: #4a6a9a; }
+
+  /* ===== Preview Pane ===== */
+  .preview-pane {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 24px 20px; overflow: auto; background: #d5dbe8;
+    background-image: radial-gradient(circle, #dde2ec 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  .preview-label {
+    font-size: 12px; color: #8a94a5; margin-bottom: 12px;
+    font-weight: 500; letter-spacing: 0.5px;
+  }
+
+  /* A4 Sheet */
+  .a4-sheet {
+    width: 595px; height: 842px;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.08);
+    position: relative; overflow: hidden; border-radius: 2px;
+  }
+  .a4-section {
+    position: absolute; left: 0; width: 100%;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .section-back    { top: 0;        height: 280.66px; }
+  .section-front   { top: 280.66px; height: 280.66px; }
+  .section-support { top: 561.32px; height: 280.66px; }
+
+  .section-content {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 10px 28px; text-align: center; position: relative;
+  }
+  .section-back .section-content { transform: rotate(180deg); }
+
+  .fold-line {
+    position: absolute; left: 15px; right: 15px;
+    border-top: 2px dashed #b8c2d0; z-index: 20; pointer-events: none;
+  }
+  .fold-line-1 { top: 280.66px; }
+  .fold-line-2 { top: 561.32px; }
+
+  .pv-name  { font-weight: 700; line-height: 1.15; word-break: break-all; max-width: 100%; }
+  .pv-title { font-weight: 500; line-height: 1.25; margin-top: 6px; max-width: 100%; }
+  .pv-org   { font-weight: 400; line-height: 1.3;  margin-top: 4px; max-width: 100%; opacity: 0.88; }
+  .pv-extra { margin-top: 8px; opacity: 0.7; }
+
+  .support-inner { text-align: center; line-height: 1.7; }
+  .support-inner .s-title { font-size: 13px; font-weight: 600; color: #888; }
+  .support-inner .s-desc  { font-size: 11px; color: #aaa; }
+  .support-inner .s-foot  { font-size: 9px;  color: #ccc; margin-top: 10px; }
+
+  /* ===== Modals ===== */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(15,25,45,0.55);
+    z-index: 9999; align-items: center; justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 14px;
+    padding: 28px; max-width: 760px; width: 92%;
+    max-height: 90vh; overflow-y: auto; position: relative;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+  }
+  .modal-close {
+    position: absolute; right: 18px; top: 14px;
+    background: none; border: none; font-size: 24px;
+    cursor: pointer; color: #aaa; line-height: 1;
+  }
+  .modal-close:hover { color: #333; }
+  .modal-box h2 { font-size: 16px; color: #1a2a4a; margin-bottom: 18px; }
+
+  .tent-3d-wrap {
+    width: 100%; height: 380px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(180deg, #dfe5f0 0%, #c8d0de 100%);
+    border-radius: 10px; margin-bottom: 16px;
+    position: relative; overflow: hidden;
+  }
+
+  /* ===== Batch Print ===== */
+  .batch-toolbar {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .batch-table-wrap { max-height: 300px; overflow-y: auto; border: 1px solid #e4e8ee; border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: #f6f8fb; padding: 9px 12px; text-align: left;
+    font-size: 12px; color: #7f8c9b; font-weight: 600;
+    border-bottom: 1px solid #e4e8ee; position: sticky; top: 0;
+  }
+  tbody tr:hover { background: #f9fafb; }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid #f0f2f5; }
+  tbody td input[type="text"] {
+    width: 100%; border: none; background: transparent; font-size: 13px;
+    font-family: inherit; color: #2c3e50; outline: none;
+    padding: 2px 4px; border-radius: 3px;
+  }
+  tbody td input[type="text"]:focus { background: #eef4fc; }
+  tbody tr.selected td { background: #f0f7ff; }
+  .row-del {
+    background: none; border: none; cursor: pointer; color: #c0c8d4;
+    font-size: 16px; padding: 0; line-height: 1;
+  }
+  .row-del:hover { color: #e74c3c; }
+  .batch-actions {
+    margin-top: 18px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;
+  }
+  .batch-paste-hint {
+    font-size: 11.5px; color: #9fa8b5; line-height: 1.6;
+    background: #f6f8fb; border-radius: 6px; padding: 10px 12px;
+    border: 1px solid #e8ecf2; margin-bottom: 14px;
+  }
+  .print-progress {
+    display: none; text-align: center; padding: 20px 0;
+  }
+  .print-progress .prog-num { font-size: 28px; font-weight: 700; color: #4a90d9; }
+  .print-progress .prog-txt { font-size: 13px; color: #888; margin-top: 4px; }
+
+  /* ===== Print Styles ===== */
+  @media print {
+    @page { size: A4 portrait; margin: 0; }
+    html, body { width: 210mm; height: 297mm; margin: 0; padding: 0; }
+    body * { visibility: hidden !important; }
+    .print-area, .print-area * { visibility: visible !important; }
+    .print-area {
+      position: absolute; left: 0; top: 0;
+      width: 210mm;
+    }
+    .a4-print-sheet {
+      width: 210mm !important; height: 297mm !important;
+      position: relative !important; overflow: hidden !important;
+      box-shadow: none !important; background: #fff !important;
+      page-break-after: always;
+    }
+    .fold-line { border-top: 1px dashed #999 !important; }
+    /* logo-corner in print */
+    .logo-corner-wrap { position: absolute !important; }
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 1000px) {
+    .app-body { flex-direction: column; height: auto; overflow-y: auto; }
+    .editor-panel { width: 100%; min-width: 0; max-height: 50vh; border-right: none; border-bottom: 1px solid #d5dbe6; }
+    .preview-pane { padding: 16px; }
+    .a4-sheet { transform: scale(0.6); transform-origin: top center; margin-bottom: -200px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header class="app-header">
+  <h1>🪧 <span class="accent">座牌打印工具</span> — A4桌牌制作</h1>
+  <div class="header-actions">
+    <button class="btn btn-outline" onclick="show3DPreview()">👁️ 3D预览</button>
+    <button class="btn btn-warning" onclick="showBatch()">📋 批量打印</button>
+    <button class="btn btn-success" onclick="printTent()">🖨️ 一键打印</button>
+  </div>
+</header>
+
+<!-- ===== Body ===== -->
+<div class="app-body">
+
+  <!-- ===== Editor Panel ===== -->
+  <div class="editor-panel">
+    <div class="panel-inner">
+
+      <!-- Template -->
+      <div class="panel-section">
+        <h3>模板样式</h3>
+        <div class="tpl-grid">
+          <div class="tpl-item active" data-tpl="white" onclick="selectTpl(this)">
+            <div class="tpl-swatch" style="background:#ffffff;color:#222;border:1px solid #e0e0e0;">Aa</div>
+            <div class="tpl-label">纯白</div>
+          </div>
+          <div class="tpl-item" data-tpl="classic" onclick="selectTpl(this)">
+            <div class="tpl-swatch" style="background:#1a2a4a;color:#fff;">Aa</div>
+            <div class="tpl-label">经典蓝</div>
+          </div>
+          <div class="tpl-item" data-tpl="elegant" onclick="selectTpl(this)">
+            <div class="tpl-swatch" style="background:#1a1a1a;color:#d4af37;">Aa</div>
+            <div class="tpl-label">黑金</div>
+          </div>
+          <div class="tpl-item" data-tpl="fresh" onclick="selectTpl(this)">
+            <div class="tpl-swatch" style="background:#e8f5e9;color:#1b5e20;">Aa</div>
+            <div class="tpl-label">清新绿</div>
+          </div>
+          <div class="tpl-item" data-tpl="warm" onclick="selectTpl(this)">
+            <div class="tpl-swatch" style="background:#fff3e0;color:#e65100;">Aa</div>
+            <div class="tpl-label">暖橙</div>
+          </div>
+          <div class="tpl-item" data-tpl="red" onclick="selectTpl(this)">
+            <div class="tpl-swatch" style="background:#b71c1c;color:#fff;">Aa</div>
+            <div class="tpl-label">中国红</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text Content -->
+      <div class="panel-section">
+        <h3>文字内容</h3>
+        <div class="field-group">
+          <label>姓名 <span style="color:#e74c3c;">*</span></label>
+          <input type="text" id="f-name" value="张三" oninput="up()">
+        </div>
+        <div class="field-group">
+          <label>职位 / 头衔</label>
+          <input type="text" id="f-title" value="产品经理" oninput="up()">
+        </div>
+        <div class="field-group">
+          <label>单位 / 公司</label>
+          <input type="text" id="f-org" value="XX科技有限公司" oninput="up()">
+        </div>
+        <div class="field-group">
+          <label>附加信息（可选）</label>
+          <input type="text" id="f-extra" placeholder="如：分会场A / 第3组" oninput="up()">
+        </div>
+      </div>
+
+      <!-- Font Settings -->
+      <div class="panel-section">
+        <h3>字体设置</h3>
+        <div class="field-group">
+          <label>字体</label>
+          <select id="f-ff" onchange="up()">
+            <option value="'Microsoft YaHei','PingFang SC',sans-serif">微软雅黑</option>
+            <option value="'SimHei',sans-serif">黑体</option>
+            <option value="'KaiTi',serif">楷体</option>
+            <option value="'SimSun',serif">宋体</option>
+            <option value="Arial,sans-serif">Arial</option>
+            <option value="'Courier New',monospace">Courier New</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>姓名字号</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-nsz" min="18" max="120" value="44" oninput="rv('nsz');up()">
+            <span class="range-val" id="v-nsz">44px</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>职位字号</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-tsz" min="10" max="60" value="20" oninput="rv('tsz');up()">
+            <span class="range-val" id="v-tsz">20px</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>单位字号</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-osz" min="8" max="48" value="16" oninput="rv('osz');up()">
+            <span class="range-val" id="v-osz">16px</span>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>字体颜色</label>
+          <input type="color" id="f-tc" value="#000000" oninput="up()">
+        </div>
+      </div>
+
+      <!-- Background -->
+      <div class="panel-section">
+        <h3>背景颜色</h3>
+        <div class="ctrl-row">
+          <div class="field-group">
+            <label>正面</label>
+            <input type="color" id="f-bgf" value="#ffffff" oninput="up()">
+          </div>
+          <div class="field-group">
+            <label>背面</label>
+            <input type="color" id="f-bgb" value="#ffffff" oninput="up()">
+          </div>
+          <div class="field-group">
+            <label>支撑区</label>
+            <input type="color" id="f-bgs" value="#ffffff" oninput="up()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Logo / Image -->
+      <div class="panel-section">
+        <h3>图片 / Logo</h3>
+        <div class="field-group">
+          <input type="file" id="f-logo" accept="image/*" onchange="loadLogo(event)">
+        </div>
+        <div id="logo-pb" class="logo-preview-box">
+          <img id="logo-img" style="max-width:50px;max-height:50px;">
+          <button class="btn btn-sm btn-ghost" onclick="rmLogo()">移除</button>
+        </div>
+        <div class="field-group" style="margin-top:8px;">
+          <label>图片位置</label>
+          <select id="f-lp" onchange="up()">
+            <option value="topleft">页面左上方</option>
+            <option value="top">姓名上方（居中）</option>
+            <option value="bottom">姓名下方</option>
+            <option value="left">文字左侧</option>
+          </select>
+        </div>
+        <div class="field-group" id="logo-size-group">
+          <label>图片大小</label>
+          <div class="ctrl-row">
+            <input type="range" id="f-lsz" min="20" max="160" value="60" oninput="rv('lsz');up()">
+            <span class="range-val" id="v-lsz">60px</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fold Hint -->
+      <div class="panel-section">
+        <h3>📐 折叠说明</h3>
+        <div class="hint-box">
+          ① 将A4纸放入打印机，<strong>内容面朝上</strong>打印<br>
+          ② 沿第一条虚线（顶部）向<strong>后</strong>折叠<br>
+          ③ 沿第二条虚线（中部）向<strong>前</strong>折叠<br>
+          ④ 底部支撑区向内对折，座牌即可站立<br><br>
+          <strong>建议：</strong>使用≥200g的A4厚纸效果最佳
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== Preview ===== -->
+  <div class="preview-pane">
+    <div class="preview-label">📄 实时预览 — A4 (210 × 297mm)</div>
+    <div class="a4-sheet" id="a4s">
+      <div class="a4-section section-back"    id="secB"><div class="section-content" id="cB"></div></div>
+      <div class="fold-line fold-line-1"></div>
+      <div class="a4-section section-front"   id="secF"><div class="section-content" id="cF"></div></div>
+      <div class="fold-line fold-line-2"></div>
+      <div class="a4-section section-support" id="secS"><div class="section-content" id="cS"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 3D Preview Modal ===== -->
+<div class="modal-overlay" id="m3d">
+  <div class="modal-box">
+    <button class="modal-close" onclick="close3D()">&times;</button>
+    <h2>🪧 折叠效果 3D 预览</h2>
+    <div class="tent-3d-wrap">
+      <canvas id="cv3d" width="680" height="380"></canvas>
+    </div>
+    <div class="hint-box">
+      折叠后效果示意。打印前请确认内容无误，建议使用A4厚纸（≥200g）以获得最佳站立效果。
+    </div>
+  </div>
+</div>
+
+<!-- ===== Batch Print Modal ===== -->
+<div class="modal-overlay" id="mbatch">
+  <div class="modal-box" style="max-width:800px;">
+    <button class="modal-close" onclick="closeBatch()">&times;</button>
+    <h2>📋 批量打印 — 多人座牌</h2>
+
+    <div class="batch-paste-hint">
+      💡 支持直接从 Excel / 表格粘贴数据（制表符分隔）；每行格式：<strong>姓名 [Tab] 职位 [Tab] 单位 [Tab] 附加信息</strong>（后三项可省略）<br>
+      也可手动逐行填写，每行对应一张座牌，共用上方"字体/背景/图片"设置。
+    </div>
+
+    <div class="panel-section" style="margin-bottom:12px;">
+      <label style="display:block;font-size:12px;color:#7f8c9b;margin-bottom:6px;font-weight:500;">📝 快速输入姓名（每行一个）</label>
+      <textarea id="batch-name-input" placeholder="张三&#10;李四&#10;王五&#10;赵六&#10;…" style="width:100%;height:80px;padding:8px 10px;border:1px solid #d0d5dd;border-radius:6px;font-size:13px;font-family:inherit;color:#2c3e50;background:#fafbfd;resize:vertical;" oninput="batchNameInputChanged()"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <button class="btn btn-primary btn-sm" onclick="batchParseNames()">📥 解析并填充到表格</button>
+        <button class="btn btn-ghost btn-sm" onclick="batchAppendNames()">➕ 追加到现有表格</button>
+        <span id="batch-name-count" style="font-size:11px;color:#9fa8b5;display:none;"></span>
+      </div>
+    </div>
+
+    <div class="batch-toolbar">
+      <button class="btn btn-primary btn-sm" onclick="batchAddRow()">＋ 添加行</button>
+      <button class="btn btn-ghost btn-sm" onclick="batchClear()">清空</button>
+      <button class="btn btn-ghost btn-sm" onclick="batchLoadSample()">载入示例</button>
+      <span style="flex:1;"></span>
+      <span id="batch-count" style="font-size:12px;color:#9fa8b5;">共 0 行</span>
+    </div>
+
+    <div class="batch-table-wrap">
+      <table id="btable">
+        <thead>
+          <tr>
+            <th style="width:30px;">#</th>
+            <th>姓名 *</th>
+            <th>职位</th>
+            <th>单位</th>
+            <th>附加信息</th>
+            <th style="width:32px;"></th>
+          </tr>
+        </thead>
+        <tbody id="btbody"></tbody>
+      </table>
+    </div>
+
+    <div class="print-progress" id="bprog">
+      <div class="prog-num" id="bprog-n">0/0</div>
+      <div class="prog-txt">正在准备打印数据…</div>
+    </div>
+
+    <div class="batch-actions">
+      <button class="btn btn-ghost" onclick="closeBatch()">取消</button>
+      <button class="btn btn-warning" onclick="batchPreviewAll()">👁️ 预览全部</button>
+      <button class="btn btn-success" onclick="batchPrint()">🖨️ 批量打印</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Batch All-Preview Modal ===== -->
+<div class="modal-overlay" id="mbatch-preview">
+  <div class="modal-box" style="max-width:900px;">
+    <button class="modal-close" onclick="document.getElementById('mbatch-preview').classList.remove('active')">&times;</button>
+    <h2>👁️ 全部预览</h2>
+    <div id="batch-preview-content" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;"></div>
+    <div style="text-align:right;margin-top:18px;">
+      <button class="btn btn-ghost" onclick="document.getElementById('mbatch-preview').classList.remove('active')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Hidden Print Area ===== -->
+<div class="print-area" id="pa">
+  <div id="ps"></div>
+</div>
+
+<script>
+// ===== Helpers =====
+const $ = id => document.getElementById(id);
+const up = () => updatePreview();
+const rv = id => $('v-'+id).textContent = $('f-'+id).value + 'px';
+
+// ===== Templates =====
+const TPLS = {
+  white:   { bf:'#ffffff', bb:'#ffffff', bs:'#ffffff', tc:'#000000' },
+  classic: { bf:'#1a2a4a', bb:'#1a2a4a', bs:'#f0f2f5', tc:'#ffffff' },
+  elegant: { bf:'#111111', bb:'#111111', bs:'#1a1a1a', tc:'#d4af37' },
+  fresh:   { bf:'#e8f5e9', bb:'#e8f5e9', bs:'#f1f8f2', tc:'#1b5e20' },
+  warm:    { bf:'#fff3e0', bb:'#fff3e0', bs:'#fff8f0', tc:'#e65100' },
+  red:     { bf:'#b71c1c', bb:'#b71c1c', bs:'#f5e0e0', tc:'#ffffff' },
+};
+
+function selectTpl(el) {
+  document.querySelectorAll('.tpl-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  const t = TPLS[el.dataset.tpl];
+  if (t) {
+    $('f-bgf').value = t.bf;
+    $('f-bgb').value = t.bb;
+    $('f-bgs').value = t.bs;
+    $('f-tc').value  = t.tc;
+    up();
+  }
+}
+
+// ===== Logo =====
+let logoB64 = null;
+function loadLogo(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    logoB64 = ev.target.result;
+    $('logo-img').src = logoB64;
+    $('logo-pb').style.display = 'flex';
+    up();
+  };
+  r.readAsDataURL(f);
+}
+function rmLogo() {
+  logoB64 = null; $('f-logo').value = ''; $('logo-pb').style.display = 'none'; up();
+}
+
+// ===== Build Section HTML =====
+function buildSectionHTML(data) {
+  // data: { name, title, org, extra, nsz, tsz, osz, tc, ff, lp, lsz, logo }
+  const { name, title, org, extra, nsz, tsz, osz, tc, ff, lp, lsz, logo } = data;
+
+  // "topleft" is handled separately at section level; here we just build text block
+  if (lp === 'topleft') {
+    let h = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;font-family:${ff};color:${tc};text-align:center;">`;
+    h += `<div class="pv-name" style="font-size:${nsz}px;color:${tc};font-family:${ff};">${esc(name)}</div>`;
+    if (title) h += `<div class="pv-title" style="font-size:${tsz}px;color:${tc};font-family:${ff};">${esc(title)}</div>`;
+    if (org)   h += `<div class="pv-org" style="font-size:${osz}px;color:${tc};font-family:${ff};">${esc(org)}</div>`;
+    if (extra) h += `<div class="pv-extra" style="font-size:${Math.max(10,osz*0.85)}px;color:${tc};font-family:${ff};">${esc(extra)}</div>`;
+    h += `</div>`;
+    // Logo overlay top-left
+    if (logo) {
+      h += `<img src="${logo}" class="logo-corner-wrap" style="position:absolute;top:14px;left:14px;width:${lsz}px;height:${lsz}px;object-fit:contain;border-radius:4px;">`;
+    }
+    return h;
+  }
+
+  // Other positions
+  const flexDir = lp === 'left' ? 'row' : 'column';
+  let lhtml = '';
+  if (logo) {
+    if (lp === 'left') {
+      lhtml = `<img src="${logo}" style="width:${lsz}px;height:${lsz}px;object-fit:contain;margin-right:16px;border-radius:4px;flex-shrink:0;">`;
+    } else {
+      const mb = lp === 'top' ? '10px' : '0';
+      const mt = lp === 'bottom' ? '10px' : '0';
+      lhtml = `<img src="${logo}" style="width:${lsz}px;height:${lsz}px;object-fit:contain;margin-bottom:${mb};margin-top:${mt};border-radius:4px;">`;
+    }
+  }
+
+  let h = `<div style="display:flex;flex-direction:${flexDir};align-items:center;justify-content:center;width:100%;height:100%;font-family:${ff};color:${tc};text-align:center;">`;
+  if (logo && lp === 'left') h += lhtml;
+  h += '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">';
+  if (logo && lp === 'top') h += lhtml;
+  h += `<div class="pv-name" style="font-size:${nsz}px;color:${tc};font-family:${ff};">${esc(name)}</div>`;
+  if (title) h += `<div class="pv-title" style="font-size:${tsz}px;color:${tc};font-family:${ff};">${esc(title)}</div>`;
+  if (org)   h += `<div class="pv-org" style="font-size:${osz}px;color:${tc};font-family:${ff};">${esc(org)}</div>`;
+  if (extra) h += `<div class="pv-extra" style="font-size:${Math.max(10,osz*0.85)}px;color:${tc};font-family:${ff};">${esc(extra)}</div>`;
+  if (logo && lp === 'bottom') h += lhtml;
+  h += '</div></div>';
+  return h;
+}
+
+function getFormData(overrides={}) {
+  return {
+    name:  overrides.name  !== undefined ? overrides.name  : ($('f-name').value || '姓名'),
+    title: overrides.title !== undefined ? overrides.title : $('f-title').value,
+    org:   overrides.org   !== undefined ? overrides.org   : $('f-org').value,
+    extra: overrides.extra !== undefined ? overrides.extra : $('f-extra').value,
+    nsz:   $('f-nsz').value,
+    tsz:   $('f-tsz').value,
+    osz:   $('f-osz').value,
+    tc:    $('f-tc').value,
+    ff:    $('f-ff').value,
+    lp:    $('f-lp').value,
+    lsz:   $('f-lsz').value,
+    logo:  logoB64,
+    bgf:   $('f-bgf').value,
+    bgb:   $('f-bgb').value,
+    bgs:   $('f-bgs').value,
+  };
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ===== Update Preview =====
+function updatePreview() {
+  const d = getFormData();
+  $('secF').style.background = d.bgf;
+  $('secB').style.background = d.bgb;
+  $('secS').style.background = d.bgs;
+
+  $('cF').innerHTML = buildSectionHTML(d);
+  $('cB').innerHTML = buildSectionHTML(d);
+  $('cS').innerHTML = buildSupportHTML(d);
+}
+
+function buildSupportHTML(d) {
+  return `<div class="support-inner">
+    <div class="s-title" style="color:${d.tc}80;">折叠支撑区</div>
+    <div class="s-desc" style="color:${d.tc}60;">沿虚线向内对折，使座牌可独立站立</div>
+    <div class="s-foot" style="color:${d.tc}40;">座牌打印工具</div>
+  </div>`;
+}
+
+// ===== Build A4 HTML for print =====
+function buildA4HTML(data) {
+  const sectionH = '99.33mm'; // 297mm / 3
+
+  const frontHTML   = buildSectionHTML(data);
+  const backHTML    = buildSectionHTML(data);
+  const supportHTML = buildSupportHTML(data);
+
+  return `<div class="a4-print-sheet" style="width:210mm;height:297mm;position:relative;overflow:hidden;background:#fff;">
+    <!-- Back section (upside down) -->
+    <div style="position:absolute;top:0;left:0;width:100%;height:${sectionH};background:${data.bgb};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 28px;text-align:center;transform:rotate(180deg);position:relative;">
+        ${backHTML}
+      </div>
+    </div>
+    <!-- Fold line 1 -->
+    <div style="position:absolute;top:${sectionH};left:15mm;right:15mm;border-top:1px dashed #999;z-index:20;"></div>
+    <!-- Front section -->
+    <div style="position:absolute;top:${sectionH};left:0;width:100%;height:${sectionH};background:${data.bgf};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 28px;text-align:center;position:relative;">
+        ${frontHTML}
+      </div>
+    </div>
+    <!-- Fold line 2 -->
+    <div style="position:absolute;top:calc(${sectionH} * 2);left:15mm;right:15mm;border-top:1px dashed #999;z-index:20;"></div>
+    <!-- Support section -->
+    <div style="position:absolute;top:calc(${sectionH} * 2);left:0;width:100%;height:${sectionH};background:${data.bgs};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 28px;text-align:center;">
+        ${supportHTML}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ===== Single Print =====
+function printTent() {
+  const d = getFormData();
+  $('ps').innerHTML = buildA4HTML(d);
+  setTimeout(() => window.print(), 150);
+}
+
+// ===== 3D Preview =====
+function show3DPreview() { $('m3d').classList.add('active'); draw3D(); }
+function close3D() { $('m3d').classList.remove('active'); }
+
+function draw3D() {
+  const c = $('cv3d');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const d = getFormData();
+  const name = d.name, title = d.title, org = d.org;
+  const nsz = parseInt(d.nsz);
+
+  const cw = 220, ch = 140, bh = 56;
+  const cx = W / 2, cy = H / 2 - 20;
+  const tableY = cy + ch * 0.32 + bh;
+
+  // Table surface
+  ctx.fillStyle = '#bec8d6';
+  ctx.fillRect(0, tableY, W, H - tableY);
+  ctx.fillStyle = '#a4b0c0';
+  ctx.fillRect(0, tableY, W, 3);
+
+  // Shadow
+  ctx.save(); ctx.globalAlpha = 0.1;
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(cx, tableY + 8, cw * 0.8, 12, 0, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  const fAngle = -0.26;
+  const bAngle =  0.34;
+
+  drawFace3D(ctx, cx, cy - 6, cw, ch, fAngle, d.bgf, d.tc, name, title, org, nsz, false);
+  drawFace3D(ctx, cx, cy - 6, cw, ch, -bAngle, d.bgb, d.tc, name, title, org, nsz, true);
+
+  // Base
+  ctx.fillStyle = '#d8dce4';
+  ctx.fillRect(cx - cw/2, cy + ch * 0.32, cw, bh);
+  ctx.strokeStyle = '#b4b8c2'; ctx.lineWidth = 1;
+  ctx.strokeRect(cx - cw/2, cy + ch * 0.32, cw, bh);
+}
+
+function drawFace3D(ctx, x, y, w, h, angle, bg, tc, name, title, org, nsz, mirror) {
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(angle);
+  ctx.fillStyle = bg;
+  ctx.fillRect(-w/2, -h/2, w, h);
+  ctx.strokeStyle = 'rgba(0,0,0,0.13)'; ctx.lineWidth = 1.5;
+  ctx.strokeRect(-w/2, -h/2, w, h);
+
+  // Sheen
+  const g = ctx.createLinearGradient(0,-h/2,0,h/2);
+  g.addColorStop(0,'rgba(255,255,255,0.07)');
+  g.addColorStop(1,'rgba(0,0,0,0.04)');
+  ctx.fillStyle = g; ctx.fillRect(-w/2,-h/2,w,h);
+
+  ctx.fillStyle = tc; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (mirror) ctx.scale(-1,1);
+  const fs = Math.max(11, nsz * 0.28);
+  ctx.font = `bold ${fs}px Microsoft YaHei,PingFang SC,sans-serif`;
+  ctx.fillText(name, 0, -h*0.1);
+  if (title) { ctx.font = `${Math.max(8,fs*0.5)}px Microsoft YaHei,sans-serif`; ctx.fillText(title, 0, h*0.1); }
+  if (org)   { ctx.font = `${Math.max(7,fs*0.4)}px Microsoft YaHei,sans-serif`; ctx.fillText(org, 0, h*0.28); }
+  ctx.restore();
+}
+
+// ===== Batch Print =====
+let batchRows = [];
+
+function showBatch() {
+  $('mbatch').classList.add('active');
+  if (batchRows.length === 0) batchAddRow();
+  renderBatchTable();
+}
+function closeBatch() { $('mbatch').classList.remove('active'); }
+
+function batchAddRow(data={}) {
+  batchRows.push({ name: data.name||'', title: data.title||'', org: data.org||'', extra: data.extra||'' });
+  renderBatchTable();
+}
+
+function batchDelRow(i) {
+  batchRows.splice(i, 1);
+  if (batchRows.length === 0) batchAddRow();
+  else renderBatchTable();
+}
+
+function batchClear() {
+  batchRows = [];
+  batchAddRow();
+}
+
+function batchLoadSample() {
+  batchRows = [
+    { name:'张三', title:'产品经理', org:'XX科技有限公司', extra:'' },
+    { name:'李四', title:'技术总监', org:'XX科技有限公司', extra:'' },
+    { name:'王五', title:'设计师',   org:'XX科技有限公司', extra:'' },
+  ];
+  renderBatchTable();
+}
+
+function syncBatchRow(i, field, val) {
+  if (batchRows[i]) batchRows[i][field] = val;
+  updateBatchCount();
+}
+
+function updateBatchCount() {
+  $('batch-count').textContent = `共 ${batchRows.filter(r=>r.name.trim()).length} 行有效`;
+}
+
+// ===== Batch Name Textarea =====
+function batchNameInputChanged() {
+  const txt = ($('batch-name-input').value || '').trim();
+  const lines = txt.split('\n').filter(l => l.trim());
+  const countEl = $('batch-name-count');
+  if (lines.length > 0) {
+    countEl.style.display = 'inline';
+    countEl.textContent = `识别到 ${lines.length} 个姓名`;
+  } else {
+    countEl.style.display = 'none';
+  }
+}
+
+function batchParseNames() {
+  const txt = ($('batch-name-input').value || '').trim();
+  const lines = txt.split('\n').map(l => l.trim()).filter(l => l);
+  if (!lines.length) { alert('请在文本框中输入至少一个姓名'); return; }
+  batchRows = lines.map(name => ({ name, title: '', org: '', extra: '' }));
+  renderBatchTable();
+}
+
+function batchAppendNames() {
+  const txt = ($('batch-name-input').value || '').trim();
+  const lines = txt.split('\n').map(l => l.trim()).filter(l => l);
+  if (!lines.length) { alert('请在文本框中输入至少一个姓名'); return; }
+  const newRows = lines.map(name => ({ name, title: '', org: '', extra: '' }));
+  batchRows = batchRows.concat(newRows);
+  renderBatchTable();
+  $('batch-name-input').value = '';
+  batchNameInputChanged();
+}
+
+// Auto-sync textarea -> batchRows when printing
+function syncBatchFromTextarea() {
+  const txt = ($('batch-name-input').value || '').trim();
+  if (!txt) return;
+  const lines = txt.split('\n').map(l => l.trim()).filter(l => l);
+  if (!lines.length) return;
+  // 只覆盖表格行数跟文本区行数不匹配的情况
+  if (lines.length !== batchRows.length || lines.some((n,i) => n !== batchRows[i].name)) {
+    batchRows = lines.map(name => ({ name, title: '', org: '', extra: '' }));
+    renderBatchTable();
+  }
+}
+
+function renderBatchTable() {
+  const tbody = $('btbody');
+  tbody.innerHTML = '';
+  batchRows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:#bbb;font-size:11px;text-align:center;">${i+1}</td>
+      <td><input type="text" value="${esc(row.name)}"  placeholder="姓名"     oninput="syncBatchRow(${i},'name',this.value)"></td>
+      <td><input type="text" value="${esc(row.title)}" placeholder="职位"     oninput="syncBatchRow(${i},'title',this.value)"></td>
+      <td><input type="text" value="${esc(row.org)}"   placeholder="单位"     oninput="syncBatchRow(${i},'org',this.value)"></td>
+      <td><input type="text" value="${esc(row.extra)}" placeholder="附加信息" oninput="syncBatchRow(${i},'extra',this.value)"></td>
+      <td><button class="row-del" onclick="batchDelRow(${i})" title="删除此行">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  updateBatchCount();
+}
+
+// Support paste from Excel (skip if pasting into the name textarea)
+document.addEventListener('paste', function(e) {
+  if (!$('mbatch').classList.contains('active')) return;
+  if (e.target && e.target.id === 'batch-name-input') return; // 让姓名输入框正常粘贴
+  const txt = (e.clipboardData || window.clipboardData).getData('text');
+  if (!txt || !txt.includes('\n')) return;
+  e.preventDefault();
+  const lines = txt.trim().split('\n');
+  const newRows = lines.map(l => {
+    const cols = l.split('\t');
+    return {
+      name:  (cols[0]||'').trim(),
+      title: (cols[1]||'').trim(),
+      org:   (cols[2]||'').trim(),
+      extra: (cols[3]||'').trim(),
+    };
+  }).filter(r => r.name);
+  if (newRows.length > 0) {
+    batchRows = newRows;
+    renderBatchTable();
+  }
+});
+
+function batchPreviewAll() {
+  syncBatchFromTextarea();
+  const valid = batchRows.filter(r => r.name.trim());
+  if (!valid.length) { alert('请至少填写一行姓名'); return; }
+  const container = $('batch-preview-content');
+  container.innerHTML = '';
+  valid.forEach((row, i) => {
+    const d = getFormData(row);
+    const mini = document.createElement('div');
+    mini.style.cssText = 'display:inline-block;';
+    const label = document.createElement('div');
+    label.textContent = `#${i+1} ${row.name}`;
+    label.style.cssText = 'font-size:11px;color:#999;text-align:center;margin-bottom:4px;';
+    // Mini A4 preview at 20% scale
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'width:119px;height:168px;position:relative;overflow:hidden;border:1px solid #e0e4ee;border-radius:3px;transform-origin:top left;box-shadow:0 1px 4px rgba(0,0,0,0.08);';
+    wrapper.innerHTML = `
+      <div style="position:absolute;top:0;left:0;width:595px;height:842px;background:#fff;transform:scale(0.2);transform-origin:top left;">
+        <div style="position:absolute;top:0;left:0;width:100%;height:280.66px;background:${d.bgb};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <div style="transform:rotate(180deg);width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px 20px;">${buildSectionHTML(d)}</div>
+        </div>
+        <div style="position:absolute;top:280.66px;left:15px;right:15px;border-top:1px dashed #bbb;"></div>
+        <div style="position:absolute;top:280.66px;left:0;width:100%;height:280.66px;background:${d.bgf};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px 20px;">${buildSectionHTML(d)}</div>
+        </div>
+        <div style="position:absolute;top:561.32px;left:15px;right:15px;border-top:1px dashed #bbb;"></div>
+        <div style="position:absolute;top:561.32px;left:0;width:100%;height:280.66px;background:${d.bgs};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          ${buildSupportHTML(d)}
+        </div>
+      </div>
+    `;
+    mini.appendChild(label);
+    mini.appendChild(wrapper);
+    container.appendChild(mini);
+  });
+  $('mbatch-preview').classList.add('active');
+}
+
+function batchPrint() {
+  syncBatchFromTextarea();
+  const valid = batchRows.filter(r => r.name.trim());
+  if (!valid.length) { alert('请至少填写一行姓名'); return; }
+
+  // Build all pages
+  let allHTML = '';
+  valid.forEach((row) => {
+    const d = getFormData(row);
+    allHTML += buildA4HTML(d);
+  });
+  $('ps').innerHTML = allHTML;
+
+  // Show count
+  $('bprog').style.display = 'block';
+  $('bprog-n').textContent = `${valid.length} 张`;
+  $('bprog').querySelector('.prog-txt').textContent = '正在发送到打印机…';
+
+  setTimeout(() => {
+    window.print();
+    $('bprog').style.display = 'none';
+  }, 200);
+}
+
+// ===== Init =====
+updatePreview();
+</script>
+</body>
+</html>
