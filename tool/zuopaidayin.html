@@ -757,9 +757,9 @@ function selectTpl(el) {
   el.classList.add('active');
   const t = TPLS[el.dataset.tpl];
   if (t) {
-    $('f-bgf').value = t.bf;  $('f-bgf-a').value = 100;
-    $('f-bgb').value = t.bb;  $('f-bgb-a').value = 100;
-    $('f-bgs').value = t.bs;  $('f-bgs-a').value = 100;
+    $('f-bgf').value = t.bf;  $('f-bgf-a').value = 100;  $('v-bgf-a').textContent = '100%';
+    $('f-bgb').value = t.bb;  $('f-bgb-a').value = 100;  $('v-bgb-a').textContent = '100%';
+    $('f-bgs').value = t.bs;  $('f-bgs-a').value = 100;  $('v-bgs-a').textContent = '100%';
     // 切换模板时清理背景图片
     if (bgB64) rmBgImg();
     up();
@@ -1009,7 +1009,6 @@ function updatePreview() {
 
   // Card layout
   const { cw, bodyH, supH, secH, totalH, offX, offY } = getCardLayout(d);
-  const marginPx = d.margin + 'px';
 
   // Position card-box
   const cb = $('card-box');
@@ -1092,7 +1091,6 @@ function buildA4HTML(data) {
   const offXmm = ((210 - cardWCm * 10) / 2).toFixed(1) + 'mm';
   const topOffCm = parseFloat(data.topOff) || 0;
   const offYmm = topOffCm > 0 ? (topOffCm * 10).toFixed(1) + 'mm' : ((297 - totalHCm * 10) / 2).toFixed(1) + 'mm';
-  const marginPx = (parseInt(data.margin) || 28) + 'px';
   const foldStyle = (data.showFold !== false) ? '' : 'style="display:none;"';
   const foldMm = ((parseInt(data.margin) || 28) * 0.353).toFixed(1) + 'mm';
   const rgbaBgs = hexToRgba(data.bgs, data.bgsA);
@@ -1527,6 +1525,9 @@ function updateValueDisplays() {
   $('v-bg-sx').textContent = $('f-bg-sx').value + '%';
   $('v-bg-sy').textContent = $('f-bg-sy').value + '%';
   $('v-bg-op').textContent = $('f-bg-op').value + '%';
+  $('v-bgf-a').textContent = $('f-bgf-a').value + '%';
+  $('v-bgb-a').textContent = $('f-bgb-a').value + '%';
+  $('v-bgs-a').textContent = $('f-bgs-a').value + '%';
   const off = parseFloat($('f-topOff').value) || 0;
   $('v-topOff').textContent = off > 0 ? off.toFixed(1) + 'cm' : '自动';
   // Margin preset highlight
