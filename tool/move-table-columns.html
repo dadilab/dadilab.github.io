@@ -1,0 +1,1000 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Excel 列数据左移工具</title>
+<!-- SheetJS 社区版 - 用于 Excel 读写 -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success: #16a34a;
+    --success-hover: #15803d;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --code-bg: #f1f5f9;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 24px;
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    color: var(--text);
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  .panel h2 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel h2 .step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field label {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  select, input[type="file"] {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    color: var(--text);
+    min-width: 160px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  select:disabled {
+    background: var(--code-bg);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  button {
+    padding: 9px 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.05s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  button:active:not(:disabled) { transform: translateY(1px); }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+
+  .btn-success {
+    background: var(--success);
+    color: white;
+  }
+  .btn-success:hover:not(:disabled) { background: var(--success-hover); }
+
+  .btn-secondary {
+    background: var(--code-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover:not(:disabled) { background: #e2e8f0; }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--code-bg);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .file-info strong { color: var(--text); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--primary);
+    color: white;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .log-area {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 16px;
+    height: 280px;
+    overflow-y: auto;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .log-area::-webkit-scrollbar { width: 8px; }
+  .log-area::-webkit-scrollbar-track { background: #1e293b; }
+  .log-area::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+  .log-entry {
+    display: flex;
+    gap: 10px;
+    padding: 2px 0;
+  }
+
+  .log-time {
+    color: #94a3b8;
+    flex-shrink: 0;
+  }
+
+  .log-msg.info .log-text { color: #93c5fd; }
+  .log-msg.success .log-text { color: #86efac; }
+  .log-msg.warning .log-text { color: #fcd34d; }
+  .log-msg.error .log-text { color: #fca5a5; }
+
+  .log-text {
+    flex: 1;
+    word-break: break-word;
+  }
+
+  .preview-table-wrapper {
+    max-height: 400px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  table.preview {
+    border-collapse: collapse;
+    font-size: 12px;
+    width: 100%;
+  }
+
+  table.preview th, table.preview td {
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  table.preview th {
+    background: var(--code-bg);
+    color: var(--text);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  table.preview th.col-highlight,
+  table.preview td.col-highlight {
+    background: #fef3c7;
+  }
+
+  table.preview tr:nth-child(even) td { background: #fafafa; }
+  table.preview tr:nth-child(even) td.col-highlight { background: #fde68a; }
+  table.preview tr:hover td { background: #eff6ff; }
+  table.preview tr:hover td.col-highlight { background: #fde68a; }
+
+  .help-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 16px;
+    background: var(--code-bg);
+    border-radius: 6px;
+    min-width: 120px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 2px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 1000;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+  .toast.info { background: var(--primary); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📊 Excel 列数据左移工具</h1>
+    <p class="subtitle">选择列后将数据向左移动一格（A 列须为空、非标题行），可多次操作后下载</p>
+  </header>
+
+  <!-- Step 1: 上传文件 -->
+  <section class="panel">
+    <h2><span class="step">1</span> 上传 Excel 文件</h2>
+    <div class="row">
+      <input type="file" id="fileInput" accept=".xlsx,.xls" />
+      <button class="btn-secondary" id="clearBtn" disabled>清空</button>
+    </div>
+    <div id="fileInfo" class="file-info" style="margin-top: 12px; display: none;"></div>
+  </section>
+
+  <!-- Step 2: 选择列 -->
+  <section class="panel" id="configPanel" style="display: none;">
+    <h2><span class="step">2</span> 选择要左移的列</h2>
+    <div class="row">
+      <div class="field">
+        <label for="columnSelect">目标列</label>
+        <select id="columnSelect" disabled>
+          <option value="">请先上传文件</option>
+        </select>
+        <div class="help-text">数据将从该列左移到 A 列</div>
+      </div>
+      <div class="field">
+        <label for="rowSelect">生效范围（行）</label>
+        <select id="rowSelect" disabled>
+          <option value="all">全部数据行</option>
+        </select>
+        <div class="help-text">仅非标题行的数据行</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 16px;">
+      <button class="btn-primary" id="executeBtn" disabled>▶ 执行左移</button>
+      <button class="btn-success" id="downloadBtn" disabled>⬇ 下载修改后的文件</button>
+    </div>
+    <div class="stats" id="stats" style="display: none;"></div>
+  </section>
+
+  <!-- 预览 -->
+  <section class="panel" id="previewPanel" style="display: none;">
+    <h2><span class="step">3</span> 数据预览</h2>
+    <div class="preview-table-wrapper" id="previewWrapper">
+      <div class="empty-state">暂无数据</div>
+    </div>
+  </section>
+
+  <!-- 日志区 -->
+  <section class="panel">
+    <h2><span class="step">4</span> 操作日志</h2>
+    <div class="row" style="margin-bottom: 12px;">
+      <button class="btn-secondary" id="clearLogBtn">清空日志</button>
+    </div>
+    <div class="log-area" id="logArea">
+      <div class="log-entry">
+        <span class="log-time">--:--:--</span>
+        <span class="log-text" style="color: #94a3b8;">等待操作...</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ==========================================================================
+   状态管理
+   ========================================================================== */
+const state = {
+  workbook: null,        // XLSX workbook
+  sheetName: null,       // 当前工作表
+  worksheet: null,       // 工作表对象
+  range: null,           // 工作表范围 {s:{r,c}, e:{r,c}}
+  originalFileName: '',  // 原始文件名
+  isModified: false,     // 是否已修改
+  lastMovedColumn: -1,   // 最近操作的列
+  movedCount: 0          // 已移动的总单元格数
+};
+
+/* ==========================================================================
+   DOM 引用
+   ========================================================================== */
+const els = {
+  fileInput: document.getElementById('fileInput'),
+  clearBtn: document.getElementById('clearBtn'),
+  fileInfo: document.getElementById('fileInfo'),
+  configPanel: document.getElementById('configPanel'),
+  columnSelect: document.getElementById('columnSelect'),
+  rowSelect: document.getElementById('rowSelect'),
+  executeBtn: document.getElementById('executeBtn'),
+  downloadBtn: document.getElementById('downloadBtn'),
+  stats: document.getElementById('stats'),
+  previewPanel: document.getElementById('previewPanel'),
+  previewWrapper: document.getElementById('previewWrapper'),
+  logArea: document.getElementById('logArea'),
+  clearLogBtn: document.getElementById('clearLogBtn'),
+  toast: document.getElementById('toast')
+};
+
+/* ==========================================================================
+   工具函数
+   ========================================================================== */
+
+// 列号(0-index) -> Excel 列字母
+function colIndexToLetter(idx) {
+  let s = '';
+  let n = idx;
+  while (true) {
+    s = String.fromCharCode(65 + (n % 26)) + s;
+    n = Math.floor(n / 26) - 1;
+    if (n < 0) break;
+  }
+  return s;
+}
+
+// Excel 列字母 -> 列号(0-index)
+function colLetterToIndex(letter) {
+  let n = 0;
+  for (let i = 0; i < letter.length; i++) {
+    n = n * 26 + (letter.charCodeAt(i) - 64);
+  }
+  return n - 1;
+}
+
+// 获取单元格显示值(避免日期等格式问题，统一转字符串)
+function cellDisplay(cell) {
+  if (cell === null || cell === undefined) return '';
+  if (cell.w !== undefined) return String(cell.w);
+  if (cell.v !== undefined) return String(cell.v);
+  return String(cell);
+}
+
+function nowTime() {
+  const d = new Date();
+  return [d.getHours(), d.getMinutes(), d.getSeconds()]
+    .map(n => String(n).padStart(2, '0')).join(':');
+}
+
+function logMessage(text, level = 'info') {
+  // 移除占位行
+  const placeholder = els.logArea.querySelector('.log-entry .log-text');
+  if (placeholder && placeholder.textContent.includes('等待操作')) {
+    els.logArea.innerHTML = '';
+  }
+
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `
+    <span class="log-time">${nowTime()}</span>
+    <span class="log-msg ${level}"><span class="log-text"></span></span>
+  `;
+  entry.querySelector('.log-text').textContent = text;
+  els.logArea.appendChild(entry);
+  els.logArea.scrollTop = els.logArea.scrollHeight;
+}
+
+function showToast(message, type = 'info', duration = 2400) {
+  els.toast.textContent = message;
+  els.toast.className = 'toast ' + type;
+  // 触发重排
+  void els.toast.offsetWidth;
+  els.toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => {
+    els.toast.classList.remove('show');
+  }, duration);
+}
+
+function updateStats() {
+  if (!els.stats) return;
+  const r = state.range;
+  if (!r) { els.stats.style.display = 'none'; return; }
+  els.stats.style.display = 'flex';
+  const rows = r.e.r - r.s.r;          // 含标题的总行数
+  const dataRows = Math.max(0, rows);  // 数据行(不含标题)
+  const cols = r.e.c - r.s.c + 1;
+  els.stats.innerHTML = `
+    <div class="stat-item">
+      <span class="stat-label">工作表</span>
+      <span class="stat-value">${state.sheetName}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">总行数</span>
+      <span class="stat-value">${rows + 1}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">数据行数</span>
+      <span class="stat-value">${dataRows}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">总列数</span>
+      <span class="stat-value">${cols}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">本次操作移动</span>
+      <span class="stat-value">${state.movedCount} 个</span>
+    </div>
+  `;
+}
+
+/* ==========================================================================
+   文件读取
+   ========================================================================== */
+els.fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const buffer = await file.arrayBuffer();
+    const wb = XLSX.read(buffer, { type: 'array', cellStyles: true });
+
+    if (!wb.SheetNames.length) {
+      throw new Error('文件中没有工作表');
+    }
+
+    state.workbook = wb;
+    state.sheetName = wb.SheetNames[0];
+    state.worksheet = wb.Sheets[state.sheetName];
+    state.range = XLSX.utils.decode_range(state.worksheet['!ref'] || 'A1');
+    state.originalFileName = file.name;
+    state.isModified = false;
+    state.lastMovedColumn = -1;
+    state.movedCount = 0;
+
+    logMessage(`文件读取成功：${file.name}（${(file.size/1024).toFixed(1)} KB）`, 'success');
+    logMessage(`默认工作表：${state.sheetName}，数据范围：${state.worksheet['!ref']}`, 'info');
+
+    // 显示文件信息
+    els.fileInfo.style.display = 'flex';
+    els.fileInfo.innerHTML = `
+      <span class="badge">已加载</span>
+      <span>文件：<strong>${file.name}</strong></span>
+      <span>工作表：<strong>${state.sheetName}</strong></span>
+      <span>范围：<strong>${state.worksheet['!ref'] || '空'}</strong></span>
+    `;
+
+    // 填充列选择下拉框
+    populateColumnSelect();
+    populateRowSelect();
+
+    // 显示配置区与预览
+    els.configPanel.style.display = 'block';
+    els.previewPanel.style.display = 'block';
+    els.clearBtn.disabled = false;
+    els.columnSelect.disabled = false;
+    els.rowSelect.disabled = false;
+    els.executeBtn.disabled = false;
+    els.downloadBtn.disabled = false;
+    updateStats();
+    renderPreview();
+    showToast('文件加载成功', 'success');
+  } catch (err) {
+    logMessage(`文件读取失败：${err.message}`, 'error');
+    showToast('文件读取失败：' + err.message, 'error');
+  }
+});
+
+els.clearBtn.addEventListener('click', () => {
+  resetState();
+  showToast('已重置', 'info');
+});
+
+function resetState() {
+  state.workbook = null;
+  state.sheetName = null;
+  state.worksheet = null;
+  state.range = null;
+  state.originalFileName = '';
+  state.isModified = false;
+  state.lastMovedColumn = -1;
+  state.movedCount = 0;
+
+  els.fileInput.value = '';
+  els.fileInfo.style.display = 'none';
+  els.configPanel.style.display = 'none';
+  els.previewPanel.style.display = 'none';
+  els.clearBtn.disabled = true;
+  els.columnSelect.innerHTML = '<option value="">请先上传文件</option>';
+  els.columnSelect.disabled = true;
+  els.rowSelect.innerHTML = '<option value="all">全部数据行</option>';
+  els.rowSelect.disabled = true;
+  els.executeBtn.disabled = true;
+  els.downloadBtn.disabled = true;
+  els.stats.style.display = 'none';
+  els.previewWrapper.innerHTML = '<div class="empty-state">暂无数据</div>';
+  logMessage('状态已重置', 'info');
+}
+
+/* ==========================================================================
+   列选择 / 行选择
+   ========================================================================== */
+function populateColumnSelect() {
+  const cols = state.range.e.c - state.range.s.c + 1;
+  els.columnSelect.innerHTML = '';
+
+  if (cols < 2) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = '至少需要 2 列（A + 目标列）';
+    els.columnSelect.appendChild(opt);
+    els.columnSelect.disabled = true;
+    els.executeBtn.disabled = true;
+    return;
+  }
+
+  // 第 1 个是占位提示
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = `请选择列（共 ${cols} 列，B 起可左移到 A）`;
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  els.columnSelect.appendChild(placeholder);
+
+  // 遍历所有列：A 列不能选（无意义），其它列都可作为源列
+  for (let c = 0; c < cols; c++) {
+    const letter = colIndexToLetter(state.range.s.c + c);
+    if (letter === 'A') continue;  // A 列作为目标列
+    const opt = document.createElement('option');
+    opt.value = String(c);
+    opt.textContent = `${letter} 列（第 ${c + 1} 列）`;
+    els.columnSelect.appendChild(opt);
+  }
+}
+
+function populateRowSelect() {
+  // 数据行 = 总行数 - 1（标题行）
+  const totalRows = state.range.e.r - state.range.s.r + 1;
+  const dataRows = totalRows - 1;
+  els.rowSelect.innerHTML = '<option value="all">全部数据行（' + dataRows + ' 行）</option>';
+
+  if (dataRows <= 0) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = '无数据行';
+    opt.disabled = true;
+    els.rowSelect.appendChild(opt);
+    return;
+  }
+
+  // 为常用规模提供选项
+  const presets = [
+    { value: 10, label: '前 10 行' },
+    { value: 50, label: '前 50 行' },
+    { value: 100, label: '前 100 行' },
+    { value: 500, label: '前 500 行' }
+  ];
+  for (const p of presets) {
+    if (p.value < dataRows) {
+      const opt = document.createElement('option');
+      opt.value = String(p.value);
+      opt.textContent = p.label;
+      els.rowSelect.appendChild(opt);
+    }
+  }
+
+  // 自定义范围
+  if (dataRows > 1) {
+    const opt = document.createElement('option');
+    opt.value = 'custom';
+    opt.textContent = '自定义...';
+    els.rowSelect.appendChild(opt);
+  }
+}
+
+els.rowSelect.addEventListener('change', () => {
+  if (els.rowSelect.value === 'custom') {
+    const totalRows = state.range.e.r - state.range.s.r + 1;
+    const dataRows = totalRows - 1;
+    const input = prompt(`请输入要处理的行数（1 - ${dataRows}）：`, String(Math.min(100, dataRows)));
+    const n = parseInt(input, 10);
+    if (isNaN(n) || n < 1 || n > dataRows) {
+      showToast('输入无效', 'error');
+      els.rowSelect.value = 'all';
+      return;
+    }
+    // 替换自定义项的显示
+    const opt = els.rowSelect.querySelector('option[value="custom"]');
+    opt.value = String(n);
+    opt.textContent = `自定义：前 ${n} 行`;
+    opt.selected = true;
+  }
+});
+
+/* ==========================================================================
+   核心：执行左移
+   ========================================================================== */
+els.executeBtn.addEventListener('click', () => {
+  const colOptIdx = parseInt(els.columnSelect.value, 10);
+  if (isNaN(colOptIdx)) {
+    showToast('请先选择要左移的列', 'error');
+    return;
+  }
+
+  // 源列的实际列号(0-index)
+  const srcColIdx = state.range.s.c + colOptIdx;
+  const srcLetter = colIndexToLetter(srcColIdx);
+  const tgtLetter = 'A';
+  const tgtColIdx = colLetterToIndex('A');
+
+  // 目标列必须存在
+  if (tgtColIdx < state.range.s.c || tgtColIdx > state.range.e.c) {
+    logMessage(`错误：工作表中不存在 A 列，无法作为目标列`, 'error');
+    showToast('工作表缺少 A 列', 'error');
+    return;
+  }
+
+  // 行范围
+  const totalRows = state.range.e.r - state.range.s.r + 1;
+  const dataRows = totalRows - 1;
+  if (dataRows <= 0) {
+    logMessage(`错误：工作表没有数据行（仅标题行）`, 'error');
+    showToast('无数据行可处理', 'error');
+    return;
+  }
+
+  let rowLimit = dataRows;
+  const rv = els.rowSelect.value;
+  if (rv !== 'all' && rv !== '' && !isNaN(parseInt(rv, 10))) {
+    rowLimit = Math.min(parseInt(rv, 10), dataRows);
+  }
+
+  logMessage(`开始执行：将 ${srcLetter} 列数据左移到 ${tgtLetter} 列，共 ${rowLimit} 行`, 'info');
+
+  // 统计
+  let success = 0, skippedFilled = 0, skippedEmpty = 0, errored = 0;
+  const skipDetails = [];
+
+  // 遍历：第 1 行(标题) 跳过；从第 2 行起为数据行
+  for (let r = 1; r <= rowLimit; r++) {
+    const excelRow = r + 1; // 1-indexed 用于显示
+    const srcAddr = XLSX.utils.encode_cell({ r, c: srcColIdx });
+    const tgtAddr = XLSX.utils.encode_cell({ r, c: tgtColIdx });
+    const srcCell = state.worksheet[srcAddr];
+    const tgtCell = state.worksheet[tgtAddr];
+
+    try {
+      // 校验 1：源单元格不能为空
+      if (srcCell === undefined || srcCell.v === undefined || srcCell.v === null || srcCell.v === '') {
+        skippedEmpty++;
+        skipDetails.push(`第 ${excelRow} 行：${srcLetter} 列源数据为空，已跳过`);
+        continue;
+      }
+
+      // 校验 2：目标 A 列必须为空
+      if (tgtCell !== undefined && tgtCell.v !== undefined && tgtCell.v !== null && tgtCell.v !== '') {
+        skippedFilled++;
+        const tgtVal = cellDisplay(tgtCell);
+        skipDetails.push(`第 ${excelRow} 行：A 列已有数据（"${tgtVal.length > 20 ? tgtVal.slice(0,20) + '...' : tgtVal}"），已跳过`);
+        continue;
+      }
+
+      // 执行左移：复制源 → 目标
+      const newCell = {
+        v: srcCell.v,
+        t: srcCell.t,
+        w: srcCell.w,
+        f: srcCell.f,
+        z: srcCell.z,  // 数字格式
+        h: srcCell.h,
+        c: srcCell.c
+      };
+      // 处理公式
+      if (srcCell.f) {
+        newCell.f = srcCell.f;
+      }
+      state.worksheet[tgtAddr] = newCell;
+
+      // 清空源单元格
+      delete state.worksheet[srcAddr];
+
+      success++;
+    } catch (err) {
+      errored++;
+      skipDetails.push(`第 ${excelRow} 行：处理异常 - ${err.message}`);
+    }
+  }
+
+  // 更新工作表范围（如果源列有数据，e.c 可能不变；如果目标列原本超出范围会扩大）
+  state.worksheet['!ref'] = XLSX.utils.encode_range(state.range);
+
+  // 输出日志
+  logMessage(`✓ 成功左移 ${success} 个单元格（${srcLetter} → ${tgtLetter}）`, success > 0 ? 'success' : 'warning');
+  if (skippedEmpty > 0) {
+    logMessage(`⊘ 跳过 ${skippedEmpty} 行：源单元格为空`, 'warning');
+  }
+  if (skippedFilled > 0) {
+    logMessage(`⊘ 跳过 ${skippedFilled} 行：A 列已有数据`, 'warning');
+  }
+  if (errored > 0) {
+    logMessage(`✗ ${errored} 行处理异常`, 'error');
+  }
+
+  // 详细异常（前 20 条）
+  const showDetails = skipDetails.slice(0, 20);
+  for (const d of showDetails) {
+    logMessage('  • ' + d, d.includes('异常') ? 'error' : 'warning');
+  }
+  if (skipDetails.length > 20) {
+    logMessage(`  ... 另有 ${skipDetails.length - 20} 条跳过记录未显示`, 'info');
+  }
+
+  // 标记已修改
+  state.isModified = true;
+  state.lastMovedColumn = srcColIdx;
+  state.movedCount = success;
+
+  // 刷新预览
+  renderPreview();
+  updateStats();
+
+  // 重新填充列下拉框（标记 A 列已填等）
+  populateColumnSelect();
+  // 重新选回刚操作的列，方便连续操作
+  for (const opt of els.columnSelect.options) {
+    if (parseInt(opt.value, 10) === colOptIdx) {
+      opt.selected = true;
+      break;
+    }
+  }
+
+  if (success > 0) {
+    showToast(`成功移动 ${success} 个单元格`, 'success');
+  } else {
+    showToast('本次操作未移动任何数据', 'warning');
+  }
+});
+
+/* ==========================================================================
+   预览
+   ========================================================================== */
+function renderPreview() {
+  if (!state.worksheet || !state.range) {
+    els.previewWrapper.innerHTML = '<div class="empty-state">暂无数据</div>';
+    return;
+  }
+
+  const r = state.range;
+  const totalRows = r.e.r - r.s.r + 1;
+  const totalCols = r.e.c - r.s.c + 1;
+
+  // 限制预览行数，避免卡顿
+  const maxPreviewRows = Math.min(totalRows, 50);
+  const maxPreviewCols = Math.min(totalCols, 12);
+
+  // 当前选中的列(0-indexed within options)
+  const colOptIdx = parseInt(els.columnSelect.value, 10);
+  const srcColIdx = isNaN(colOptIdx) ? -1 : state.range.s.c + colOptIdx;
+
+  let html = '<table class="preview"><thead><tr>';
+  html += '<th style="background: #e2e8f0;">行\\列</th>';
+  for (let c = 0; c < maxPreviewCols; c++) {
+    const colIdx = r.s.c + c;
+    const letter = colIndexToLetter(colIdx);
+    const isHighlight = colIdx === srcColIdx;
+    html += `<th class="${isHighlight ? 'col-highlight' : ''}">${letter}</th>`;
+  }
+  if (totalCols > maxPreviewCols) {
+    html += `<th style="background: #e2e8f0;">... +${totalCols - maxPreviewCols} 列</th>`;
+  }
+  html += '</tr></thead><tbody>';
+
+  for (let row = 0; row < maxPreviewRows; row++) {
+    const excelRow = r.s.r + row + 1;
+    const isHeader = row === 0 && r.s.r === 0;  // 起始行 = 0 时第 1 行为标题
+    html += '<tr>';
+    html += `<th style="background: #e2e8f0;">${excelRow}${isHeader ? ' (标题)' : ''}</th>`;
+    for (let c = 0; c < maxPreviewCols; c++) {
+      const colIdx = r.s.c + c;
+      const addr = XLSX.utils.encode_cell({ r: r.s.r + row, c: colIdx });
+      const cell = state.worksheet[addr];
+      const val = cellDisplay(cell);
+      const display = val.length > 30 ? val.slice(0, 30) + '...' : val;
+      const isHighlight = colIdx === srcColIdx;
+      html += `<td class="${isHighlight ? 'col-highlight' : ''}" title="${escapeHtml(val)}">${escapeHtml(display)}</td>`;
+    }
+    if (totalCols > maxPreviewCols) {
+      html += '<td style="background: #f8fafc; color: #94a3b8;">...</td>';
+    }
+    html += '</tr>';
+  }
+  if (totalRows > maxPreviewRows) {
+    html += `<tr><td colspan="${maxPreviewCols + 2}" style="text-align:center; color:#94a3b8; padding: 8px;">... 另有 ${totalRows - maxPreviewRows} 行未显示</td></tr>`;
+  }
+  html += '</tbody></table>';
+
+  els.previewWrapper.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// 选中列变化时刷新预览高亮
+els.columnSelect.addEventListener('change', renderPreview);
+
+/* ==========================================================================
+   下载
+   ========================================================================== */
+els.downloadBtn.addEventListener('click', () => {
+  if (!state.workbook) {
+    showToast('请先上传文件', 'error');
+    return;
+  }
+
+  try {
+    // 写出工作簿为二进制
+    const wbout = XLSX.write(state.workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+      compression: true
+    });
+
+    const blob = new Blob([wbout], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+
+    // 构造下载文件名：xxx_已处理.xlsx
+    const dotIdx = state.originalFileName.lastIndexOf('.');
+    const base = dotIdx > 0 ? state.originalFileName.slice(0, dotIdx) : state.originalFileName;
+    const ext = dotIdx > 0 ? state.originalFileName.slice(dotIdx) : '.xlsx';
+    const downloadName = `${base}_已左移${ext}`;
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = downloadName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    logMessage(`⬇ 已下载：${downloadName}（${(blob.size/1024).toFixed(1)} KB）`, 'success');
+    showToast('文件下载成功', 'success');
+  } catch (err) {
+    logMessage(`下载失败：${err.message}`, 'error');
+    showToast('下载失败：' + err.message, 'error');
+  }
+});
+
+/* ==========================================================================
+   日志清空
+   ========================================================================== */
+els.clearLogBtn.addEventListener('click', () => {
+  els.logArea.innerHTML = `
+    <div class="log-entry">
+      <span class="log-time">--:--:--</span>
+      <span class="log-text" style="color: #94a3b8;">日志已清空</span>
+    </div>
+  `;
+});
+
+/* ==========================================================================
+   初始化
+   ========================================================================== */
+logMessage('工具已就绪，请上传 Excel 文件（.xlsx / .xls）', 'info');
+</script>
+</body>
+</html>
