@@ -1,0 +1,1139 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学生姓名表格工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* =============================================
+     全局文字强制黑色 (#000000) — 最高优先级
+  ============================================= */
+  body, body *,
+  body::before, body::after,
+  body *::before, body *::after,
+  .app, .sidebar, .preview-area, .paper, .paper-wrapper,
+  h1, h2, h3, h4, h5, h6, p, span, div, li, dt, dd,
+  label, input, textarea, select, button, option, optgroup,
+  a, a:link, a:visited, a:hover, a:focus, a:active,
+  table, th, td, tr, thead, tbody, tfoot, caption, col, colgroup,
+  .paper-title, .paper-subtitle,
+  .preview-info, .preview-info strong,
+  .group-title, .subtitle,
+  .page-tab, .page-tab.active, .page-tab:hover,
+  .btn, .btn:hover, .btn:focus, .btn:active,
+  .btn-primary, .btn-primary:hover, .btn-primary:focus, .btn-primary:active,
+  .btn-danger, .btn-danger:hover, .btn-danger:focus, .btn-danger:active,
+  .btn-block,
+  .page-tab .close, .page-tab .close:hover,
+  .field label, .field input, .field textarea, .field select,
+  .sidebar h1, .sidebar h2, .sidebar p,
+  .col-num,
+  strong, b, i, em, u, s, mark, small, big, sub, sup,
+  [contenteditable],
+  [contenteditable]:empty::before,
+  button span, label span {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+  }
+
+  /* placeholder 也强制黑色 */
+  ::placeholder,
+  ::-webkit-input-placeholder,
+  ::-moz-placeholder,
+  :-ms-input-placeholder,
+  ::-ms-input-placeholder {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    opacity: 1 !important;
+  }
+
+  :root {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --border: #e1e4e8;
+    --text: #1f2328;
+    --muted: #6e7681;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .app {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    min-height: 100vh;
+  }
+  /* ===== 侧边控制面板 ===== */
+  .sidebar {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+  .sidebar h1 {
+    font-size: 18px;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  .sidebar .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .group {
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .group:last-child { border-bottom: none; }
+  .group-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .field {
+    margin-bottom: 12px;
+  }
+  .field label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 5px;
+    color: var(--text);
+  }
+  .field input[type="text"],
+  .field input[type="number"],
+  .field textarea,
+  .field select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .field textarea {
+    min-height: 140px;
+    resize: vertical;
+    font-family: inherit;
+  }
+  .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .row > * { flex: 1; }
+  .slider-row {
+    display: grid;
+    grid-template-columns: 1fr 60px;
+    gap: 8px;
+    align-items: center;
+  }
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary);
+  }
+  input[type="number"].small {
+    width: 60px;
+    text-align: center;
+  }
+  .switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .switch input { display: none; }
+  .switch .toggle {
+    width: 36px;
+    height: 20px;
+    background: #d1d5db;
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .switch .toggle::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: left 0.2s;
+  }
+  .switch input:checked + .toggle { background: var(--primary); }
+  .switch input:checked + .toggle::after { left: 18px; }
+  .btn {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: #f3f4f6; }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+  .btn-danger {
+    color: var(--danger);
+    border-color: #fecaca;
+  }
+  .btn-danger:hover { background: #fef2f2; }
+  .btn-block { width: 100%; }
+  /* ===== 页面标签 ===== */
+  .pages {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .page-tab {
+    padding: 6px 12px;
+    background: #f3f4f6;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .page-tab:hover { background: #e5e7eb; }
+  .page-tab.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .page-tab .close {
+    font-size: 14px;
+    line-height: 1;
+    opacity: 0.6;
+  }
+  .page-tab .close:hover { opacity: 1; }
+  .page-actions {
+    display: flex;
+    gap: 6px;
+  }
+  /* ===== 预览区域 ===== */
+  .preview-area {
+    padding: 24px;
+    overflow: auto;
+  }
+  .preview-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .preview-info {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .preview-info strong { color: var(--text); }
+  .toolbar-actions { display: flex; gap: 8px; }
+  /* ===== A4 纸张 ===== */
+  .paper-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+  .paper {
+    background: #fff;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm 18mm;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 0 1px rgba(0,0,0,0.1);
+    position: relative;
+    page-break-after: always;
+    page-break-inside: avoid;
+  }
+  .paper:last-child { page-break-after: auto; }
+  .paper-header {
+    text-align: center;
+    margin-bottom: 18mm;
+  }
+  .paper-title {
+    font-size: 22pt;
+    font-weight: bold;
+    margin-bottom: 4mm;
+    outline: none;
+    border-radius: 4px;
+    padding: 2px 4px;
+  }
+  .paper-title:focus, .paper-subtitle:focus {
+    background: #fffbe6;
+  }
+  .paper-subtitle {
+    font-size: 14pt;
+    outline: none;
+    border-radius: 4px;
+    padding: 2px 4px;
+  }
+  .paper-subtitle:empty::before {
+    content: attr(data-placeholder);
+  }
+  /* ===== 表格 ===== */
+  table.grid {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  table.grid td {
+    border: 1px solid #000;
+    text-align: center;
+    vertical-align: middle;
+    padding: 4px 6px;
+    word-break: break-all;
+    transition: height 0.1s;
+    position: relative;
+  }
+  table.grid.no-border td {
+    border-color: transparent;
+  }
+  table.grid.dashed td {
+    border-style: dashed;
+    border-color: #666;
+  }
+  /* 拖拽手柄 */
+  .row-handle {
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 6px;
+    background: var(--primary);
+    border-radius: 3px;
+    cursor: ns-resize;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 5;
+  }
+  table.grid tr:hover .row-handle { opacity: 0.7; }
+  .row-handle:hover { opacity: 1 !important; }
+  /* 编号列 */
+  .col-num {
+    font-size: 0.9em;
+  }
+  /* ===== 底部图片区 ===== */
+  .image-row {
+    display: flex;
+    gap: 12mm;
+    margin-top: 12mm;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .image-row.count-1 { justify-content: center; }
+  .image-row.count-2 { justify-content: space-between; }
+  .image-row.count-3 { justify-content: center; }
+  .image-cell {
+    flex: 1;
+    min-width: 0;
+    max-width: 33%;
+    text-align: center;
+    position: relative;
+  }
+  .image-cell.empty {
+    display: none;
+  }
+  .image-drop {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* 1:1 比例 */
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    background: transparent;
+  }
+  .image-drop img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .image-caption {
+    width: 100%;
+    border: 1px solid transparent;
+    text-align: center;
+    font-size: 13px;
+    padding: 6px 4px;
+    margin-top: 2px;
+    background: #fff;
+    outline: none;
+    font-family: inherit;
+    border-radius: 3px;
+    cursor: text;
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    -webkit-user-select: text;
+    user-select: text;
+    line-height: 1.5;
+  }
+  .image-caption:focus {
+    border-color: #000;
+    background: #fff;
+  }
+  .image-caption.hidden { display: none; }
+  .image-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    display: none;
+    z-index: 2;
+  }
+  .image-drop.has-image:hover .image-remove { display: block; }
+  .add-image-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: 1px dashed #000;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    color: #000;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .add-image-btn:hover { background: #f5f5f5; }
+  .add-image-row {
+    text-align: center;
+    margin-top: 10mm;
+  }
+  @media print {
+    .add-image-row { display: none !important; }
+    .image-remove { display: none !important; }
+  }
+  @media (max-width: 700px) {
+    .image-row { flex-direction: column; gap: 8mm; }
+    .image-cell { max-width: 100%; }
+    .image-drop { aspect-ratio: 4/3; }
+  }
+  /* 自动填充提示 */
+  .empty-hint {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  /* ===== 打印样式 ===== */
+  @media print {
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    body { background: #fff; }
+    .sidebar, .preview-toolbar, .pages-controls { display: none !important; }
+    .app { display: block; }
+    .preview-area { padding: 0; overflow: visible; }
+    .paper-wrapper { display: block; }
+    .paper { box-shadow: none; margin: 0; }
+    .row-handle { display: none; }
+  }
+  /* 响应式 */
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: static; max-height: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 左侧控制面板 -->
+  <aside class="sidebar">
+    <h1>学生姓名表格工具</h1>
+    <p class="subtitle">编辑左侧参数,右侧实时预览</p>
+
+    <!-- 页面管理 -->
+    <div class="group">
+      <div class="group-title">页面管理</div>
+      <div class="pages" id="pagesContainer"></div>
+      <div class="page-actions">
+        <button class="btn btn-primary" id="addPageBtn" style="flex:1">+ 新增页面</button>
+        <button class="btn btn-danger" id="deletePageBtn" style="flex:1">删除当前页</button>
+      </div>
+    </div>
+
+    <!-- 标题设置 -->
+    <div class="group">
+      <div class="group-title">标题设置</div>
+      <div class="field">
+        <label>主标题</label>
+        <input type="text" id="titleInput" placeholder="如:2026年暑期游泳培训1班">
+      </div>
+      <div class="field">
+        <label>副标题</label>
+        <input type="text" id="subtitleInput" placeholder="如:教练:XXX 电话:13000000000">
+      </div>
+    </div>
+
+    <!-- 姓名输入 -->
+    <div class="group">
+      <div class="group-title">学生名单</div>
+      <div class="field">
+        <label>每行输入一个姓名</label>
+        <textarea id="namesInput" placeholder="张三&#10;李四&#10;王五"></textarea>
+      </div>
+    </div>
+
+    <!-- 表格布局 -->
+    <div class="group">
+      <div class="group-title">表格布局</div>
+      <div class="field">
+        <label>每行列数</label>
+        <select id="colsSelect">
+          <option value="2">2 列</option>
+          <option value="3">3 列</option>
+          <option value="4" selected>4 列</option>
+          <option value="5">5 列</option>
+          <option value="6">6 列</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>标题字号</label>
+        <div class="slider-row">
+          <input type="range" id="titleFontSize" min="14" max="48" value="26" step="1">
+          <input type="number" id="titleFontSizeNum" class="small" min="14" max="48" value="26">
+        </div>
+      </div>
+      <div class="field">
+        <label>副标题字号</label>
+        <div class="slider-row">
+          <input type="range" id="subFontSize" min="10" max="32" value="16" step="1">
+          <input type="number" id="subFontSizeNum" class="small" min="10" max="32" value="16">
+        </div>
+      </div>
+      <div class="field">
+        <label>表格字号</label>
+        <div class="slider-row">
+          <input type="range" id="cellFontSize" min="10" max="35" value="14" step="1">
+          <input type="number" id="cellFontSizeNum" class="small" min="10" max="35" value="14">
+        </div>
+      </div>
+      <div class="field">
+        <label>行高(像素)</label>
+        <div class="slider-row">
+          <input type="range" id="rowHeight" min="24" max="80" value="40" step="1">
+          <input type="number" id="rowHeightNum" class="small" min="24" max="80" value="40">
+        </div>
+      </div>
+      <div class="field">
+        <label>表格行数(留空则自适应)</label>
+        <input type="number" id="rowCountInput" min="1" max="50" placeholder="自动">
+      </div>
+    </div>
+
+    <!-- 图片设置 -->
+    <div class="group">
+      <div class="group-title">图片设置</div>
+      <div class="field">
+        <label>图片区行距(毫米)</label>
+        <div class="slider-row">
+          <input type="range" id="imageGap" min="0" max="30" value="8" step="1">
+          <input type="number" id="imageGapNum" class="small" min="0" max="30" value="8">
+        </div>
+      </div>
+      <div class="field">
+        <label>图片说明字号</label>
+        <div class="slider-row">
+          <input type="range" id="captionFontSize" min="10" max="30" value="13" step="1">
+          <input type="number" id="captionFontSizeNum" class="small" min="10" max="30" value="13">
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <button class="btn btn-primary btn-block" id="addImageBtn">+ 添加图片（当前页）</button>
+      </div>
+    </div>
+
+    <!-- 显示选项 -->
+    <div class="group">
+      <div class="group-title">显示选项</div>
+      <label class="switch">
+        <span>显示边框</span>
+        <input type="checkbox" id="borderToggle" checked>
+        <span class="toggle"></span>
+      </label>
+      <div style="height:8px"></div>
+      <label class="switch">
+        <span>显示编号列</span>
+        <input type="checkbox" id="numColToggle" checked>
+        <span class="toggle"></span>
+      </label>
+      <div style="height:8px"></div>
+      <label class="switch">
+        <span>显示空姓名占位</span>
+        <input type="checkbox" id="placeholderToggle">
+        <span class="toggle"></span>
+      </label>
+    </div>
+
+    <!-- 操作 -->
+    <div class="group">
+      <div class="group-title">操作</div>
+      <button class="btn btn-primary btn-block" id="printBtn">🖨️ 打印 / 导出 PDF</button>
+      <div style="height:8px"></div>
+      <button class="btn btn-block" id="clearBtn">清空当前页</button>
+    </div>
+  </aside>
+
+  <!-- 预览区 -->
+  <main class="preview-area">
+    <div class="preview-toolbar">
+      <div class="preview-info">
+        <strong id="infoNames">0</strong> 名学生 ·
+        <strong id="infoCols">4</strong> 列 ·
+        第 <strong id="infoPage">1</strong> 页
+      </div>
+      <div class="toolbar-actions">
+        <button class="btn" id="copyBtn">复制当前页</button>
+      </div>
+    </div>
+    <div class="paper-wrapper" id="paperWrapper">
+    </div>
+  </main>
+</div>
+
+<script>
+/* ===========================
+   数据模型
+=========================== */
+let pages = [
+  {
+    title: '2026年暑期游泳培训1班',
+    subtitle: '教练:XXX 电话:13000000000',
+    names: '',
+    cols: 4,
+    titleFontSize: 26,
+    subFontSize: 16,
+    cellFontSize: 14,
+    rowHeight: 40,
+    rowCount: 0,           // 0 = 自适应
+    showBorder: true,
+    showNumCol: true,
+    showPlaceholder: false,
+    imageGap: 8,           // 图片区行距 mm
+    captionFontSize: 13,   // 图片说明字号
+    images: [
+      { src: '', caption: '' },
+      { src: '', caption: '' },
+      { src: '', caption: '' }
+    ]
+  }
+];
+let currentPage = 0;
+
+/* ===========================
+   DOM 引用
+=========================== */
+const $ = (id) => document.getElementById(id);
+const titleInput = $('titleInput');
+const subtitleInput = $('subtitleInput');
+const namesInput = $('namesInput');
+const colsSelect = $('colsSelect');
+const titleFontSize = $('titleFontSize');
+const titleFontSizeNum = $('titleFontSizeNum');
+const subFontSize = $('subFontSize');
+const subFontSizeNum = $('subFontSizeNum');
+const cellFontSize = $('cellFontSize');
+const cellFontSizeNum = $('cellFontSizeNum');
+const rowHeight = $('rowHeight');
+const rowHeightNum = $('rowHeightNum');
+const rowCountInput = $('rowCountInput');
+const borderToggle = $('borderToggle');
+const numColToggle = $('numColToggle');
+const placeholderToggle = $('placeholderToggle');
+const imageGap = $('imageGap');
+const imageGapNum = $('imageGapNum');
+const captionFontSize = $('captionFontSize');
+const captionFontSizeNum = $('captionFontSizeNum');
+const paperWrapper = $('paperWrapper');
+const pagesContainer = $('pagesContainer');
+const infoNames = $('infoNames');
+const infoCols = $('infoCols');
+const infoPage = $('infoPage');
+
+/* ===========================
+   工具函数
+=========================== */
+function getNames(text) {
+  return text.split('\n').map(s => s.trim()).filter(Boolean);
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+}
+
+/* ===========================
+   同步表单 → 当前页数据
+=========================== */
+function readForm() {
+  const p = pages[currentPage];
+  p.title = titleInput.value;
+  p.subtitle = subtitleInput.value;
+  p.names = namesInput.value;
+  p.cols = parseInt(colsSelect.value);
+  p.titleFontSize = parseInt(titleFontSize.value);
+  p.subFontSize = parseInt(subFontSize.value);
+  p.cellFontSize = parseInt(cellFontSize.value);
+  p.rowHeight = parseInt(rowHeight.value);
+  p.rowCount = parseInt(rowCountInput.value) || 0;
+  p.showBorder = borderToggle.checked;
+  p.showNumCol = numColToggle.checked;
+  p.showPlaceholder = placeholderToggle.checked;
+  p.imageGap = parseInt(imageGap.value);
+  p.captionFontSize = parseInt(captionFontSize.value);
+}
+
+/* ===========================
+   同步当前页数据 → 表单
+=========================== */
+function fillForm() {
+  const p = pages[currentPage];
+  titleInput.value = p.title;
+  subtitleInput.value = p.subtitle;
+  namesInput.value = p.names;
+  colsSelect.value = p.cols;
+  titleFontSize.value = p.titleFontSize;
+  titleFontSizeNum.value = p.titleFontSize;
+  subFontSize.value = p.subFontSize;
+  subFontSizeNum.value = p.subFontSize;
+  cellFontSize.value = p.cellFontSize;
+  cellFontSizeNum.value = p.cellFontSize;
+  rowHeight.value = p.rowHeight;
+  rowHeightNum.value = p.rowHeight;
+  rowCountInput.value = p.rowCount || '';
+  borderToggle.checked = p.showBorder;
+  numColToggle.checked = p.showNumCol;
+  placeholderToggle.checked = p.showPlaceholder;
+  imageGap.value = p.imageGap;
+  imageGapNum.value = p.imageGap;
+  captionFontSize.value = p.captionFontSize;
+  captionFontSizeNum.value = p.captionFontSize;
+}
+
+/* ===========================
+   渲染页面标签
+=========================== */
+function renderPages() {
+  pagesContainer.innerHTML = '';
+  pages.forEach((_, idx) => {
+    const tab = document.createElement('div');
+    tab.className = 'page-tab' + (idx === currentPage ? ' active' : '');
+    tab.innerHTML = `<span>第 ${idx + 1} 页</span>` +
+      (pages.length > 1 ? `<span class="close" data-idx="${idx}">×</span>` : '');
+    tab.onclick = (e) => {
+      if (e.target.classList.contains('close')) return;
+      switchPage(idx);
+    };
+    pagesContainer.appendChild(tab);
+  });
+  // 绑定关闭按钮
+  pagesContainer.querySelectorAll('.close').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      deletePage(idx);
+    };
+  });
+}
+
+function switchPage(idx) {
+  if (idx < 0 || idx >= pages.length) return;
+  readForm();
+  currentPage = idx;
+  fillForm();
+  renderPages();
+  renderAllPages();
+}
+
+/* ===========================
+   渲染全部页面
+=========================== */
+function renderAllPages() {
+  readForm();
+  paperWrapper.innerHTML = '';
+
+  pages.forEach((p, idx) => {
+    const paperDiv = document.createElement('div');
+    paperDiv.className = 'paper';
+
+    // ---- 标题区 ----
+    const header = document.createElement('div');
+    header.className = 'paper-header';
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'paper-title';
+    titleDiv.contentEditable = 'true';
+    titleDiv.textContent = p.title || '';
+    titleDiv.addEventListener('input', () => {
+      pages[idx].title = titleDiv.textContent;
+      if (idx === currentPage) titleInput.value = titleDiv.textContent;
+    });
+
+    const subDiv = document.createElement('div');
+    subDiv.className = 'paper-subtitle';
+    subDiv.contentEditable = 'true';
+    subDiv.textContent = p.subtitle || '';
+    subDiv.addEventListener('input', () => {
+      pages[idx].subtitle = subDiv.textContent;
+      if (idx === currentPage) subtitleInput.value = subDiv.textContent;
+    });
+
+    header.appendChild(titleDiv);
+    header.appendChild(subDiv);
+    paperDiv.appendChild(header);
+
+    // ---- 表格 ----
+    const names = getNames(p.names);
+    const cols = p.cols;
+    const totalRows = p.rowCount > 0 ? p.rowCount : Math.ceil(names.length / cols) || 1;
+
+    const table = document.createElement('table');
+    table.className = 'grid';
+    if (!p.showBorder) table.classList.add('no-border');
+
+    for (let r = 0; r < totalRows; r++) {
+      const tr = document.createElement('tr');
+      tr.style.height = p.rowHeight + 'px';
+      for (let c = 0; c < cols; c++) {
+        const td = document.createElement('td');
+        const cellIdx = r * cols + c;
+        let content = '';
+        if (p.showNumCol && names[cellIdx]) {
+          content = `<span>${cellIdx + 1}.</span> `;
+        }
+        if (names[cellIdx]) {
+          content += escapeHtml(names[cellIdx]);
+        } else if (p.showPlaceholder) {
+          content += '<span>　</span>';
+        }
+        td.innerHTML = content;
+        td.style.fontSize = p.cellFontSize + 'px';
+        td.style.height = p.rowHeight + 'px';
+        if (p.showNumCol && c === 0) td.classList.add('col-num');
+        tr.appendChild(td);
+      }
+      table.appendChild(tr);
+    }
+    paperDiv.appendChild(table);
+
+    // ---- 图片区 ----
+    const imageRowDiv = document.createElement('div');
+    imageRowDiv.className = 'image-row';
+    imageRowDiv.style.gap = p.imageGap + 'mm';
+    imageRowDiv.style.marginTop = (p.imageGap > 0 ? p.imageGap : 12) + 'mm';
+
+    const filled = [0, 1, 2].filter(i => p.images[i].src);
+    filled.forEach(i => {
+      const img = p.images[i];
+      const cell = document.createElement('div');
+      cell.className = 'image-cell';
+
+      const drop = document.createElement('div');
+      drop.className = 'image-drop has-image';
+      const imgEl = document.createElement('img');
+      imgEl.src = img.src;
+      drop.appendChild(imgEl);
+
+      const rm = document.createElement('button');
+      rm.className = 'image-remove';
+      rm.textContent = '×';
+      rm.title = '删除图片';
+      rm.onclick = (e) => { e.stopPropagation(); removeImage(idx, i); };
+      drop.appendChild(rm);
+
+      drop.addEventListener('click', () => uploadToSlot(idx, i));
+      drop.addEventListener('dragover', (e) => { e.preventDefault(); });
+      drop.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (e.dataTransfer.files[0]) readImageFile(e.dataTransfer.files[0], idx, i);
+      });
+      cell.appendChild(drop);
+
+      const caption = document.createElement('input');
+      caption.type = 'text';
+      caption.className = 'image-caption';
+      caption.value = img.caption || '';
+      caption.placeholder = '图片说明';
+      caption.style.fontSize = p.captionFontSize + 'px';
+      caption.addEventListener('input', () => {
+        pages[idx].images[i].caption = caption.value;
+      });
+      cell.appendChild(caption);
+      imageRowDiv.appendChild(cell);
+    });
+
+    if (filled.length > 0) {
+      imageRowDiv.classList.add('count-' + filled.length);
+      imageRowDiv.style.justifyContent = filled.length === 2 ? 'space-between' : 'center';
+    }
+
+    paperDiv.appendChild(imageRowDiv);
+    paperWrapper.appendChild(paperDiv);
+  });
+
+  updateInfo();
+}
+
+/* ===========================
+   图片区交互
+=========================== */
+function uploadToSlot(pageIdx, idx) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = () => { if (input.files[0]) readImageFile(input.files[0], pageIdx, idx); };
+  input.click();
+}
+
+function setImage(pageIdx, idx, src) {
+  pages[pageIdx].images[idx].src = src;
+  renderAllPages();
+}
+
+function removeImage(pageIdx, idx) {
+  pages[pageIdx].images[idx].src = '';
+  pages[pageIdx].images[idx].caption = '';
+  renderAllPages();
+}
+
+function readImageFile(file, pageIdx, idx) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = (e) => { setImage(pageIdx, idx, e.target.result); };
+  reader.readAsDataURL(file);
+}
+
+function updateInfo() {
+  const p = pages[currentPage];
+  const names = getNames(p.names);
+  infoNames.textContent = names.length;
+  infoCols.textContent = p.cols;
+  infoPage.textContent = currentPage + 1;
+}
+
+/* ===========================
+   页面操作
+=========================== */
+function addPage() {
+  readForm();
+  // 复制当前页结构但不复制图片
+  const newPage = { ...pages[currentPage] };
+  newPage.title = '';
+  newPage.subtitle = '';
+  newPage.names = '';
+  newPage.images = [
+    { src: '', caption: '' },
+    { src: '', caption: '' },
+    { src: '', caption: '' }
+  ];
+  pages.push(newPage);
+  switchPage(pages.length - 1);
+}
+function deletePage(idx) {
+  if (pages.length <= 1) {
+    alert('至少需要保留一个页面');
+    return;
+  }
+  if (!confirm(`确定要删除第 ${idx + 1} 页吗?`)) return;
+  pages.splice(idx, 1);
+  if (currentPage >= pages.length) currentPage = pages.length - 1;
+  fillForm();
+  renderPages();
+  renderAllPages();
+}
+function copyCurrentPage() {
+  readForm();
+  const newPage = { ...pages[currentPage] };
+  newPage.title = pages[currentPage].title + ' (副本)';
+  newPage.images = pages[currentPage].images.map(img => ({ ...img }));
+  pages.push(newPage);
+  switchPage(pages.length - 1);
+}
+
+/* ===========================
+   图片区交互（侧边栏按钮 + 全局粘贴）
+=========================== */
+function bindImageEvents() {
+  // 添加图片按钮（侧边栏）
+  $('addImageBtn').addEventListener('click', () => {
+    const p = pages[currentPage];
+    const slotOrder = [1, 0, 2];
+    for (const i of slotOrder) {
+      if (!p.images[i].src) { uploadToSlot(currentPage, i); return; }
+    }
+    alert('最多添加 3 张图片');
+  });
+
+  // 全局粘贴
+  document.addEventListener('paste', (e) => {
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const p = pages[currentPage];
+        const slotOrder = [1, 0, 2];
+        for (const i of slotOrder) {
+          if (!p.images[i].src) { readImageFile(item.getAsFile(), currentPage, i); break; }
+        }
+        break;
+      }
+    }
+  });
+}
+
+/* ===========================
+   事件绑定
+=========================== */
+function bindEvents() {
+  // 表单变化 → 重渲染
+  const onChange = () => {
+    readForm();
+    renderAllPages();
+  };
+  [titleInput, subtitleInput, namesInput, colsSelect, rowCountInput].forEach(el => {
+    el.addEventListener('input', onChange);
+  });
+  // 标题字号
+  titleFontSize.addEventListener('input', () => {
+    titleFontSizeNum.value = titleFontSize.value;
+    onChange();
+  });
+  titleFontSizeNum.addEventListener('input', () => {
+    titleFontSize.value = titleFontSizeNum.value;
+    onChange();
+  });
+  // 副标题字号
+  subFontSize.addEventListener('input', () => {
+    subFontSizeNum.value = subFontSize.value;
+    onChange();
+  });
+  subFontSizeNum.addEventListener('input', () => {
+    subFontSize.value = subFontSizeNum.value;
+    onChange();
+  });
+  // 表格字号
+  cellFontSize.addEventListener('input', () => {
+    cellFontSizeNum.value = cellFontSize.value;
+    onChange();
+  });
+  cellFontSizeNum.addEventListener('input', () => {
+    cellFontSize.value = cellFontSizeNum.value;
+    onChange();
+  });
+  // 行高
+  rowHeight.addEventListener('input', () => {
+    rowHeightNum.value = rowHeight.value;
+    onChange();
+  });
+  rowHeightNum.addEventListener('input', () => {
+    rowHeight.value = rowHeightNum.value;
+    onChange();
+  });
+  // 图片区行距
+  imageGap.addEventListener('input', () => {
+    imageGapNum.value = imageGap.value;
+    onChange();
+  });
+  imageGapNum.addEventListener('input', () => {
+    imageGap.value = imageGapNum.value;
+    onChange();
+  });
+  // 图片说明字号
+  captionFontSize.addEventListener('input', () => {
+    captionFontSizeNum.value = captionFontSize.value;
+    onChange();
+  });
+  captionFontSizeNum.addEventListener('input', () => {
+    captionFontSize.value = captionFontSizeNum.value;
+    onChange();
+  });
+  // 开关
+  [borderToggle, numColToggle, placeholderToggle].forEach(el => {
+    el.addEventListener('change', onChange);
+  });
+  // 图片区事件
+  bindImageEvents();
+  // 页面操作
+  $('addPageBtn').addEventListener('click', addPage);
+  $('deletePageBtn').addEventListener('click', () => deletePage(currentPage));
+  $('copyBtn').addEventListener('click', copyCurrentPage);
+  $('printBtn').addEventListener('click', () => {
+    readForm();
+    renderAllPages();
+    window.print();
+  });
+  $('clearBtn').addEventListener('click', () => {
+    if (!confirm('清空当前页的姓名列表?')) return;
+    namesInput.value = '';
+    onChange();
+  });
+}
+
+/* ===========================
+   初始化
+=========================== */
+function init() {
+  bindEvents();
+  fillForm();
+  renderPages();
+  renderAllPages();
+}
+init();
+</script>
+</body>
+</html>
