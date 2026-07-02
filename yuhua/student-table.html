@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -292,17 +293,22 @@
     outline: none;
     border-radius: 4px;
     padding: 2px 4px;
+    white-space: pre-wrap;
   }
-  .paper-title:focus, .paper-subtitle:focus {
+  .paper-title:focus, .paper-subtitle:focus, .paper-subtitle2:focus {
     background: #fffbe6;
   }
-  .paper-subtitle {
+  .paper-subtitle, .paper-subtitle2 {
     font-size: 14pt;
     outline: none;
     border-radius: 4px;
     padding: 2px 4px;
+    white-space: pre-wrap;
   }
-  .paper-subtitle:empty::before {
+  .paper-subtitle2 {
+    margin-top: 2mm;
+  }
+  .paper-subtitle:empty::before, .paper-subtitle2:empty::before {
     content: attr(data-placeholder);
   }
   /* ===== 表格 ===== */
@@ -487,17 +493,6 @@
     .sidebar { position: static; max-height: none; }
   }
 </style>
- 
- <script>
-var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?bd4b296780080a3ed1cec76ce390b1ad";
-  var s = document.getElementsByTagName("script")[0]; 
-  s.parentNode.insertBefore(hm, s);
-})();
-</script>
-
 </head>
 <body>
 <div class="app">
@@ -527,6 +522,24 @@ var _hmt = _hmt || [];
         <label>副标题</label>
         <input type="text" id="subtitleInput" placeholder="如:教练:XXX 电话:13000000000">
       </div>
+      <div class="field">
+        <label>副标题2</label>
+        <input type="text" id="subtitle2Input" placeholder="如:第二行信息">
+      </div>
+      <div class="field">
+        <label>主标题字号</label>
+        <div class="slider-row">
+          <input type="range" id="titleFontSize" min="14" max="48" value="26" step="1">
+          <input type="number" id="titleFontSizeNum" class="small" min="14" max="48" value="26">
+        </div>
+      </div>
+      <div class="field">
+        <label>副标题字号</label>
+        <div class="slider-row">
+          <input type="range" id="subFontSize" min="10" max="32" value="16" step="1">
+          <input type="number" id="subFontSizeNum" class="small" min="10" max="32" value="16">
+        </div>
+      </div>
     </div>
 
     <!-- 姓名输入 -->
@@ -550,20 +563,6 @@ var _hmt = _hmt || [];
           <option value="5">5 列</option>
           <option value="6">6 列</option>
         </select>
-      </div>
-      <div class="field">
-        <label>标题字号</label>
-        <div class="slider-row">
-          <input type="range" id="titleFontSize" min="14" max="48" value="26" step="1">
-          <input type="number" id="titleFontSizeNum" class="small" min="14" max="48" value="26">
-        </div>
-      </div>
-      <div class="field">
-        <label>副标题字号</label>
-        <div class="slider-row">
-          <input type="range" id="subFontSize" min="10" max="32" value="16" step="1">
-          <input type="number" id="subFontSizeNum" class="small" min="10" max="32" value="16">
-        </div>
       </div>
       <div class="field">
         <label>表格字号</label>
@@ -627,6 +626,12 @@ var _hmt = _hmt || [];
         <input type="checkbox" id="placeholderToggle">
         <span class="toggle"></span>
       </label>
+      <div style="height:8px"></div>
+      <label class="switch">
+        <span>启用本地保存(localStorage)</span>
+        <input type="checkbox" id="localStorageToggle">
+        <span class="toggle"></span>
+      </label>
     </div>
 
     <!-- 操作 -->
@@ -663,6 +668,7 @@ let pages = [
   {
     title: '2026年暑期游泳培训1班',
     subtitle: '教练:XXX 电话:13000000000',
+    subtitle2: '',
     names: '',
     cols: 4,
     titleFontSize: 26,
@@ -690,6 +696,7 @@ let currentPage = 0;
 const $ = (id) => document.getElementById(id);
 const titleInput = $('titleInput');
 const subtitleInput = $('subtitleInput');
+const subtitle2Input = $('subtitle2Input');
 const namesInput = $('namesInput');
 const colsSelect = $('colsSelect');
 const titleFontSize = $('titleFontSize');
@@ -704,6 +711,7 @@ const rowCountInput = $('rowCountInput');
 const borderToggle = $('borderToggle');
 const numColToggle = $('numColToggle');
 const placeholderToggle = $('placeholderToggle');
+const localStorageToggle = $('localStorageToggle');
 const imageGap = $('imageGap');
 const imageGapNum = $('imageGapNum');
 const captionFontSize = $('captionFontSize');
@@ -728,24 +736,83 @@ function escapeHtml(s) {
 }
 
 /* ===========================
+   本地存储 (localStorage)
+   - 元数据 key 始终保存开关状态
+   - 数据 key 仅在开关开启时保存/加载
+=========================== */
+const STORAGE_FLAG_KEY = 'studentTable_autosave_enabled';
+const STORAGE_DATA_KEY = 'studentTable_pages_data';
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 单张图片上限 5MB
+let _saveTimer = null;
+
+function isAutosaveEnabled() {
+  const v = localStorage.getItem(STORAGE_FLAG_KEY);
+  return v === null ? true : v === 'true';
+}
+
+function setAutosaveFlag(enabled) {
+  localStorage.setItem(STORAGE_FLAG_KEY, enabled ? 'true' : 'false');
+}
+
+// 防抖保存
+function saveToStorage() {
+  if (!isAutosaveEnabled()) return;
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(flushSave, 300);
+}
+
+// 立即保存（用于页面卸载前）
+function flushSave() {
+  if (!isAutosaveEnabled()) return;
+  clearTimeout(_saveTimer);
+  _saveTimer = null;
+  try {
+    localStorage.setItem(STORAGE_DATA_KEY, JSON.stringify({
+      pages: pages,
+      currentPage: currentPage
+    }));
+  } catch (e) {
+    console.warn('保存到 localStorage 失败:', e);
+    alert('本地保存失败：存储空间已满（图片过多或过大）。建议关闭本地保存或减少图片数量。');
+  }
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_DATA_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return data;
+  } catch (e) {
+    console.warn('从 localStorage 加载失败:', e);
+    return null;
+  }
+}
+
+function clearStorageData() {
+  localStorage.removeItem(STORAGE_DATA_KEY);
+}
+
+/* ===========================
    同步表单 → 当前页数据
 =========================== */
 function readForm() {
   const p = pages[currentPage];
   p.title = titleInput.value;
   p.subtitle = subtitleInput.value;
+  p.subtitle2 = subtitle2Input.value;
   p.names = namesInput.value;
-  p.cols = parseInt(colsSelect.value);
-  p.titleFontSize = parseInt(titleFontSize.value);
-  p.subFontSize = parseInt(subFontSize.value);
-  p.cellFontSize = parseInt(cellFontSize.value);
-  p.rowHeight = parseInt(rowHeight.value);
+  p.cols = parseInt(colsSelect.value) || 4;
+  p.titleFontSize = parseInt(titleFontSize.value) || 26;
+  p.subFontSize = parseInt(subFontSize.value) || 16;
+  p.cellFontSize = parseInt(cellFontSize.value) || 14;
+  p.rowHeight = parseInt(rowHeight.value) || 40;
   p.rowCount = parseInt(rowCountInput.value) || 0;
   p.showBorder = borderToggle.checked;
   p.showNumCol = numColToggle.checked;
   p.showPlaceholder = placeholderToggle.checked;
-  p.imageGap = parseInt(imageGap.value);
-  p.captionFontSize = parseInt(captionFontSize.value);
+  p.imageGap = parseInt(imageGap.value) || 0;
+  p.captionFontSize = parseInt(captionFontSize.value) || 13;
 }
 
 /* ===========================
@@ -755,6 +822,7 @@ function fillForm() {
   const p = pages[currentPage];
   titleInput.value = p.title;
   subtitleInput.value = p.subtitle;
+  subtitle2Input.value = p.subtitle2;
   namesInput.value = p.names;
   colsSelect.value = p.cols;
   titleFontSize.value = p.titleFontSize;
@@ -829,22 +897,38 @@ function renderAllPages() {
     titleDiv.className = 'paper-title';
     titleDiv.contentEditable = 'true';
     titleDiv.textContent = p.title || '';
+    titleDiv.style.fontSize = p.titleFontSize + 'px';
     titleDiv.addEventListener('input', () => {
       pages[idx].title = titleDiv.textContent;
       if (idx === currentPage) titleInput.value = titleDiv.textContent;
+      saveToStorage();
     });
 
     const subDiv = document.createElement('div');
     subDiv.className = 'paper-subtitle';
     subDiv.contentEditable = 'true';
     subDiv.textContent = p.subtitle || '';
+    subDiv.style.fontSize = p.subFontSize + 'px';
     subDiv.addEventListener('input', () => {
       pages[idx].subtitle = subDiv.textContent;
       if (idx === currentPage) subtitleInput.value = subDiv.textContent;
+      saveToStorage();
+    });
+
+    const sub2Div = document.createElement('div');
+    sub2Div.className = 'paper-subtitle2';
+    sub2Div.contentEditable = 'true';
+    sub2Div.textContent = p.subtitle2 || '';
+    sub2Div.style.fontSize = p.subFontSize + 'px';
+    sub2Div.addEventListener('input', () => {
+      pages[idx].subtitle2 = sub2Div.textContent;
+      if (idx === currentPage) subtitle2Input.value = sub2Div.textContent;
+      saveToStorage();
     });
 
     header.appendChild(titleDiv);
     header.appendChild(subDiv);
+    header.appendChild(sub2Div);
     paperDiv.appendChild(header);
 
     // ---- 表格 ----
@@ -922,6 +1006,7 @@ function renderAllPages() {
       caption.style.fontSize = p.captionFontSize + 'px';
       caption.addEventListener('input', () => {
         pages[idx].images[i].caption = caption.value;
+        saveToStorage();
       });
       cell.appendChild(caption);
       imageRowDiv.appendChild(cell);
@@ -953,18 +1038,25 @@ function uploadToSlot(pageIdx, idx) {
 function setImage(pageIdx, idx, src) {
   pages[pageIdx].images[idx].src = src;
   renderAllPages();
+  saveToStorage();
 }
 
 function removeImage(pageIdx, idx) {
   pages[pageIdx].images[idx].src = '';
   pages[pageIdx].images[idx].caption = '';
   renderAllPages();
+  saveToStorage();
 }
 
 function readImageFile(file, pageIdx, idx) {
   if (!file || !file.type.startsWith('image/')) return;
+  if (file.size > MAX_IMAGE_SIZE) {
+    alert('图片过大（超过 5MB），请压缩后再使用。');
+    return;
+  }
   const reader = new FileReader();
   reader.onload = (e) => { setImage(pageIdx, idx, e.target.result); };
+  reader.onerror = () => { alert('图片读取失败，请重试。'); };
   reader.readAsDataURL(file);
 }
 
@@ -985,6 +1077,7 @@ function addPage() {
   const newPage = { ...pages[currentPage] };
   newPage.title = '';
   newPage.subtitle = '';
+  newPage.subtitle2 = '';
   newPage.names = '';
   newPage.images = [
     { src: '', caption: '' },
@@ -1005,11 +1098,13 @@ function deletePage(idx) {
   fillForm();
   renderPages();
   renderAllPages();
+  saveToStorage();
 }
 function copyCurrentPage() {
   readForm();
   const newPage = { ...pages[currentPage] };
-  newPage.title = pages[currentPage].title + ' (副本)';
+  const baseTitle = pages[currentPage].title.replace(/\s*\(副本\)\s*$/, '');
+  newPage.title = baseTitle + ' (副本)';
   newPage.images = pages[currentPage].images.map(img => ({ ...img }));
   pages.push(newPage);
   switchPage(pages.length - 1);
@@ -1051,71 +1146,56 @@ function bindImageEvents() {
    事件绑定
 =========================== */
 function bindEvents() {
-  // 表单变化 → 重渲染
+  // 表单变化 → 重渲染（防抖，避免拖动滑块/快速输入时频繁重建 DOM）
+  let renderTimer = null;
   const onChange = () => {
     readForm();
-    renderAllPages();
+    saveToStorage();
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(renderAllPages, 80);
   };
-  [titleInput, subtitleInput, namesInput, colsSelect, rowCountInput].forEach(el => {
-    el.addEventListener('input', onChange);
+  // 即时更新（不重建 DOM，只同步数据+保存），用于文本输入
+  const onTextInput = () => {
+    readForm();
+    saveToStorage();
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(renderAllPages, 80);
+  };
+  [titleInput, subtitleInput, subtitle2Input, namesInput, colsSelect, rowCountInput].forEach(el => {
+    el.addEventListener('input', onTextInput);
   });
-  // 标题字号
-  titleFontSize.addEventListener('input', () => {
-    titleFontSizeNum.value = titleFontSize.value;
-    onChange();
-  });
-  titleFontSizeNum.addEventListener('input', () => {
-    titleFontSize.value = titleFontSizeNum.value;
-    onChange();
-  });
-  // 副标题字号
-  subFontSize.addEventListener('input', () => {
-    subFontSizeNum.value = subFontSize.value;
-    onChange();
-  });
-  subFontSizeNum.addEventListener('input', () => {
-    subFontSize.value = subFontSizeNum.value;
-    onChange();
-  });
-  // 表格字号
-  cellFontSize.addEventListener('input', () => {
-    cellFontSizeNum.value = cellFontSize.value;
-    onChange();
-  });
-  cellFontSizeNum.addEventListener('input', () => {
-    cellFontSize.value = cellFontSizeNum.value;
-    onChange();
-  });
-  // 行高
-  rowHeight.addEventListener('input', () => {
-    rowHeightNum.value = rowHeight.value;
-    onChange();
-  });
-  rowHeightNum.addEventListener('input', () => {
-    rowHeight.value = rowHeightNum.value;
-    onChange();
-  });
-  // 图片区行距
-  imageGap.addEventListener('input', () => {
-    imageGapNum.value = imageGap.value;
-    onChange();
-  });
-  imageGapNum.addEventListener('input', () => {
-    imageGap.value = imageGapNum.value;
-    onChange();
-  });
-  // 图片说明字号
-  captionFontSize.addEventListener('input', () => {
-    captionFontSizeNum.value = captionFontSize.value;
-    onChange();
-  });
-  captionFontSizeNum.addEventListener('input', () => {
-    captionFontSize.value = captionFontSizeNum.value;
-    onChange();
-  });
+  // 滑块与数字输入联动（统一走防抖渲染）
+  const bindSlider = (rangeEl, numEl) => {
+    rangeEl.addEventListener('input', () => {
+      numEl.value = rangeEl.value;
+      onChange();
+    });
+    numEl.addEventListener('input', () => {
+      rangeEl.value = numEl.value;
+      onChange();
+    });
+  };
+  bindSlider(titleFontSize, titleFontSizeNum);
+  bindSlider(subFontSize, subFontSizeNum);
+  bindSlider(cellFontSize, cellFontSizeNum);
+  bindSlider(rowHeight, rowHeightNum);
+  bindSlider(imageGap, imageGapNum);
+  bindSlider(captionFontSize, captionFontSizeNum);
   // 开关
   [borderToggle, numColToggle, placeholderToggle].forEach(el => {
     el.addEventListener('change', onChange);
+  });
+  // localStorage 开关（单独处理）
+  localStorageToggle.addEventListener('change', () => {
+    const enabled = localStorageToggle.checked;
+    setAutosaveFlag(enabled);
+    if (enabled) {
+      saveToStorage();
+      alert('已开启本地保存:数据将自动保存到浏览器,刷新或重开不会丢失。');
+    } else {
+      clearStorageData();
+      alert('已关闭本地保存:已清除浏览器中保存的数据,后续不会自动保存。');
+    }
   });
   // 图片区事件
   bindImageEvents();
@@ -1125,6 +1205,7 @@ function bindEvents() {
   $('copyBtn').addEventListener('click', copyCurrentPage);
   $('printBtn').addEventListener('click', () => {
     readForm();
+    saveToStorage();
     renderAllPages();
     window.print();
   });
@@ -1133,6 +1214,11 @@ function bindEvents() {
     namesInput.value = '';
     onChange();
   });
+  // 页面卸载前立即保存，防止防抖未触发的编辑丢失
+  window.addEventListener('beforeunload', flushSave);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushSave();
+  });
 }
 
 /* ===========================
@@ -1140,6 +1226,51 @@ function bindEvents() {
 =========================== */
 function init() {
   bindEvents();
+  // 根据 localStorage 开关状态恢复数据
+  const enabled = isAutosaveEnabled();
+  localStorageToggle.checked = enabled;
+  if (enabled) {
+    const data = loadFromStorage();
+    if (data && Array.isArray(data.pages) && data.pages.length > 0) {
+      pages = data.pages;
+      currentPage = Math.min(data.currentPage || 0, pages.length - 1);
+    }
+  }
+  // 规范化每页字段，兼容旧数据 / 损坏数据
+  const clampNum = (v, min, max, def) => {
+    const n = typeof v === 'number' && !isNaN(v) ? v : def;
+    return Math.min(Math.max(n, min), max);
+  };
+  pages.forEach(p => {
+    if (typeof p.title !== 'string') p.title = '';
+    if (typeof p.subtitle !== 'string') p.subtitle = '';
+    if (typeof p.subtitle2 !== 'string') p.subtitle2 = '';
+    if (typeof p.names !== 'string') p.names = '';
+    p.cols = clampNum(p.cols, 2, 6, 4);
+    p.titleFontSize = clampNum(p.titleFontSize, 14, 48, 26);
+    p.subFontSize = clampNum(p.subFontSize, 10, 32, 16);
+    p.cellFontSize = clampNum(p.cellFontSize, 10, 35, 14);
+    p.rowHeight = clampNum(p.rowHeight, 24, 80, 40);
+    p.rowCount = clampNum(p.rowCount, 0, 50, 0);
+    p.imageGap = clampNum(p.imageGap, 0, 30, 8);
+    p.captionFontSize = clampNum(p.captionFontSize, 10, 30, 13);
+    p.showBorder = !!p.showBorder;
+    p.showNumCol = !!p.showNumCol;
+    p.showPlaceholder = !!p.showPlaceholder;
+    if (!Array.isArray(p.images) || p.images.length === 0) {
+      p.images = [
+        { src: '', caption: '' },
+        { src: '', caption: '' },
+        { src: '', caption: '' }
+      ];
+    } else {
+      while (p.images.length < 3) p.images.push({ src: '', caption: '' });
+      p.images = p.images.slice(0, 3).map(img => ({
+        src: typeof img.src === 'string' ? img.src : '',
+        caption: typeof img.caption === 'string' ? img.caption : ''
+      }));
+    }
+  });
   fillForm();
   renderPages();
   renderAllPages();
