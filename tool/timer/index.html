@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -315,17 +316,20 @@
         .timer-card.fullscreen {
             position: fixed;
             inset: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             z-index: 1000;
             background: #1a1a2e;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             border-radius: 0;
             padding: 40px;
             border-top: none !important;
             box-shadow: none;
+            flex: none;
+            max-width: none;
             animation: fullscreenIn 0.3s ease;
         }
 
@@ -340,6 +344,8 @@
 
         .timer-card.fullscreen .timer-display {
             color: #fff;
+            margin: 0;
+            gap: clamp(8px, 2vw, 32px);
         }
 
         .timer-card.fullscreen .timer-segment .num {
@@ -355,6 +361,7 @@
         .timer-card.fullscreen .timer-sep {
             font-size: clamp(3rem, 20vw, 10rem);
             color: rgba(255,255,255,0.3);
+            align-self: center;
         }
 
         .timer-card.fullscreen .timer-controls {
@@ -383,6 +390,11 @@
         .countdown-finished .timer-display {
             color: #e74c3c;
             animation: pulse 0.6s ease-in-out infinite alternate;
+        }
+
+        /* 全屏模式下倒计时结束同样高亮（提升优先级覆盖全屏白色） */
+        .timer-card.fullscreen.countdown-finished .timer-display {
+            color: #ff6b6b;
         }
 
         @keyframes pulse {
@@ -583,6 +595,16 @@
             .timers-container.layout-2 .timer-card { flex: 0 1 100%; max-width: 420px; }
         }
     </style>
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?bd4b296780080a3ed1cec76ce390b1ad";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
 </head>
 <body>
     <div class="container">
@@ -646,6 +668,22 @@
                 }, 2000);
             }
 
+            // ---------- localStorage 安全读写（防止损坏数据 / 隐私模式 / 配额超限导致崩溃） ----------
+            function readTitles() {
+                try {
+                    return JSON.parse(localStorage.getItem('timerTitles') || '{}') || {};
+                } catch (e) {
+                    return {};
+                }
+            }
+            function writeTitles(obj) {
+                try {
+                    localStorage.setItem('timerTitles', JSON.stringify(obj));
+                } catch (e) {
+                    /* 忽略：隐私模式或配额超限 */
+                }
+            }
+
             // ---------- 系统时钟 ----------
             const clockDateEl = document.getElementById('clockDate');
             const clockTimeEl = document.getElementById('clockTime');
@@ -678,6 +716,10 @@
             let modalResolve = null;
 
             function openModal() {
+                // 防止并发调用覆盖 modalResolve 导致前一个 Promise 永久悬挂
+                if (modalOverlay.classList.contains('active')) {
+                    return Promise.resolve(null);
+                }
                 modalOverlay.classList.add('active');
                 setTimeout(() => modalHours.focus(), 100);
                 return new Promise((resolve) => {
@@ -718,11 +760,12 @@
                 }
             });
 
-            modalOverlay.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && modalOverlay.classList.contains('active')) {
+            document.addEventListener('keydown', (e) => {
+                if (!modalOverlay.classList.contains('active')) return;
+                if (e.key === 'Enter') {
                     e.preventDefault();
                     modalConfirm.click();
-                } else if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                } else if (e.key === 'Escape') {
                     e.preventDefault();
                     modalCancel.click();
                 }
@@ -770,7 +813,7 @@
                     // 标题 #序号（可双击编辑）
                     this.titleEl = document.createElement('span');
                     this.titleEl.className = 'card-title';
-                    const storedTitles = JSON.parse(localStorage.getItem('timerTitles') || '{}');
+                    const storedTitles = readTitles();
                     const savedTitle = storedTitles[this.id];
                     this.titleEl.textContent = savedTitle || '#' + this.id;
                     this.titleEl.title = '双击编辑标题';
@@ -894,13 +937,16 @@
 
                 updateTime() {
                     if (this.isCountdown) {
+                        this.time--;
                         if (this.time <= 0) {
+                            // 归零即结束，避免多显示一拍 00:00:00
+                            this.time = 0;
+                            this.updateDisplay();
                             this.pause();
                             this.card.classList.add('countdown-finished');
                             showToast('⏰ 倒计时结束！');
                             return;
                         }
-                        this.time--;
                     } else {
                         this.time++;
                     }
@@ -965,7 +1011,7 @@
                         } else if (e.key === 'Escape') {
                             e.preventDefault();
                             // 恢复原标题
-                            const storedTitles = JSON.parse(localStorage.getItem('timerTitles') || '{}');
+                            const storedTitles = readTitles();
                             this.titleEl.textContent = storedTitles[this.id] || '#' + this.id;
                             this.titleEl.contentEditable = false;
                             this.titleEl.removeEventListener('blur', finish);
@@ -978,13 +1024,15 @@
                 }
 
                 saveTitle() {
-                    const text = this.titleEl.textContent.trim();
+                    // 以 textContent 重新赋值，剥离 contentEditable 可能粘贴的富文本/HTML，仅保留纯文本
+                    let text = this.titleEl.textContent.trim();
                     if (!text) {
-                        this.titleEl.textContent = '#' + this.id;
+                        text = '#' + this.id;
                     }
-                    const storedTitles = JSON.parse(localStorage.getItem('timerTitles') || '{}');
-                    storedTitles[this.id] = this.titleEl.textContent;
-                    localStorage.setItem('timerTitles', JSON.stringify(storedTitles));
+                    this.titleEl.textContent = text;
+                    const storedTitles = readTitles();
+                    storedTitles[this.id] = text;
+                    writeTitles(storedTitles);
                 }
 
                 delete() {
@@ -994,9 +1042,9 @@
                         document.body.classList.remove('has-fullscreen');
                     }
                     // 从 localStorage 中移除标题
-                    const storedTitles = JSON.parse(localStorage.getItem('timerTitles') || '{}');
+                    const storedTitles = readTitles();
                     delete storedTitles[this.id];
-                    localStorage.setItem('timerTitles', JSON.stringify(storedTitles));
+                    writeTitles(storedTitles);
                     this.container.removeChild(this.card);
                     updateLayout();
                 }
