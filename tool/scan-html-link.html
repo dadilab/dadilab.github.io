@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML 文件链接生成工具</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f2f5; color: #333; padding: 24px; }
+  h1 { font-size: 22px; margin-bottom: 16px; color: #1a1a1a; }
+
+  .toolbar { display: flex; align-items: center; gap: 16px; background: #fff; padding: 16px 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 20px; flex-wrap: wrap; }
+  .toolbar label { font-size: 14px; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px; }
+  .toolbar input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+  .btn { padding: 8px 18px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+  .btn-primary { background: #1677ff; color: #fff; }
+  .btn-primary:hover { background: #0958d9; }
+  .btn-secondary { background: #f0f0f0; color: #333; }
+  .btn-secondary:hover { background: #e0e0e0; }
+  .btn-success { background: #52c41a; color: #fff; }
+  .btn-success:hover { background: #389e0d; }
+  .filter-wrap { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .filter-wrap input { padding: 7px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; width: 220px; outline: none; transition: border-color 0.2s; }
+  .filter-wrap input:focus { border-color: #1677ff; }
+
+  #status { font-size: 13px; color: #666; margin-bottom: 12px; min-height: 20px; }
+
+  .table-wrap { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: #fafafa; }
+  th { padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #e8e8e8; white-space: nowrap; user-select: none; }
+  th.sortable { cursor: pointer; }
+  th.sortable:hover { background: #f0f0f0; }
+  th.sorted-asc, th.sorted-desc { color: #1677ff; }
+  th .sort-arrow { font-size: 10px; margin-left: 2px; }
+  td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; word-break: break-all; }
+  tr:hover td { background: #e6f4ff; }
+  .col-cb { width: 36px; text-align: center; }
+  .col-index { width: 50px; color: #999; text-align: center; }
+  .col-title { min-width: 200px; }
+  .col-title a { color: #1677ff; text-decoration: none; }
+  .col-title a:hover { text-decoration: underline; }
+  .col-path { min-width: 180px; color: #888; font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; }
+  .col-code { min-width: 320px; }
+  .col-code code { display: block; background: #f6f8fa; border: 1px solid #e8e8e8; border-radius: 4px; padding: 6px 10px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; color: #24292e; white-space: pre-wrap; word-break: break-all; }
+  .col-actions { width: 80px; text-align: center; }
+  .move-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 24px; border: 1px solid #d9d9d9; border-radius: 4px; background: #fff; cursor: pointer; color: #666; font-size: 13px; line-height: 1; margin: 0 2px; transition: all 0.15s; }
+  .move-btn:hover { background: #e6f4ff; border-color: #1677ff; color: #1677ff; }
+  .move-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .move-btn:disabled:hover { background: #fff; border-color: #d9d9d9; color: #666; }
+  .empty { text-align: center; padding: 60px 20px; color: #bbb; font-size: 14px; }
+  .batch-bar { display: none; align-items: center; gap: 10px; padding: 8px 16px; background: #e6f4ff; border-radius: 6px; margin-bottom: 12px; font-size: 13px; }
+  .batch-bar.show { display: flex; }
+  .batch-bar .selected-count { color: #1677ff; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>📁 HTML 文件链接生成工具</h1>
+
+<div class="toolbar">
+  <button class="btn btn-primary" onclick="document.getElementById('folderInput').click()">选择文件夹</button>
+  <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none">
+  <button class="btn btn-success" id="btnExport" style="display:none;" onclick="exportExcel()">导出 Excel</button>
+  <label>
+    <input type="checkbox" id="chkNewWindow" checked>
+    在新窗口打开链接
+  </label>
+  <div class="filter-wrap">
+    <input type="text" id="filterInput" placeholder="筛选标题或路径..." oninput="renderTable()">
+  </div>
+</div>
+
+<div id="batchBar" class="batch-bar">
+  <span>已选 <span class="selected-count" id="selectedCount">0</span> 项</span>
+  <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px;" onclick="batchDelete()">删除选中</button>
+  <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px;" onclick="batchMoveTop()">置顶</button>
+  <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px;" onclick="batchMoveBottom()">置底</button>
+</div>
+
+<div id="status">请选择一个包含 HTML 文件的文件夹</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="col-cb"><input type="checkbox" id="chkAll" onchange="toggleSelectAll()" title="全选"></th>
+        <th class="col-index sortable" data-col="order">#</th>
+        <th class="col-title sortable" data-col="title">标题</th>
+        <th class="col-path sortable" data-col="path">链接路径</th>
+        <th>链接源代码预览</th>
+        <th class="col-actions">操作</th>
+      </tr>
+    </thead>
+    <tbody id="tbody">
+      <tr><td colspan="6" class="empty">暂无数据，请选择文件夹</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+let allFiles = [];       // { uid, title, path }
+let uidCounter = 0;
+let sortCol = 'order';
+let sortAsc = true;
+let selectedUids = new Set();   // 保存勾选状态，避免 renderTable 重建 DOM 时丢失
+let parseToken = 0;             // 解析任务的代次标识，用于取消过期的异步解析
+
+// ---- 排序 ----
+document.querySelectorAll('th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) { sortAsc = !sortAsc; }
+    else { sortCol = col; sortAsc = true; }
+    updateSortIndicators();
+    renderTable();
+  });
+});
+function updateSortIndicators() {
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.classList.remove('sorted-asc', 'sorted-desc');
+    if (th.dataset.col === sortCol) {
+      th.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+    }
+  });
+}
+
+// ---- 选择文件夹 ----
+document.getElementById('folderInput').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files).filter(f => f.name.toLowerCase().endsWith('.html'));
+  if (files.length === 0) { setStatus('未找到 .html 文件'); return; }
+  setStatus(`发现 ${files.length} 个 HTML 文件，正在解析...`);
+  allFiles = [];
+  uidCounter = 0;
+  selectedUids.clear();
+  const token = ++parseToken;   // 本次解析的唯一标识
+
+  for (let i = 0; i < files.length; i++) {
+    if (token !== parseToken) return;   // 已被新的选择操作取代，终止过期任务
+    const file = files[i];
+    const relPath = getRelativePath(file);
+    const title = await extractTitle(file);
+    if (token !== parseToken) return;   // await 期间若被取代则终止
+    allFiles.push({ uid: ++uidCounter, title: title || '(无标题)', path: relPath });
+    if ((i + 1) % 10 === 0) setStatus(`已解析 ${i + 1} / ${files.length} 个文件...`);
+  }
+
+  sortCol = 'order'; sortAsc = true;
+  updateSortIndicators();
+  renderTable();
+  setStatus(`✅ 解析完成，共 ${allFiles.length} 个 HTML 文件`);
+  document.getElementById('btnExport').style.display = '';
+});
+
+// 去掉根文件夹名称（第一段路径）
+function getRelativePath(file) {
+  const fullPath = file.webkitRelativePath || file.name;
+  const parts = fullPath.split('/');
+  return parts.length > 1 ? parts.slice(1).join('/') : fullPath;
+}
+
+// ---- 解析标题 ----
+async function extractTitle(file) {
+  try {
+    const text = await file.text();
+    const match = text.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    return match ? match[1].trim() : '';
+  } catch {
+    return '';
+  }
+}
+
+// ---- 生成链接代码 ----
+function generateLinkCode(item) {
+  const newWindow = document.getElementById('chkNewWindow').checked;
+  const target = newWindow ? ' target="_blank"' : '';
+  const titleAttr = ` title="${escHtml(item.title)}"`;
+  return `<a href="${escHtml(item.path)}"${target}${titleAttr}>${escHtml(item.title)}</a>`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- 表格渲染 ----
+function renderTable() {
+  const filter = document.getElementById('filterInput').value.toLowerCase();
+  let data = allFiles.filter(f =>
+    !filter || f.title.toLowerCase().includes(filter) || f.path.toLowerCase().includes(filter)
+  );
+
+  // 排序
+  data.sort((a, b) => {
+    let va, vb;
+    if (sortCol === 'order') {
+      va = allFiles.indexOf(a); vb = allFiles.indexOf(b);
+    } else if (sortCol === 'title') {
+      va = a.title.toLowerCase(); vb = b.title.toLowerCase();
+    } else if (sortCol === 'path') {
+      va = a.path.toLowerCase(); vb = b.path.toLowerCase();
+    }
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ? 1 : -1;
+    return 0;
+  });
+
+  const newWindow = document.getElementById('chkNewWindow').checked;
+  const targetStr = newWindow ? ' target="_blank"' : '';
+
+  const tbody = document.getElementById('tbody');
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">无匹配结果</td></tr>';
+    updateBatchBar();
+    return;
+  }
+
+  tbody.innerHTML = data.map((item, i) => {
+    const code = generateLinkCode(item);
+    const pos = allFiles.indexOf(item);
+    const isFirst = (pos === 0);
+    const isLast = (pos === allFiles.length - 1);
+    const checked = selectedUids.has(item.uid) ? ' checked' : '';
+    return `<tr data-uid="${item.uid}">
+      <td class="col-cb"><input type="checkbox" class="row-cb" data-uid="${item.uid}"${checked} onchange="onRowCheck(this)"></td>
+      <td class="col-index">${pos + 1}</td>
+      <td class="col-title"><a href="${escHtml(item.path)}"${targetStr}>${escHtml(item.title)}</a></td>
+      <td class="col-path">${escHtml(item.path)}</td>
+      <td class="col-code"><code>${escHtml(code)}</code></td>
+      <td class="col-actions">
+        <button class="move-btn" title="上移" onclick="moveUp(${item.uid})" ${isFirst ? 'disabled' : ''}>↑</button>
+        <button class="move-btn" title="下移" onclick="moveDown(${item.uid})" ${isLast ? 'disabled' : ''}>↓</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  updateBatchBar();
+}
+
+// ---- 全选/反选 ----
+function onRowCheck(cb) {
+  const uid = Number(cb.dataset.uid);
+  if (cb.checked) selectedUids.add(uid); else selectedUids.delete(uid);
+  updateBatchBar();
+}
+
+function toggleSelectAll() {
+  const checked = document.getElementById('chkAll').checked;
+  document.querySelectorAll('.row-cb').forEach(cb => {
+    cb.checked = checked;
+    const uid = Number(cb.dataset.uid);
+    if (checked) selectedUids.add(uid); else selectedUids.delete(uid);
+  });
+  updateBatchBar();
+}
+
+function updateBatchBar() {
+  const cbs = document.querySelectorAll('.row-cb');
+  const checkedCbs = document.querySelectorAll('.row-cb:checked');
+  const count = checkedCbs.length;
+  const bar = document.getElementById('batchBar');
+  document.getElementById('selectedCount').textContent = selectedUids.size;
+  // 根据当前可见行是否全部勾选来更新全选框状态
+  const chkAll = document.getElementById('chkAll');
+  chkAll.checked = cbs.length > 0 && count === cbs.length;
+  if (selectedUids.size > 0) {
+    bar.classList.add('show');
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+// ---- 上移/下移 ----
+function moveUp(uid) {
+  const idx = allFiles.findIndex(f => f.uid === uid);
+  if (idx <= 0) return;
+  [allFiles[idx - 1], allFiles[idx]] = [allFiles[idx], allFiles[idx - 1]];
+  sortCol = 'order'; sortAsc = true;
+  updateSortIndicators();
+  renderTable();
+}
+
+function moveDown(uid) {
+  const idx = allFiles.findIndex(f => f.uid === uid);
+  if (idx < 0 || idx >= allFiles.length - 1) return;
+  [allFiles[idx], allFiles[idx + 1]] = [allFiles[idx + 1], allFiles[idx]];
+  sortCol = 'order'; sortAsc = true;
+  updateSortIndicators();
+  renderTable();
+}
+
+// ---- 批量操作 ----
+function getSelectedUids() {
+  const cbs = document.querySelectorAll('.row-cb:checked');
+  return new Set(Array.from(cbs).map(cb => Number(cb.dataset.uid)));
+}
+
+function batchDelete() {
+  const uids = getSelectedUids();
+  if (uids.size === 0) return;
+  allFiles = allFiles.filter(f => !uids.has(f.uid));
+  uids.forEach(uid => selectedUids.delete(uid));   // 清理已删除项的勾选状态
+  renderTable();
+  setStatus(`已删除 ${uids.size} 项，剩余 ${allFiles.length} 个`);
+}
+
+function batchMoveTop() {
+  const uids = getSelectedUids();
+  if (uids.size === 0) return;
+  const selected = allFiles.filter(f => uids.has(f.uid));
+  const rest = allFiles.filter(f => !uids.has(f.uid));
+  allFiles = [...selected, ...rest];
+  sortCol = 'order'; sortAsc = true;
+  updateSortIndicators();
+  renderTable();
+}
+
+function batchMoveBottom() {
+  const uids = getSelectedUids();
+  if (uids.size === 0) return;
+  const selected = allFiles.filter(f => uids.has(f.uid));
+  const rest = allFiles.filter(f => !uids.has(f.uid));
+  allFiles = [...rest, ...selected];
+  sortCol = 'order'; sortAsc = true;
+  updateSortIndicators();
+  renderTable();
+}
+
+// ---- 新窗口勾选变化刷新 ----
+document.getElementById('chkNewWindow').addEventListener('change', renderTable);
+
+// ---- 导出 Excel ----
+function exportExcel() {
+  if (allFiles.length === 0) { alert('没有可导出的数据'); return; }
+
+  const filter = document.getElementById('filterInput').value.toLowerCase();
+  let data = allFiles.filter(f =>
+    !filter || f.title.toLowerCase().includes(filter) || f.path.toLowerCase().includes(filter)
+  );
+
+  // 按当前排序
+  data.sort((a, b) => {
+    let va, vb;
+    if (sortCol === 'order') {
+      va = allFiles.indexOf(a); vb = allFiles.indexOf(b);
+    } else if (sortCol === 'title') {
+      va = a.title.toLowerCase(); vb = b.title.toLowerCase();
+    } else if (sortCol === 'path') {
+      va = a.path.toLowerCase(); vb = b.path.toLowerCase();
+    }
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ? 1 : -1;
+    return 0;
+  });
+
+  const rows = data.map((item, i) => {
+    const code = generateLinkCode(item);
+    return [i + 1, item.title, item.path, code];
+  });
+
+  // 使用 SheetJS 生成 xlsx
+  if (typeof XLSX === 'undefined') {
+    // 降级为 CSV
+    alert('XLSX 库加载失败，改用 CSV 导出');
+    fallbackCSV(rows);
+    return;
+  }
+
+  const ws_data = [['序号', '标题', '链接路径', '链接源代码预览'], ...rows];
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+  // 设置列宽
+  ws['!cols'] = [
+    { wch: 8 }, { wch: 40 }, { wch: 35 }, { wch: 60 }
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'HTML链接列表');
+  const now = new Date();
+  const ts = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+    String(now.getHours()).padStart(2, '0'),
+    String(now.getMinutes()).padStart(2, '0'),
+    String(now.getSeconds()).padStart(2, '0')
+  ].join('');
+  XLSX.writeFile(wb, ts + '.xlsx');
+  setStatus('✅ 已导出 Excel');
+}
+
+function fallbackCSV(rows) {
+  const BOM = '\uFEFF';
+  const header = '序号,标题,链接路径,链接源代码预览';
+  const csvRows = rows.map(r => {
+    return [r[0], `"${(r[1] || '').replace(/"/g, '""')}"`, `"${(r[2] || '').replace(/"/g, '""')}"`, `"${(r[3] || '').replace(/"/g, '""')}"`].join(',');
+  });
+  const csv = BOM + header + '\n' + csvRows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'html_links.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function setStatus(msg) {
+  document.getElementById('status').innerHTML = msg;
+}
+</script>
+</body>
+</html>
