@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>随机信息生成器</title>
+<style>
+:root {
+  --purple: #7c5ce7;
+  --purple-dark: #5a3fbf;
+  --red-ball: #e74c3c;
+  --blue-ball: #4096ff;
+  --gold-ball: #fa8c16;
+  --bg-card: #fff;
+  --text-primary: #1a1a2e;
+  --text-secondary: #8c8c9e;
+  --border-light: #f0f0f5;
+  --shadow-card: 0 2px 16px rgba(0,0,0,0.06);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: linear-gradient(160deg, #e8ecf8 0%, #d5ddf5 30%, #e2e4f0 70%, #eceff9 100%);
+  min-height: 100vh;
+  padding: 32px 16px 48px;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== 顶部 ===== */
+.header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.header h1 {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #2d2d44;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.header .sub {
+  font-size: 0.85rem;
+  color: #9a9ab0;
+  font-weight: 400;
+}
+
+/* ===== 双栏网格：左3 右2 ===== */
+.grid {
+  max-width: 1160px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 22px;
+  align-items: start;
+}
+
+/* ===== 卡片通用 ===== */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 26px 28px 22px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid #f2f2f8;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.card-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-header .icon { font-size: 1.25rem; line-height: 1; }
+.card-header h2 { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); }
+
+/* 控制栏 */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.controls label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.controls select {
+  padding: 5px 10px;
+  font-size: 0.82rem;
+  border: 1px solid #e0e0ee;
+  border-radius: 5px;
+  color: var(--text-primary);
+  background: #fafafe;
+  cursor: pointer;
+  outline: none;
+  font-weight: 500;
+}
+
+.controls select:focus { border-color: var(--purple); }
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(124, 92, 231, 0.35);
+}
+.btn-primary:active { transform: translateY(0); }
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--purple);
+  background: #fff;
+  border: 1px solid #d4c8f6;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-outline:hover {
+  background: #f9f6ff;
+  border-color: var(--purple);
+}
+
+/* ===== 表格区域 ===== */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: 420px;
+  overflow-y: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+.table-wrap::-webkit-scrollbar { height: 5px; width: 5px; }
+.table-wrap::-webkit-scrollbar-thumb { background: #d0d0e0; border-radius: 8px; }
+.table-wrap::-webkit-scrollbar-track { background: transparent; }
+
+.person-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  min-width: 700px;
+  table-layout: auto;
+}
+
+.person-table thead { position: sticky; top: 0; z-index: 2; }
+
+.person-table th {
+  background: #f8f8fe;
+  color: #777;
+  font-weight: 600;
+  padding: 10px 10px;
+  text-align: left;
+  white-space: nowrap;
+  font-size: 0.76rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #eeeef6;
+}
+
+.person-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #f5f5fa;
+  color: var(--text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.person-table tbody tr:hover td { background: #fafafe; }
+.person-table tbody tr:last-child td { border-bottom: none; }
+
+.person-table .col-no   { width: 42px;  color: #bbb; text-align: center; }
+.person-table .col-name { width: 72px;  font-weight: 600; }
+.person-table .col-sex  { width: 48px;  }
+.person-table .col-age  { width: 48px;  text-align: center; }
+.person-table .col-id   { width: 175px; font-family: "SF Mono","Cascadia Code","Consolas",monospace; font-size: 0.78rem; letter-spacing: 0.2px; }
+.person-table .col-phone { width: 122px; font-family: "SF Mono","Cascadia Code","Consolas",monospace; font-size: 0.78rem; }
+.person-table .col-prov  { width: 72px;  }
+
+.cell-with-copy {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.copy-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #bbb;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.copy-icon:hover { color: var(--purple); background: #f0ebff; }
+.copy-icon.copied  { color: #52c41a; background: #f0fdf2; }
+
+/* 底部状态栏 */
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.record-count {
+  font-size: 0.78rem;
+  color: #aaa;
+  font-weight: 500;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+/* ===== 彩票卡片 ===== */
+.lottery-section {
+  background: #fafaff;
+  border-radius: var(--radius-md);
+  padding: 16px 18px 14px;
+  margin-bottom: 12px;
+  border: 1px solid #f0f0f8;
+  transition: box-shadow 0.2s;
+}
+.lottery-section:last-child { margin-bottom: 0; }
+.lottery-section:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+
+.lottery-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.lottery-title { display: flex; align-items: center; gap: 7px; }
+.lottery-title .lt-icon { font-size: 1.05rem; }
+.lottery-title h3 { font-size: 0.9rem; font-weight: 600; color: #444; }
+
+.badge {
+  display: inline-block;
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: var(--purple);
+  background: #f0ebff;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.btn-refresh {
+  padding: 5px 14px;
+  font-size: 0.76rem;
+  color: #999;
+  background: #fff;
+  border: 1px solid #e8e8f0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.btn-refresh:hover { color: var(--purple); border-color: var(--purple); background: #faf7ff; }
+
+/* 号码球 */
+.ball-row {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ball {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn {
+  0%   { transform: scale(0.3); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+.ball.red  { background: linear-gradient(135deg, #f35958, #d63031); }
+.ball.blue { background: linear-gradient(135deg, #5b9cf5, #2e75d4); }
+.ball.gold { background: linear-gradient(135deg, #f5a623, #e8890c); }
+.ball.square {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-sm);
+  font-size: 1.2rem;
+}
+
+/* 历史 */
+.history-bar { margin-top: 12px; display: flex; align-items: center; gap: 8px; }
+.history-label { font-size: 0.73rem; color: #bbb; flex-shrink: 0; font-weight: 500; }
+.history-tags { display: flex; gap: 5px; flex-wrap: wrap; overflow: hidden; }
+.history-tag {
+  font-size: 0.7rem;
+  background: #f5f5fa;
+  color: #999;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: "SF Mono","Cascadia Code","Consolas",monospace;
+  letter-spacing: 0.3px;
+}
+.history-tag:hover { background: #ede8ff; color: var(--purple); }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2d2d44;
+  color: #fff;
+  padding: 10px 28px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  z-index: 999;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  letter-spacing: 0.5px;
+}
+.toast.show { opacity: 1; pointer-events: auto; }
+
+/* ===== 响应式 ===== */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+  }
+  body { padding: 20px 12px 36px; }
+  .header { margin-bottom: 20px; }
+  .header h1 { font-size: 1.35rem; }
+  .card { padding: 18px 14px 14px; }
+  .person-table { font-size: 0.76rem; min-width: 620px; }
+  .person-table th, .person-table td { padding: 7px 8px; }
+}
+
+@media (max-width: 400px) {
+  .lottery-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .ball { width: 34px; height: 34px; font-size: 0.82rem; }
+  .ball.square { width: 38px; height: 38px; font-size: 1rem; }
+  .ball-row { gap: 5px; }
+  .controls { gap: 6px; }
+  .controls select { padding: 4px 8px; font-size: 0.78rem; }
+  .btn-primary { padding: 6px 14px; font-size: 0.78rem; }
+  .btn-outline { padding: 5px 10px; font-size: 0.72rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>随机信息生成器</h1>
+  <p class="sub">个人信息批量生成 · 双色球 · 大乐透 · 福彩3D</p>
+</div>
+
+<div class="grid">
+  <!-- ===== 左栏：个人信息（批量列表） ===== -->
+  <div class="card person-card">
+    <div class="card-header">
+      <div class="header-left">
+        <span class="icon">👥</span>
+        <h2>随机个人信息</h2>
+      </div>
+      <div class="controls">
+        <label for="batch-size">每次</label>
+        <select id="batch-size" onchange="handleBatchChange()">
+          <option value="5">5 条</option>
+          <option value="10" selected>10 条</option>
+          <option value="20">20 条</option>
+          <option value="50">50 条</option>
+        </select>
+        <button class="btn-primary" onclick="generateBatch()">🔄 生成</button>
+        <button class="btn-outline" onclick="exportCSV()">📥 导出 CSV</button>
+      </div>
+    </div>
+
+    <div class="table-wrap" id="table-wrap">
+      <table class="person-table">
+        <thead>
+          <tr>
+            <th class="col-no">#</th>
+            <th class="col-name">姓名</th>
+            <th class="col-sex">性别</th>
+            <th class="col-age">年龄</th>
+            <th class="col-id">身份证号</th>
+            <th class="col-phone">手机号</th>
+            <th class="col-prov">省份</th>
+          </tr>
+        </thead>
+        <tbody id="person-tbody">
+          <tr><td colspan="7" class="empty-state">点击「生成」按钮开始</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span class="record-count" id="record-count">尚未生成</span>
+      <button class="btn-outline" onclick="copyAllRows()">📋 复制全部</button>
+    </div>
+  </div>
+
+  <!-- ===== 右栏：彩票号码 ===== -->
+  <div class="card lottery-card">
+    <div class="card-header">
+      <div class="header-left">
+        <span class="icon">🎱</span>
+        <h2>彩票号码</h2>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="lottery-section">
+        <div class="lottery-header">
+          <div class="lottery-title">
+            <span class="lt-icon">🔴</span><h3>双色球</h3><span class="badge">红 6 · 蓝 1</span>
+          </div>
+          <button class="btn-refresh" onclick="generateSSQ()">🔄 换一组</button>
+        </div>
+        <div class="ball-row" id="ssq-balls"></div>
+        <div class="history-bar">
+          <span class="history-label">最近</span>
+          <div class="history-tags" id="ssq-history"></div>
+        </div>
+      </div>
+
+      <div class="lottery-section">
+        <div class="lottery-header">
+          <div class="lottery-title">
+            <span class="lt-icon">🟡</span><h3>大乐透</h3><span class="badge">前 5 · 后 2</span>
+          </div>
+          <button class="btn-refresh" onclick="generateDLT()">🔄 换一组</button>
+        </div>
+        <div class="ball-row" id="dlt-balls"></div>
+        <div class="history-bar">
+          <span class="history-label">最近</span>
+          <div class="history-tags" id="dlt-history"></div>
+        </div>
+      </div>
+
+      <div class="lottery-section">
+        <div class="lottery-header">
+          <div class="lottery-title">
+            <span class="lt-icon">🎯</span><h3>福彩 3D</h3><span class="badge">3 位数字</span>
+          </div>
+          <button class="btn-refresh" onclick="generateFC3D()">🔄 换一组</button>
+        </div>
+        <div class="ball-row" id="fc3d-balls"></div>
+        <div class="history-bar">
+          <span class="history-label">最近</span>
+          <div class="history-tags" id="fc3d-history"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 数据池 ──────────────────────────
+const SURNAMES = [
+  '王','李','张','刘','陈','杨','赵','黄','周','吴','徐','孙','胡','朱','高','林','何','郭','马',
+  '罗','梁','宋','郑','谢','韩','唐','冯','于','董','萧','程','曹','袁','邓','许','傅','沈','曾',
+  '彭','吕','苏','卢','蒋','蔡','贾','丁','魏','薛','叶','阎','余','潘','杜','戴','夏','钟','汪',
+  '田','任','姜','范','方','石','姚','谭','廖','邹','熊','金','陆','郝','孔','白','崔','康','毛',
+  '邱','秦','江','史','顾','侯','邵','孟','龙','万','段','雷','钱','汤','尹','易','常','武','乔',
+  '贺','赖','龚','文'
+];
+
+const MALE_NAMES = [
+  '伟','强','磊','洋','勇','军','杰','涛','明','超','辉','鹏','浩','鑫','毅','俊','帅','峰',
+  '亮','刚','平','宁','博','文','旭','飞','龙','林','波','彬','健','康','凯','瑞','豪','志',
+  '东','海','斌','航','恒','宏','华','波','涛','安','哲','宇','然','正','远','毅','诚','建'
+];
+
+const FEMALE_NAMES = [
+  '芳','敏','静','丽','婷','雪','艳','娟','霞','秀','萍','红','玲','琳','云','娜','慧','颖',
+  '文','华','英','燕','莉','洁','梅','琴','蕾','丹','宁','薇','欣','佳','怡','雨','诗','雅',
+  '萱','梦','瑶','彤','兰','菲','月','晨','倩','珊','妍','婉','玉','琦','琳','晶','茹','欢'
+];
+
+const PROVINCES = [
+  '北京市','天津市','河北省','山西省','内蒙古','辽宁省','吉林省','黑龙江省',
+  '上海市','江苏省','浙江省','安徽省','福建省','江西省','山东省',
+  '河南省','湖北省','湖南省','广东省','广西','海南省',
+  '重庆市','四川省','贵州省','云南省','西藏',
+  '陕西省','甘肃省','青海省','宁夏','新疆'
+];
+
+const PROVINCE_CODES = {
+  '北京市':'110101','天津市':'120101','河北省':'130100','山西省':'140100','内蒙古':'150100',
+  '辽宁省':'210100','吉林省':'220100','黑龙江省':'230100',
+  '上海市':'310101','江苏省':'320100','浙江省':'330100','安徽省':'340100','福建省':'350100',
+  '江西省':'360100','山东省':'370100',
+  '河南省':'410100','湖北省':'420100','湖南省':'430100','广东省':'440100','广西':'450100',
+  '海南省':'460100',
+  '重庆市':'500101','四川省':'510100','贵州省':'520100','云南省':'530100','西藏':'540100',
+  '陕西省':'610100','甘肃省':'620100','青海省':'630100','宁夏':'640100','新疆':'650100'
+};
+
+const PHONE_PREFIXES = [
+  '130','131','132','133','134','135','136','137','138','139',
+  '150','151','152','153','155','156','157','158','159',
+  '176','177','178',
+  '180','181','182','183','184','185','186','187','188','189',
+  '191','193','195','196','197','198','199'
+];
+
+// ── 工具 ────────────────────────────
+const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const randPick = arr => arr[Math.floor(Math.random() * arr.length)];
+const shuffle = arr => { const a = [...arr]; for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+// ── 身份证校验位 ─────────────────────
+function calcIdChecksum(id17) {
+  const w = [7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];
+  const m = '10X98765432';
+  let s = 0;
+  for (let i = 0; i < 17; i++) s += +id17[i] * w[i];
+  return m[s % 11];
+}
+
+// ── 个人信息：生成单条 ───────────────
+function makeOnePerson() {
+  const isMale = Math.random() > 0.5;
+  const gender = isMale ? '男' : '女';
+
+  const surname = randPick(SURNAMES);
+  const pool = isMale ? MALE_NAMES : FEMALE_NAMES;
+  const len = Math.random() > 0.4 ? 2 : 1;
+  let given = '';
+  for (let i = 0; i < len; i++) given += randPick(pool);
+  const name = surname + given;
+
+  const age = randInt(18, 65);
+  const now = new Date();
+  const by = now.getFullYear() - age;
+  const bm = randInt(1, 12);
+  const bd = randInt(1, new Date(by, bm, 0).getDate());
+
+  const prov = randPick(PROVINCES);
+  const code = PROVINCE_CODES[prov];
+  const seq = String(randInt(0, 999)).padStart(3, '0');
+  const arr = seq.split('');
+  arr[2] = String(isMale ? [1,3,5,7,9][randInt(0,4)] : [0,2,4,6,8][randInt(0,4)]);
+  const id17 = code + String(by) + String(bm).padStart(2,'0') + String(bd).padStart(2,'0') + arr.join('');
+  const idCard = id17 + calcIdChecksum(id17);
+
+  const phone = randPick(PHONE_PREFIXES) + String(randInt(0, 99999999)).padStart(8, '0');
+
+  return { name, gender, age, idCard, phone, province: prov };
+}
+
+// ── 批量生成 & 渲染表格 ──────────────
+let currentData = [];
+
+function generateBatch() {
+  const size = parseInt(document.getElementById('batch-size').value);
+  currentData = Array.from({ length: size }, () => makeOnePerson());
+  renderTable();
+  document.getElementById('record-count').textContent = `共 ${size} 条记录`;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('person-tbody');
+  if (currentData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">点击「生成」按钮开始</td></tr>';
+    document.getElementById('record-count').textContent = '尚未生成';
+    return;
+  }
+
+  tbody.innerHTML = currentData.map((p, i) => `
+    <tr>
+      <td class="col-no">${i + 1}</td>
+      <td class="col-name">${esc(p.name)}</td>
+      <td class="col-sex">${p.gender}</td>
+      <td class="col-age">${p.age}岁</td>
+      <td class="col-id">
+        <span class="cell-with-copy">
+          <span>${p.idCard}</span>
+          <button class="copy-icon" onclick="copyCell(this,'${p.idCard}')" title="复制身份证号">📋</button>
+        </span>
+      </td>
+      <td class="col-phone">
+        <span class="cell-with-copy">
+          <span>${p.phone}</span>
+          <button class="copy-icon" onclick="copyCell(this,'${p.phone}')" title="复制手机号">📋</button>
+        </span>
+      </td>
+      <td class="col-prov">${p.province}</td>
+    </tr>
+  `).join('');
+}
+
+function esc(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// 单格复制
+function copyCell(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    btn.textContent = '✓';
+    showToast('已复制');
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.textContent = '📋';
+    }, 1200);
+  });
+}
+
+// 复制全部（TSV 格式，可粘贴到 Excel）
+function copyAllRows() {
+  if (currentData.length === 0) { showToast('请先生成数据'); return; }
+  const header = '序号\t姓名\t性别\t年龄\t身份证号\t手机号\t省份';
+  const lines = currentData.map((p, i) =>
+    `${i + 1}\t${p.name}\t${p.gender}\t${p.age}岁\t${p.idCard}\t${p.phone}\t${p.province}`
+  );
+  const tsv = header + '\n' + lines.join('\n');
+  navigator.clipboard.writeText(tsv).then(() => showToast('已复制全部 ' + currentData.length + ' 条记录（可粘贴到 Excel）'));
+}
+
+// 导出 CSV
+function exportCSV() {
+  if (currentData.length === 0) { showToast('请先生成数据'); return; }
+  const header = '序号,姓名,性别,年龄,身份证号,手机号,省份';
+  const lines = currentData.map((p, i) =>
+    `${i + 1},${p.name},${p.gender},${p.age}岁,${p.idCard},${p.phone},${p.province}`
+  );
+  const csv = '\uFEFF' + header + '\n' + lines.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'random-person-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV 已下载');
+}
+
+function handleBatchChange() {
+  if (currentData.length > 0) generateBatch();
+}
+
+// ── Toast ────────────────────────────
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ── 彩票 ─────────────────────────────
+function renderBalls(containerId, html) {
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function generateSSQ() {
+  const reds = shuffle(Array.from({length:33}, (_,i)=>i+1)).slice(0,6).sort((a,b)=>a-b);
+  const blue = randInt(1, 16);
+  renderBalls('ssq-balls',
+    reds.map(n => `<span class="ball red">${String(n).padStart(2,'0')}</span>`).join('')
+    + `<span class="ball blue">${String(blue).padStart(2,'0')}</span>`
+  );
+  addHistory('ssq', reds.join(' ') + ' + ' + String(blue).padStart(2,'0'));
+}
+
+function generateDLT() {
+  const front = shuffle(Array.from({length:35}, (_,i)=>i+1)).slice(0,5).sort((a,b)=>a-b);
+  const back  = shuffle(Array.from({length:12}, (_,i)=>i+1)).slice(0,2).sort((a,b)=>a-b);
+  renderBalls('dlt-balls',
+    front.map(n => `<span class="ball red">${String(n).padStart(2,'0')}</span>`).join('')
+    + back.map(n => `<span class="ball gold">${String(n).padStart(2,'0')}</span>`).join('')
+  );
+  addHistory('dlt', front.join(' ') + ' + ' + back.join(' '));
+}
+
+function generateFC3D() {
+  const d = [randInt(0,9), randInt(0,9), randInt(0,9)];
+  renderBalls('fc3d-balls', d.map(n => `<span class="ball square red">${n}</span>`).join(''));
+  addHistory('fc3d', d.join(' '));
+}
+
+// 历史
+const MAX_HIST = 10;
+const hist = { ssq:[], dlt:[], fc3d:[] };
+
+function addHistory(type, text) {
+  hist[type].unshift(text);
+  if (hist[type].length > MAX_HIST) hist[type].pop();
+  renderHistory(type);
+}
+function renderHistory(type) {
+  document.getElementById(type + '-history').innerHTML =
+    hist[type].map(h => `<span class="history-tag" title="${h}">${h}</span>`).join('');
+}
+
+// ── 初始化 ───────────────────────────
+function init() {
+  generateBatch();
+  generateSSQ();
+  generateDLT();
+  generateFC3D();
+  for (let i=0;i<3;i++) {
+    hist.ssq.push(shuffle(Array.from({length:33},(_,j)=>j+1)).slice(0,6).sort((a,b)=>a-b).join(' ')+' + '+String(randInt(1,16)).padStart(2,'0'));
+    hist.dlt.push(shuffle(Array.from({length:35},(_,j)=>j+1)).slice(0,5).sort((a,b)=>a-b).join(' ')+' + '+shuffle(Array.from({length:12},(_,j)=>j+1)).slice(0,2).sort((a,b)=>a-b).join(' '));
+    hist.fc3d.push([randInt(0,9),randInt(0,9),randInt(0,9)].join(' '));
+  }
+  renderHistory('ssq');
+  renderHistory('dlt');
+  renderHistory('fc3d');
+}
+
+init();
+</script>
+
+</body>
+</html>
