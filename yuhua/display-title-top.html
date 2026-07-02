@@ -1,0 +1,248 @@
+// ==UserScript==
+// @name         显示或复制页面标题 + 快速滚动顶部或底部
+// @namespace    http://tampermonkey.net/
+// @version      1.1.0
+// @description  右上角显示页面 title 并可复制；右下角提供回顶/到底按钮
+// @author       Blueprint
+// @match        *://*/*
+// @grant        GM_setClipboard
+// @run-at       document-end
+// ==/UserScript==
+
+(function () {
+  'use strict';
+
+  /* ══════════════════════════════════════
+     Part 1 · 右上角标题卡片
+  ══════════════════════════════════════ */
+
+  const TOAST_MS = 1800;
+
+  function getTitle() {
+    return document.title || '(无标题)';
+  }
+
+  function copyToClipboard(text, onSuccess, onFail) {
+    if (typeof GM_setClipboard === 'function') {
+      GM_setClipboard(text);
+      onSuccess();
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(onSuccess).catch(() => execCopy(text, onSuccess, onFail));
+      return;
+    }
+    execCopy(text, onSuccess, onFail);
+  }
+
+  function execCopy(text, onSuccess, onFail) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    Object.assign(ta.style, { position: 'fixed', opacity: '0', top: '0', left: '0' });
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy') ? onSuccess() : onFail(); } catch { onFail(); }
+    document.body.removeChild(ta);
+  }
+
+  function createTitleWidget() {
+    const wrap = document.createElement('div');
+    wrap.id = '__ptitle-widget__';
+    Object.assign(wrap.style, {
+      position:       'fixed',
+      top:            '12px',
+      right:          '12px',
+      zIndex:         '2147483647',
+      display:        'flex',
+      alignItems:     'center',
+      gap:            '8px',
+      background:     'rgba(28, 28, 30, 0.90)',
+      color:          '#f0f0f0',
+      borderRadius:   '10px',
+      padding:        '8px 12px',
+      fontSize:       '13px',
+      fontFamily:     'system-ui, -apple-system, "PingFang SC", sans-serif',
+      boxShadow:      '0 4px 20px rgba(0,0,0,0.40)',
+      backdropFilter: 'blur(8px)',
+      maxWidth:       '340px',
+      boxSizing:      'border-box',
+      lineHeight:     '1.4',
+      userSelect:     'none',
+    });
+
+    const icon = document.createElement('span');
+    icon.textContent = '📄';
+    icon.style.cssText = 'flex-shrink:0; font-size:14px;';
+
+    const titleEl = document.createElement('span');
+    titleEl.id = '__ptitle-text__';
+    Object.assign(titleEl.style, {
+      flex:         '1',
+      overflow:     'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace:   'nowrap',
+      maxWidth:     '200px',
+      fontSize:     '12px',
+      color:        '#e0e0e0',
+    });
+
+    function refreshTitle() {
+      const t = getTitle();
+      titleEl.textContent = t;
+      titleEl.title = t;
+    }
+    refreshTitle();
+
+    const btn = document.createElement('button');
+    btn.textContent = '复制';
+    Object.assign(btn.style, {
+      flexShrink:   '0',
+      background:   '#3a86ff',
+      color:        '#fff',
+      border:       'none',
+      borderRadius: '6px',
+      padding:      '3px 10px',
+      fontSize:     '12px',
+      cursor:       'pointer',
+      fontFamily:   'inherit',
+      lineHeight:   '1.8',
+      transition:   'background 0.15s',
+    });
+    btn.onmouseenter = () => { if (!btn.disabled) btn.style.background = '#2368cc'; };
+    btn.onmouseleave = () => { if (!btn.disabled) btn.style.background = '#3a86ff'; };
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    Object.assign(closeBtn.style, {
+      flexShrink:  '0',
+      background:  'transparent',
+      color:       '#888',
+      border:      'none',
+      padding:     '0 2px',
+      fontSize:    '17px',
+      lineHeight:  '1',
+      cursor:      'pointer',
+      fontFamily:  'inherit',
+    });
+    closeBtn.title = '关闭';
+    closeBtn.onmouseenter = () => { closeBtn.style.color = '#fff'; };
+    closeBtn.onmouseleave = () => { closeBtn.style.color = '#888'; };
+    closeBtn.onclick = () => { observer.disconnect(); wrap.remove(); };
+
+    let toastTimer = null;
+    function showToast(ok) {
+      if (toastTimer) clearTimeout(toastTimer);
+      btn.textContent = ok ? '✅ 已复制' : '❌ 失败';
+      btn.style.background = ok ? '#27ae60' : '#e74c3c';
+      btn.disabled = true;
+      toastTimer = setTimeout(() => {
+        btn.textContent = '复制';
+        btn.style.background = '#3a86ff';
+        btn.disabled = false;
+      }, TOAST_MS);
+    }
+
+    btn.addEventListener('click', () => {
+      copyToClipboard(getTitle(), () => showToast(true), () => showToast(false));
+    });
+
+    wrap.appendChild(icon);
+    wrap.appendChild(titleEl);
+    wrap.appendChild(btn);
+    wrap.appendChild(closeBtn);
+
+    const observer = new MutationObserver(refreshTitle);
+    const titleTag = document.querySelector('head > title');
+    if (titleTag) observer.observe(titleTag, { childList: true });
+
+    return wrap;
+  }
+
+  /* ══════════════════════════════════════
+     Part 2 · 右下角滚动按钮
+  ══════════════════════════════════════ */
+
+  function createScrollWidget() {
+    // 容器：垂直排列
+    const wrap = document.createElement('div');
+    wrap.id = '__scroll-widget__';
+    Object.assign(wrap.style, {
+      position:      'fixed',
+      bottom:        '24px',
+      right:         '16px',
+      zIndex:        '2147483647',
+      display:       'flex',
+      flexDirection: 'column',
+      gap:           '8px',
+      userSelect:    'none',
+    });
+
+    function makeBtn(label, title, onClick) {
+      const b = document.createElement('button');
+      b.textContent = label;
+      b.title = title;
+      Object.assign(b.style, {
+        width:          '40px',
+        height:         '40px',
+        borderRadius:   '50%',
+        border:         'none',
+        background:     'rgba(28, 28, 30, 0.85)',
+        color:          '#f0f0f0',
+        fontSize:       '18px',
+        lineHeight:     '1',
+        cursor:         'pointer',
+        boxShadow:      '0 2px 10px rgba(0,0,0,0.35)',
+        backdropFilter: 'blur(6px)',
+        display:        'flex',
+        alignItems:     'center',
+        justifyContent: 'center',
+        fontFamily:     'system-ui, sans-serif',
+        transition:     'background 0.15s, transform 0.1s',
+        padding:        '0',
+      });
+      b.onmouseenter = () => { b.style.background = 'rgba(58, 134, 255, 0.90)'; };
+      b.onmouseleave = () => { b.style.background = 'rgba(28, 28, 30, 0.85)'; };
+      b.onmousedown  = () => { b.style.transform = 'scale(0.92)'; };
+      b.onmouseup    = () => { b.style.transform = 'scale(1)'; };
+      b.addEventListener('click', onClick);
+      return b;
+    }
+
+    // 回顶按钮 ↑
+    const topBtn = makeBtn('↑', '回到顶部', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // 到底按钮 ↓
+    const botBtn = makeBtn('↓', '滚动到底部', () => {
+      const scrollHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      );
+      window.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+    });
+
+    wrap.appendChild(topBtn);
+    wrap.appendChild(botBtn);
+    return wrap;
+  }
+
+  /* ══════════════════════════════════════
+     挂载
+  ══════════════════════════════════════ */
+  function mount() {
+    if (!document.getElementById('__ptitle-widget__')) {
+      document.body.appendChild(createTitleWidget());
+    }
+    if (!document.getElementById('__scroll-widget__')) {
+      document.body.appendChild(createScrollWidget());
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', mount);
+  } else {
+    mount();
+  }
+})();
