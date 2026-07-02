@@ -20,132 +20,183 @@ var _hmt = _hmt || [];
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        :root {
+            --text-primary: #1a1f36;
+            --text-secondary: #5b6478;
+            --text-muted: #98a2b3;
+            --accent: #4f6ef7;
+            --accent-grad: linear-gradient(135deg, #6366f1 0%, #4f6ef7 100%);
+            --card-bg: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+            --border-soft: rgba(15, 23, 42, 0.06);
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+            --shadow-lg: 0 12px 28px -6px rgba(15, 23, 42, 0.12), 0 8px 12px -8px rgba(15, 23, 42, 0.08);
+            --radius-card: 14px;
+            --radius-pill: 999px;
         }
 
         body {
-            background-color: #f0f2f5;
-            max-width: 900px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(at 0% 0%, rgba(79, 110, 247, 0.06), transparent 50%),
+                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.05), transparent 50%),
+                linear-gradient(135deg, #f1f4fa 0%, #e7ecf5 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            max-width: 960px;
             margin: 0 auto;
-            padding: 12px 16px 60px;
-            line-height: 1.5;
-            color: #1d1d1f;
+            padding: 16px 20px 80px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
         }
 
         /* ———— 顶部导航 ———— */
         .nav {
             position: sticky;
-            top: 8px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 14px;
-            padding: 10px 16px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-            margin: 8px 0 20px;
-            text-align: center;
-            z-index: 999;
+            top: 10px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: saturate(180%) blur(18px);
+            -webkit-backdrop-filter: saturate(180%) blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: var(--radius-pill);
+            padding: 8px 10px;
+            box-shadow: var(--shadow-md);
+            margin: 8px 0 28px;
             display: flex;
             justify-content: center;
             gap: 4px;
             flex-wrap: wrap;
+            z-index: 999;
         }
 
         .nav a {
             display: inline-block;
-            padding: 6px 14px;
-            color: #555;
+            padding: 7px 16px;
+            color: var(--text-secondary);
             text-decoration: none;
             font-size: 14px;
-            font-weight: 500;
-            border-radius: 8px;
-            transition: all 0.2s ease;
+            font-weight: 600;
+            border-radius: var(--radius-pill);
+            transition: color 0.2s ease, background 0.2s ease, transform 0.15s ease;
         }
 
         .nav a:hover {
-            color: #007aff;
-            background: rgba(0, 122, 255, 0.08);
+            color: #fff;
+            background: var(--accent-grad);
+            transform: translateY(-1px);
         }
 
         /* ———— 分类区块 ———— */
         .section {
-            margin-bottom: 16px;
+            margin-bottom: 28px;
+            scroll-margin-top: 80px;
         }
 
         .section-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin: 0 0 10px 4px;
+            gap: 10px;
+            margin: 0 0 14px 4px;
         }
 
         .section-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
+            font-size: 17px;
+            font-weight: 700;
             flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
         }
 
         .section-title {
-            font-size: 17px;
-            font-weight: 600;
-            color: #1d1d1f;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            color: var(--text-primary);
         }
 
         .section-count {
             font-size: 12px;
-            color: #999;
-            background: #f0f0f0;
-            padding: 1px 8px;
-            border-radius: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.05);
+            padding: 2px 10px;
+            border-radius: var(--radius-pill);
             margin-left: auto;
         }
 
         /* ———— 链接卡片网格 ———— */
         .link-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 10px;
         }
 
         .link-card {
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 10px 14px;
+            gap: 12px;
+            background: var(--card-bg);
+            border-radius: var(--radius-card);
+            padding: 12px 16px;
             text-decoration: none;
-            color: #1d1d1f;
+            color: var(--text-primary);
             font-size: 14px;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(0, 0, 0, 0.04);
+            font-weight: 500;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .link-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent-grad);
+            transform: scaleY(0);
+            transform-origin: center;
+            transition: transform 0.25s ease;
         }
 
         .link-card:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            color: #007aff;
-            border-color: rgba(0, 122, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(79, 110, 247, 0.25);
+        }
+
+        .link-card:hover::before {
+            transform: scaleY(1);
         }
 
         .link-num {
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
-            background: #f0f4ff;
-            color: #007aff;
+            min-width: 26px;
+            height: 26px;
+            padding: 0 6px;
+            border-radius: 8px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            transition: transform 0.25s ease;
+        }
+
+        .link-card:hover .link-num {
+            transform: scale(1.08);
         }
 
         .link-text {
@@ -156,33 +207,48 @@ var _hmt = _hmt || [];
         }
 
         .link-arrow {
-            font-size: 12px;
-            color: #ccc;
+            font-size: 13px;
+            color: var(--text-muted);
             flex-shrink: 0;
-            transition: color 0.2s;
+            transition: transform 0.25s ease, color 0.2s ease;
         }
 
         .link-card:hover .link-arrow {
-            color: #007aff;
+            color: var(--accent);
+            transform: translate(2px, -2px);
         }
 
         /* ———— 分类配色 ———— */
-        .cat-hot .section-icon { background: #fff3e0; }
-        .cat-yuhua .section-icon { background: #e8f5e9; }
-        .cat-tools .section-icon { background: #e3f2fd; }
-        .cat-game .section-icon { background: #fce4ec; }      
+        .cat-hot .section-icon { background: #fff1e0; color: #c2410c; }
+        .cat-yuhua .section-icon { background: #e6f6ec; color: #15803d; }
+        .cat-tools .section-icon { background: #e3ecff; color: #1d4ed8; }
+        .cat-game .section-icon { background: #fce7f3; color: #be185d; }
+        .cat-script .section-icon { background: #ede9fe; color: #6d28d9; }
 
-        .cat-hot .link-num { background: #fff3e0; color: #f57c00; }
-        .cat-yuhua .link-num { background: #e8f5e9; color: #2e7d32; }
-        .cat-tools .link-num { background: #e3f2fd; color: #1565c0; }
-        .cat-game .link-num { background: #fce4ec; color: #c62828; }        
+        .cat-hot .link-num { background: #fff1e0; color: #c2410c; }
+        .cat-yuhua .link-num { background: #e6f6ec; color: #15803d; }
+        .cat-tools .link-num { background: #e3ecff; color: #1d4ed8; }
+        .cat-game .link-num { background: #fce7f3; color: #be185d; }
+        .cat-script .link-num { background: #ede9fe; color: #6d28d9; }
+
+        /* ———— 入场动画 ———— */
+        .section { animation: fadeUp 0.5s ease both; }
+        .section:nth-child(2) { animation-delay: 0.05s; }
+        .section:nth-child(3) { animation-delay: 0.1s; }
+        .section:nth-child(4) { animation-delay: 0.15s; }
+        .section:nth-child(5) { animation-delay: 0.2s; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         /* ———— 响应式 ———— */
         @media (max-width: 600px) {
-            body { padding: 8px 10px 40px; }
+            body { padding: 10px 12px 50px; }
             .link-grid { grid-template-columns: 1fr; }
-            .nav { padding: 8px 10px; gap: 2px; }
-            .nav a { padding: 5px 10px; font-size: 13px; }
+            .nav { padding: 6px 8px; gap: 2px; }
+            .nav a { padding: 6px 12px; font-size: 13px; }
+            .section-title { font-size: 16px; }
         }
     </style>
 </head>
@@ -194,7 +260,7 @@ var _hmt = _hmt || [];
         <a href="#yuhua">🌿 雨花</a>
         <a href="#tools">🔧 工具</a>
         <a href="#game">🎮 娱乐</a>
-        <a href="#script">🎮 脚本</a>
+        <a href="#script">⚡ 脚本</a>
     </div>
 
     <!-- 热门链接 -->
@@ -202,21 +268,21 @@ var _hmt = _hmt || [];
         <div class="section-header">
             <div class="section-icon">📌</div>
             <div class="section-title">热门链接</div>
-            <div class="section-count">3 个</div>
+            <div class="section-count"></div>
         </div>
         <div class="link-grid">
             <a class="link-card" href="https://www.xudadi.com" target="_blank">
-                <span class="link-num">1</span>
+                <span class="link-num"></span>
                 <span class="link-text">许大地的官方网址</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/webjpg/" target="_blank">
-                <span class="link-num">2</span>
+                <span class="link-num"></span>
                 <span class="link-text">图片在线批量处理工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/htmleditor.html" target="_blank">
-                <span class="link-num">3</span>
+                <span class="link-num"></span>
                 <span class="link-text">html编辑器</span>
                 <span class="link-arrow">↗</span>
             </a>
@@ -228,61 +294,61 @@ var _hmt = _hmt || [];
         <div class="section-header">
             <div class="section-icon">🌿</div>
             <div class="section-title">雨花</div>
-            <div class="section-count">7 个</div>
+            <div class="section-count"></div>
         </div>
         <div class="link-grid">
             <a class="link-card" href="https://www.kdocs.cn/l/cmI60xDbB0Un" target="_blank">
-                <span class="link-num">1</span>
+                <span class="link-num"></span>
                 <span class="link-text">雨花包本链接</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/yuhua/baoben/baoben.html" target="_blank">
-                <span class="link-num">2</span>
+                <span class="link-num"></span>
                 <span class="link-text">包本处理工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/yuhua/baoben/shuminghao.html" target="_blank">
-                <span class="link-num">3</span>
+                <span class="link-num"></span>
                 <span class="link-text">包本书名号处理工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/yuhua/baoben/duanhang.html" target="_blank">
-                <span class="link-num">4</span>
+                <span class="link-num"></span>
                 <span class="link-text">包本断行处理工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=2029979112450129923#wechat_redirect" target="_blank">
-                <span class="link-num">5</span>
+                <span class="link-num"></span>
                 <span class="link-text">雨花公众号文章</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=3865997525819736066#wechat_redirect" target="_blank">
-                <span class="link-num">6</span>
+                <span class="link-num"></span>
                 <span class="link-text">雨花每周食谱</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIwMjExMzkwNA==&action=getalbum&album_id=1773154879981584386#wechat_redirect" target="_blank">
-                <span class="link-num">7</span>
+                <span class="link-num"></span>
                 <span class="link-text">雨花包本喜报</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/yuhua/tuixiuchaxun.html" target="_blank">
-                <span class="link-num">8</span>
+                <span class="link-num"></span>
                 <span class="link-text">延迟退休查询</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/yuhua/swim-grade-query.html" target="_blank">
-                <span class="link-num">9</span>
+                <span class="link-num"></span>
                 <span class="link-text">游泳等级达级查询</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/yuhua/student-table.html" target="_blank">
-                <span class="link-num">10</span>
+                <span class="link-num"></span>
                 <span class="link-text">张贴/公示学员名单</span>
                 <span class="link-arrow">↗</span>
             </a>
-             <a class="link-card" href="/yuhua/class-time-calc.html" target="_blank">
-                <span class="link-num">11</span>
+            <a class="link-card" href="/yuhua/class-time-calc.html" target="_blank">
+                <span class="link-num"></span>
                 <span class="link-text">打铃时间计算</span>
                 <span class="link-arrow">↗</span>
             </a>
@@ -294,136 +360,136 @@ var _hmt = _hmt || [];
         <div class="section-header">
             <div class="section-icon">🔧</div>
             <div class="section-title">实用工具</div>
-            <div class="section-count">24 个</div>
+            <div class="section-count"></div>
         </div>
         <div class="link-grid">
             <a class="link-card" href="/tool/720vr.html" target="_blank">
-                <span class="link-num">1</span>
+                <span class="link-num"></span>
                 <span class="link-text">720VR查看器</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/aes_crypto_tool.html" target="_blank">
-                <span class="link-num">2</span>
+                <span class="link-num"></span>
                 <span class="link-text">AES加密解密工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/aimoqiu.html" target="_blank">
-                <span class="link-num">3</span>
+                <span class="link-num"></span>
                 <span class="link-text">AI摸球模拟平台</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/amount-converter.html" target="_blank">
-                <span class="link-num">4</span>
+                <span class="link-num"></span>
                 <span class="link-text">金额大小写转换</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/amount-in-words.html" target="_blank">
-                <span class="link-num">5</span>
+                <span class="link-num"></span>
                 <span class="link-text">财务金额大小写转换</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/yuhua/baoben/duanhang.html" target="_blank">
-                <span class="link-num">6</span>
+                <span class="link-num"></span>
                 <span class="link-text">包本断行</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/base64convert.html" target="_blank">
-                <span class="link-num">7</span>
+                <span class="link-num"></span>
                 <span class="link-text">base64转换工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/color-conversion.html" target="_blank">
-                <span class="link-num">8</span>
+                <span class="link-num"></span>
                 <span class="link-text">颜色转换工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/excel-processor.html" target="_blank">
-                <span class="link-num">9</span>
+                <span class="link-num"></span>
                 <span class="link-text">Excel表格处理器</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/excelcelladdcustomchar.html" target="_blank">
-                <span class="link-num">10</span>
+                <span class="link-num"></span>
                 <span class="link-text">Excel表格自定义字符处理器</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/excel_splitter.html" target="_blank">
-                <span class="link-num">11</span>
+                <span class="link-num"></span>
                 <span class="link-text">通用Excel列内容拆分工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/folder-generator.html" target="_blank">
-                <span class="link-num">12</span>
+                <span class="link-num"></span>
                 <span class="link-text">文件夹生成器</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/hexconvert.html" target="_blank">
-                <span class="link-num">13</span>
+                <span class="link-num"></span>
                 <span class="link-text">进制转换工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/htmleditor.html" target="_blank">
-                <span class="link-num">14</span>
+                <span class="link-num"></span>
                 <span class="link-text">html编辑器</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/ImageCropping.html" target="_blank">
-                <span class="link-num">15</span>
+                <span class="link-num"></span>
                 <span class="link-text">图片裁剪工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/img-yasuo-online.html" target="_blank">
-                <span class="link-num">16</span>
+                <span class="link-num"></span>
                 <span class="link-text">图片在线压缩</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/link-editor.html" target="_blank">
-                <span class="link-num">17</span>
+                <span class="link-num"></span>
                 <span class="link-text">链接编辑器</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/moqiu.html" target="_blank">
-                <span class="link-num">18</span>
+                <span class="link-num"></span>
                 <span class="link-text">摸球模拟平台</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/yuhua/shipuchuli.html" target="_blank">
-                <span class="link-num">19</span>
+                <span class="link-num"></span>
                 <span class="link-text">食谱处理工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/text-avatar-generation.html" target="_blank">
-                <span class="link-num">20</span>
+                <span class="link-num"></span>
                 <span class="link-text">文字头像生成器</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/time-calc.html" target="_blank">
-                <span class="link-num">21</span>
+                <span class="link-num"></span>
                 <span class="link-text">保质期时间计算器</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/tree-nav.html" target="_blank">
-                <span class="link-num">22</span>
+                <span class="link-num"></span>
                 <span class="link-text">树状导航目录</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/userpasswordmanager.html" target="_blank">
-                <span class="link-num">23</span>
+                <span class="link-num"></span>
                 <span class="link-text">用户名密码管理器</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/zizeng.html" target="_blank">
-                <span class="link-num">24</span>
+                <span class="link-num"></span>
                 <span class="link-text">自增数字插入工具</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/zitie/" target="_blank">
-                <span class="link-num">25</span>
+                <span class="link-num"></span>
                 <span class="link-text">字帖生成器</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/tool/timer" target="_blank">
-                <span class="link-num">26</span>
+                <span class="link-num"></span>
                 <span class="link-text">多功能计时器</span>
                 <span class="link-arrow">↗</span>
             </a>
@@ -435,46 +501,89 @@ var _hmt = _hmt || [];
         <div class="section-header">
             <div class="section-icon">🎮</div>
             <div class="section-title">娱乐</div>
-            <div class="section-count">3 个</div>
+            <div class="section-count"></div>
         </div>
         <div class="link-grid">
             <a class="link-card" href="/game/chinese-chess.html" target="_blank">
-                <span class="link-num">1</span>
+                <span class="link-num"></span>
                 <span class="link-text">中国象棋</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/game/color-select.html" target="_blank">
-                <span class="link-num">2</span>
+                <span class="link-num"></span>
                 <span class="link-text">十六宫格找不同颜色</span>
                 <span class="link-arrow">↗</span>
             </a>
             <a class="link-card" href="/game/snake/index.html" target="_blank">
-                <span class="link-num">3</span>
+                <span class="link-num"></span>
                 <span class="link-text">大战AI贪吃蛇</span>
                 <span class="link-arrow">↗</span>
             </a>
         </div>
+    </div>
 
-        <!-- 油猴 -->
-    <div class="section cat-game" id="script">
+    <!-- 脚本 -->
+    <div class="section cat-script" id="script">
         <div class="section-header">
             <div class="section-icon">JS</div>
-            <div class="section-title" 脚本</div>
-            <div class="section-count">3 个</div>
+            <div class="section-title">脚本</div>
+            <div class="section-count"></div>
         </div>
         <div class="link-grid">
             <a class="link-card" href="/yuhua/21tb-auto-learning.user.js" target="_blank">
-                <span class="link-num">1</span>
+                <span class="link-num"></span>
                 <span class="link-text">公需科目自动调整下一个视频</span>
                 <span class="link-arrow">↗</span>
             </a>
-            <a class="link-card" href="h/yuhua/edueva-auto-learning.js" target="_blank">
-                <span class="link-num">2</span>
-                <span class="link-text">教师发展培训培训自动下一章节</span>
+            <a class="link-card" href="/yuhua/edueva-auto-learning.js" target="_blank">
+                <span class="link-num"></span>
+                <span class="link-text">教师发展培训自动下一章节</span>
                 <span class="link-arrow">↗</span>
-            </a>            
+            </a>
         </div>
     </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // 遍历所有分类，为每个链接卡片自动生成序号，并同步更新分类计数
+        function renumber() {
+            document.querySelectorAll('.section').forEach(function (section) {
+                var cards = section.querySelectorAll('.link-grid .link-card');
+                cards.forEach(function (card, index) {
+                    var num = card.querySelector('.link-num');
+                    if (num) {
+                        num.textContent = String(index + 1);
+                    }
+                });
+                var count = section.querySelector('.section-count');
+                if (count) {
+                    count.textContent = cards.length + ' 个';
+                }
+            });
+        }
+
+        // 初次渲染：自动生成全部序号
+        renumber();
+
+        // 使用 MutationObserver 动态监测链接变化，实时重新编号
+        var observer = new MutationObserver(function () {
+            renumber();
+        });
+
+        // 对每一个链接网格监听子节点的新增/删除（即链接卡片的增删）
+        document.querySelectorAll('.link-grid').forEach(function (grid) {
+            observer.observe(grid, {
+                childList: true,   // 监测链接卡片的增删
+                subtree: true      // 监测子树，兼容嵌套结构的变化
+            });
+        });
+
+        // 暴露到全局，便于手动添加链接后调用（通常无需手动调用，观察者会自动触发）
+        window.renumberLinks = renumber;
+    })();
+    </script>
 </body>
 
 </html>
