@@ -394,6 +394,11 @@ function parseList(text){
   return String(text||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
 }
 
+// HTML 转义，防止姓名中的特殊字符破坏表格/导出
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
 function readConfig(){
   state.totalWeeks = Math.max(1, Math.min(60, parseInt(weeksInput.value,10)||1));
   weeksInput.value = state.totalWeeks;
@@ -411,6 +416,7 @@ function readConfig(){
 // ---------- rotation generation ----------
 function generate(){
   exitSwap();
+  exitClear();
   readConfig();
   const N = state.totalWeeks;
   const G = state.global;
@@ -435,7 +441,7 @@ function generate(){
     state.schedule[w] = {admin, teacher, playground, leader};
   }
   warningsEl.innerHTML = warns.length
-    ? '<div class="warn-head">⚠️ 排班提示（' + warns.length + ' 条）</div><div class="warn-body">' + warns.map(w=>'<div class="warn-item">'+w+'</div>').join('') + '</div>'
+    ? '<div class="warn-head">⚠️ 排班提示（' + warns.length + ' 条）</div><div class="warn-body">' + warns.map(w=>'<div class="warn-item">'+esc(w)+'</div>').join('') + '</div>'
     : '';
   renderSchedule();
 }
@@ -445,7 +451,7 @@ function nameCell(f, w, role, val){
   const cls = role==='teacher' ? 't' : 'role-line';
   const tdCls = role==='teacher' ? 'cell-floor' : 'cell-role role-'+role;
   const cnt = val ? '<span class="cnt">0</span>' : '';
-  return `<td class="${tdCls}"><div class="${cls} clickable${val?'':' emptycell'}" data-f="${f}" data-w="${w}" data-role="${role}"><span class="nm">${val||'—'}</span>${cnt}</div></td>`;
+  return `<td class="${tdCls}"><div class="${cls} clickable${val?'':' emptycell'}" data-f="${f}" data-w="${w}" data-role="${role}"><span class="nm">${esc(val)||'—'}</span>${cnt}</div></td>`;
 }
 
 function renderSchedule(){
@@ -544,12 +550,18 @@ function updateTopbar(m){
   }
 }
 
+// 统一清除编排模式的所有临时选中（不改动当前模式）
+function clearArrangeSel(){
+  state.arrSrc = null;
+  clearCellSel(); clearChipSel(); clearFloorChipSel(); clearGlobalChipSel(); clearSwapSel();
+}
+
 // 位置互换模式：点第一个姓名选中，点第二个姓名完成互换（可连续，ESC 退出）
 function enterSwap(){
-  exitMode();                 // 先清掉编排模式的临时选中
+  exitClear();                 // 先退出清空模式，保证互斥
+  clearArrangeSel();
   state.swapping = true;
   state.swapSrc = null;
-  clearCellSel(); clearChipSel(); clearFloorChipSel(); clearGlobalChipSel();
   btnSwap.classList.add('active');
   showBanner('🔄 位置互换：请点击第一个要互换的姓名');
 }
@@ -563,9 +575,9 @@ function exitSwap(){
 
 // 清空单元格模式：点一个单元格清空一个，可连续使用，ESC 退出
 function enterClear(){
-  exitMode();                 // 先清掉编排模式的临时选中与互换模式
+  exitSwap();                  // 先退出互换模式，保证互斥
+  clearArrangeSel();
   state.clearing = true;
-  clearCellSel(); clearChipSel(); clearFloorChipSel();
   btnClear.classList.add('active');
   showBanner('🧹 清空单元格：点击要清空的单元格即可清空，可连续点击连续清空；按 ESC 退出。', 'clear');
 }
@@ -667,7 +679,7 @@ scheduleEl.addEventListener('click', e=>{
     const src = {f:state.arrSrc.f, w:state.arrSrc.w, role:state.arrSrc.role};
     setVal(src.f,src.w,src.role,'');
     updateCellName(src);
-    state.arrSrc = null; el.classList.remove('sel');
+    state.arrSrc = null; clearCellSel();   // 清除源格与目标格的残留高亮
   }
   // chip 来源保留选中，可重复安排到多个单元格
 });
@@ -692,6 +704,8 @@ function renderFlexChips(){
     c.className = 'chip';
     c.textContent = name;
     c.addEventListener('click', ()=>{
+      if(state.swapping){ alert('请先按 ESC 退出「位置互换」模式。'); return; }
+      if(state.clearing){ alert('请先按 ESC 退出「清空单元格」模式。'); return; }
       if(state.mode!=='arrange'){ alert('请先切换到「编排模式」再选择教师。'); return; }
       if(state.arrSrc && state.arrSrc.kind==='chip' && state.arrSrc.name===name){
         state.arrSrc = null; c.classList.remove('sel'); return;
@@ -733,6 +747,8 @@ function renderGlobalChips(){
       c.className = 'chip';
       c.textContent = name;
       c.addEventListener('click', ()=>{
+        if(state.swapping){ alert('请先按 ESC 退出「位置互换」模式。'); return; }
+        if(state.clearing){ alert('请先按 ESC 退出「清空单元格」模式。'); return; }
         if(state.mode!=='arrange'){ alert('请先切换到「编排模式」再选择教师。'); return; }
         if(state.arrSrc && state.arrSrc.kind==='global' && state.arrSrc.role===g.role && state.arrSrc.name===name){
           state.arrSrc = null; c.classList.remove('sel'); return;
@@ -772,6 +788,8 @@ function renderFloorChips(){
       c.className = 'chip';
       c.textContent = name;
       c.addEventListener('click', ()=>{
+        if(state.swapping){ alert('请先按 ESC 退出「位置互换」模式。'); return; }
+        if(state.clearing){ alert('请先按 ESC 退出「清空单元格」模式。'); return; }
         if(state.mode!=='arrange'){ alert('请先切换到「编排模式」再选择教师。'); return; }
         if(state.arrSrc && state.arrSrc.kind==='floor' && state.arrSrc.name===name && state.arrSrc.floor===f){
           state.arrSrc = null; c.classList.remove('sel'); return;
@@ -790,32 +808,96 @@ function renderFloorChips(){
 }
 
 // ---------- import schedule from pasted text ----------
+// 根据字段名识别列角色：floor:N / admin / playground / leader / week / null
+function detectColumn(header){
+  const h = String(header||'').trim();
+  if(!h) return null;
+  const fm = h.match(/第?\s*(\d+)\s*楼/);
+  if(fm) return 'floor:' + Math.min(FLOORS, Math.max(1, +fm[1]));
+  if(/行政/.test(h)) return 'admin';
+  if(/操场/.test(h)) return 'playground';
+  if(/组长/.test(h)) return 'leader';
+  if(/周|week/i.test(h)) return 'week';
+  return null;
+}
+
 function parseImport(text){
+  const lines = String(text||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
   const rows = [];
-  String(text||'').split(/\r?\n/).forEach(line=>{
-    line = line.trim();
-    if(!line) return;
-    // 跳过表头等非周行：行首必须是「第X周」或纯数字
+  let header = null;
+  for(const line of lines){
     const cells = line.split(/[\t,，;；]+|\s{2,}/).map(s=>s.trim()).filter(Boolean);
-    if(!cells.length) return;
+    if(!cells.length) continue;
+    // 数据行：行首必须是「第X周」或纯数字
     let w = null;
     const m = cells[0].match(/第\s*(\d+)\s*周/);
     if(m) w = +m[1];
     else if(/^\d{1,2}$/.test(cells[0])) w = +cells[0];
-    if(!w || w<1 || w>60) return;
-    rows.push({w, cells: cells.slice(1)});
-  });
-  return rows;
+    if(w && w>=1 && w<=60){ rows.push({w, cells: cells.slice(1)}); continue; }
+    // 非数据行：首个含字段特征（且至少 3 列）的行为表头，解析每列角色（跳过「周次」列，与数据列对齐）
+    if(!header && cells.length>=3 && /周次|行政|操场|组长|楼/.test(line)){
+      header = cells.slice(1).map(detectColumn);
+    }
+  }
+  return {rows, header};
 }
 
 function openImport(){
+  exitSwap();                  // 退出互换/清空等临时状态，并清除编排选中（保留当前模式）
+  exitClear();
+  clearArrangeSel();
   importText.value = '';
   importMask.style.display = 'flex';
   importText.focus();
 }
 function closeImport(){ importMask.style.display = 'none'; }
 
-function applyImport(rows){
+function uniq(arr){
+  const seen = new Set(), out = [];
+  arr.forEach(v=>{ if(v && !seen.has(v)){ seen.add(v); out.push(v); } });
+  return out;
+}
+
+// 按列角色归类姓名：{admin:[], playground:[], leader:[], floors:{f:[]}}
+function collectNames(rows, roleOf){
+  const b = {admin:[], playground:[], leader:[], floors:{}};
+  const push = (arr, v)=>{ if(v && !arr.includes(v)) arr.push(v); };
+  rows.forEach(r=>{
+    r.cells.forEach((val, i)=>{
+      if(!val) return;
+      const role = roleOf(i);
+      if(role==='admin') push(b.admin, val);
+      else if(role==='playground') push(b.playground, val);
+      else if(role==='leader') push(b.leader, val);
+      else if(role && role.indexOf('floor:')===0){
+        const f = +role.slice(6);
+        b.floors[f] = b.floors[f] || [];
+        push(b.floors[f], val);
+      }
+    });
+  });
+  return b;
+}
+
+// 将归类结果填充到左侧「排班配置」对应名单，返回归类摘要
+function fillBuckets(b){
+  const summary = [];
+  if(b.admin.length){ gAdmin.value = b.admin.join('\n'); state.global.admin = b.admin; summary.push('值周行政 '+b.admin.length+' 人'); }
+  if(b.playground.length){ gPlayground.value = b.playground.join('\n'); state.global.playground = b.playground; summary.push('值周操场教师 '+b.playground.length+' 人'); }
+  if(b.leader.length){ gLeader.value = b.leader.join('\n'); state.global.leader = b.leader; summary.push('值周组长 '+b.leader.length+' 人'); }
+  const fl = [];
+  for(let f=1; f<=FLOORS; f++){
+    if(b.floors[f] && b.floors[f].length){
+      textareas[f].teachers.value = b.floors[f].join('\n');
+      state.lists[f] = {teachers: b.floors[f]};
+      fl.push(f+'楼 '+b.floors[f].length+' 人');
+    }
+  }
+  if(fl.length) summary.push(fl.join('、'));
+  return summary;
+}
+
+function applyImport(rows, header){
   let maxW = 0;
   rows.forEach(r=>{ maxW = Math.max(maxW, r.w); });
   const N = Math.min(60, Math.max(1, maxW));
@@ -837,19 +919,36 @@ function applyImport(rows){
       state.schedule[w] = {admin:'', teacher, playground:'', leader:''};
     }
   }
+  // 根据字段名归类姓名到左侧名单，便于后续再次排班
+  const viaHeader = header && header.some(r=>r && r!=='week');
+  const buckets = viaHeader
+    ? collectNames(rows, i=>header[i]||null)
+    : collectNames(rows, i=>{                       // 无表头：按标准列顺序
+        if(i===0) return 'admin';
+        if(i>=1 && i<=FLOORS) return 'floor:'+i;
+        if(i===FLOORS+1) return 'playground';
+        if(i===FLOORS+2) return 'leader';
+        return null;
+      });
+  const summary = fillBuckets(buckets);
   warningsEl.innerHTML = '';
   renderSchedule();
-  return {N, present};
+  if(state.mode==='arrange'){ renderFlexChips(); renderFloorChips(); renderGlobalChips(); }
+  return {N, present, summary, viaHeader};
 }
 
 importOk.addEventListener('click', ()=>{
-  const rows = parseImport(importText.value);
+  const {rows, header} = parseImport(importText.value);
   if(!rows.length){ alert('未能识别排班数据：请确保每行以「第X周」开头，并用制表符/逗号/空格分隔各列。'); return; }
-  const {N, present} = applyImport(rows);
+  const {N, present, summary, viaHeader} = applyImport(rows, header);
   const missing = [];
   for(let w=1; w<=N; w++) if(!present.includes(w)) missing.push(w);
   closeImport();
-  alert('导入成功：共 ' + rows.length + ' 周（第 1–' + N + ' 周）' + (missing.length ? '，缺失第 ' + missing.join('、') + ' 周已按空白填充。' : '。'));
+  let msg = '导入成功：共 ' + rows.length + ' 周（第 1–' + N + ' 周）' + (missing.length ? '，缺失第 ' + missing.join('、') + ' 周已按空白填充。' : '。');
+  msg += '\n\n' + (viaHeader ? '已根据字段名自动归类到「排班配置」名单：' : '未检测到字段名，已按标准列顺序（值周行政、1-6楼、操场、组长）归类到「排班配置」名单：');
+  msg += '\n' + (summary.join('\n') || '（未识别到可归类的岗位列）');
+  msg += '\n\n后续可直接点击「生成排班」按这些名单重新排班。';
+  alert(msg);
 });
 importCancel.addEventListener('click', closeImport);
 importMask.addEventListener('click', e=>{ if(e.target === importMask) closeImport(); });
@@ -863,9 +962,9 @@ function exportExcel(){
   html += '<th>值周操场教师</th><th>值周组长</th></tr>';
   for(let w=1; w<=state.totalWeeks; w++){
     const c = state.schedule[w];
-    html += `<tr><td>第${w}周</td><td>${c.admin||''}</td>`;
-    for(let f=1; f<=FLOORS; f++) html += `<td>${c.teacher[f]||''}</td>`;
-    html += `<td>${c.playground||''}</td><td>${c.leader||''}</td></tr>`;
+    html += `<tr><td>第${w}周</td><td>${esc(c.admin)}</td>`;
+    for(let f=1; f<=FLOORS; f++) html += `<td>${esc(c.teacher[f])}</td>`;
+    html += `<td>${esc(c.playground)}</td><td>${esc(c.leader)}</td></tr>`;
   }
   html += '</table></body></html>';
   const blob = new Blob(['\ufeff'+html], {type:'application/vnd.ms-excel;charset=utf-8'});
