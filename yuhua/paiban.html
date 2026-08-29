@@ -1,0 +1,926 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>值周工作编排器</title>
+<style>
+  :root{
+    --bg:#f3f5f9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --line:#e5e9f2; --line-soft:#eef1f6; --accent:#2563eb; --accent-soft:#eff4ff;
+    --sel:#fbbf24; --warn:#dc2626; --ok:#16a34a;
+    --shadow:0 1px 2px rgba(15,23,42,.04),0 12px 32px -20px rgba(15,23,42,.22);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       background:var(--bg);color:var(--ink);font-size:15px;line-height:1.55;}
+
+  /* ===== 整体布局：左侧固定侧边栏 + 右侧主区 ===== */
+  .layout{display:flex;min-height:100vh;}
+
+  /* ===== 侧边导航栏 ===== */
+  .sidebar{width:256px;flex:none;background:linear-gradient(180deg,#13213f 0%,#0b1526 100%);color:#cbd5e1;
+           display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:12px;padding:26px 22px 22px;}
+  .brand-logo{width:42px;height:42px;flex:none;border-radius:12px;background:linear-gradient(135deg,#3b82f6,#2563eb);
+              display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 8px 18px -6px rgba(37,99,235,.55);}
+  .brand-logo svg{width:22px;height:22px;}
+  .brand-name{font-size:16.5px;font-weight:800;color:#f8fafc;letter-spacing:.3px;}
+  .brand-sub{font-size:11.5px;color:#64748b;margin-top:2px;letter-spacing:1.2px;}
+  .nav{padding:6px 14px;display:flex;flex-direction:column;gap:6px;flex:1;}
+  .nav-label{font-size:11.5px;font-weight:700;letter-spacing:2px;color:#475569;padding:14px 10px 8px;}
+  .nav-item{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;border:none;border-radius:11px;
+            background:transparent;color:#94a3b8;font-size:15px;font-weight:600;cursor:pointer;
+            transition:.16s;font-family:inherit;text-align:left;}
+  .nav-item:hover{background:rgba(148,163,184,.12);color:#e2e8f0;}
+  .nav-item.active{background:var(--accent);color:#fff;box-shadow:0 10px 22px -10px rgba(37,99,235,.85);}
+  .nav-item .ico{display:flex;width:22px;height:22px;flex:none;}
+  .nav-item .ico svg{width:100%;height:100%;}
+  .sidebar-foot{padding:18px 22px;border-top:1px solid rgba(148,163,184,.14);font-size:12.5px;color:#64748b;line-height:1.8;}
+
+  /* ===== 主区 ===== */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+          padding:32px 38px 22px;max-width:1500px;width:100%;margin:0 auto;}
+  .topbar h2{margin:0;font-size:24px;font-weight:800;letter-spacing:.3px;}
+  .topbar p{margin:6px 0 0;font-size:14px;color:var(--muted);}
+  .topbar-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .content{width:100%;max-width:1500px;margin:0 auto;padding:0 38px 38px;flex:1;}
+  .wrap{display:grid;grid-template-columns:392px 1fr;gap:24px;align-items:start;}
+  .wrap > *{min-width:0;}
+  @media(max-width:1120px){.wrap{grid-template-columns:1fr;}}
+  @media(max-width:880px){
+    .sidebar{position:static;height:auto;width:100%;}
+    .brand{padding:16px 18px 8px;}
+    .nav{flex-direction:row;padding:6px 12px 16px;}
+    .nav-item{justify-content:center;}
+    .nav-label,.sidebar-foot{display:none;}
+    .topbar{padding:20px 18px 14px;}
+    .content{padding:0 18px 24px;}
+  }
+
+  /* ===== 卡片 ===== */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);}
+  .panel-h{padding:16px 20px;font-weight:700;font-size:15.5px;border-bottom:1px solid var(--line-soft);
+           display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .panel-h .sub{font-weight:500;font-size:12.5px;color:var(--muted);}
+  .panel-b{padding:20px;}
+
+  /* ===== 左侧配置卡 ===== */
+  .cfg{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto;}
+  @media(max-width:1120px){.cfg{position:static;max-height:none;overflow:visible;}}
+  .cfg section{border-top:1px solid var(--line-soft);padding-top:20px;margin-top:20px;}
+  body.mode-edit .cfg section:first-child{border-top:none;padding-top:0;margin-top:0;}
+  body.mode-arrange .cfg section:nth-of-type(2){border-top:none;padding-top:0;margin-top:0;}
+  body.mode-arrange .cfg h3 .num{display:none;}
+  .cfg h3{margin:0 0 13px;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:10px;}
+  .cfg h3 .num{display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:8px;
+       background:var(--accent);color:#fff;font-size:12.5px;flex:none;font-weight:700;}
+
+  .row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+  label.fld{font-size:13.5px;color:var(--muted);min-width:58px;font-weight:600;}
+  input[type=number]{width:96px;padding:9px 12px;border:1px solid #dbe1ea;border-radius:10px;font-size:15px;font-family:inherit;}
+  input[type=text]{width:100%;padding:9px 12px;border:1px solid #dbe1ea;border-radius:10px;font-size:14.5px;font-family:inherit;background:#fff;}
+  textarea{width:100%;min-height:46px;resize:vertical;padding:9px 12px;border:1px solid #dbe1ea;border-radius:10px;
+           font-size:14.5px;font-family:inherit;line-height:1.55;background:#fff;}
+  textarea.locked{background:#f1f5f9;color:var(--muted);}
+  input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.14);}
+  .field{font-size:12.5px;color:var(--muted);display:block;margin-bottom:7px;font-weight:600;}
+
+  .pub-list{display:flex;flex-direction:column;gap:16px;}
+  .floor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:10px;}
+  .flr{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fbfcfe;}
+  .flr-h{padding:8px 12px;color:#fff;font-weight:700;font-size:13.5px;letter-spacing:.3px;}
+  .flr-b{padding:11px;}
+
+  /* ===== 按钮 ===== */
+  .btn{border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;
+       background:var(--accent);color:#fff;transition:.16s;white-space:nowrap;font-family:inherit;}
+  .btn:hover{filter:brightness(1.07);transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn.ghost{background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;}
+  .btn.ghost:hover{background:#e6ecf4;}
+  .btn.warn{background:#fef2f2;color:var(--warn);border:1px solid #fecaca;}
+  .btn.warn:hover{background:#fee2e2;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+  .btn.active{box-shadow:0 0 0 3px rgba(37,99,235,.28);outline:2px solid var(--accent);outline-offset:1px;background:var(--accent);color:#fff;}
+  .btn.ghost.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .btn-row{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px;}
+
+  .tips{font-size:12.5px;color:var(--muted);margin:7px 0 0;line-height:1.65;}
+  .tips b{color:var(--ink);}
+
+  /* ===== 教师 chips ===== */
+  #flexChips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;min-height:6px;}
+  .chip{padding:8px 16px;border-radius:999px;background:#f1f5f9;color:#334155;font-size:16px;cursor:pointer;
+        border:1px solid #e2e8f0;user-select:none;transition:.14s;font-weight:600;}
+  .chip:hover{border-color:var(--accent);color:var(--accent);}
+  .chip.sel{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 6px 14px -6px rgba(37,99,235,.6);}
+  .chip.empty{background:none;border:none;color:var(--muted);cursor:default;font-weight:400;padding:4px 0;}
+
+  /* ===== 模式可见性：编辑模式显示 .edit-only，编排模式显示 .arrange-only ===== */
+  body.mode-arrange .edit-only{display:none !important;}
+  body.mode-edit .arrange-only{display:none !important;}
+
+  .fc-group{margin-bottom:14px;}
+  .fc-title{font-size:15px;font-weight:700;margin:2px 0 8px;}
+  .fc-chips{display:flex;flex-wrap:wrap;gap:8px;}
+
+  /* ===== 模式提示条 ===== */
+  #banner{position:sticky;top:0;z-index:30;display:none;padding:12px 18px;font-weight:600;font-size:15px;
+          border-radius:12px;margin-bottom:18px;box-shadow:var(--shadow);}
+  #banner.arrange{background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;}
+  #banner.clear{background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;}
+
+  /* ===== 排班表 ===== */
+  .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+  .scroll-x{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff;}
+  table.sched{border-collapse:collapse;width:100%;font-size:16px;min-width:840px;}
+  table.sched th,table.sched td{border:1px solid var(--line-soft);padding:8px 11px;text-align:center;white-space:nowrap;}
+  table.sched thead th{position:sticky;top:0;background:#f8fafc;z-index:5;font-weight:700;font-size:14.5px;}
+  table.sched tbody th{background:#f8fafc;font-weight:600;color:var(--muted);position:sticky;left:0;z-index:4;font-size:14.5px;}
+  table.sched td.role-admin{background:#fff7ed;}
+  table.sched td.role-playground{background:#ecfeff;}
+  table.sched td.role-leader{background:#f0fdf4;}
+  table.sched tbody tr:hover td{background:rgba(37,99,235,.05);}
+  td.clickable{cursor:pointer;}
+  td.sel, .clickable.sel{outline:3px solid var(--sel);outline-offset:-3px;background:#fffbeb !important;font-weight:700;}
+  td.swap-sel, .clickable.swap-sel{outline:3px solid #7c3aed;outline-offset:-3px;background:#f5f3ff !important;font-weight:700;}
+  .emptycell{color:#cbd5e1;}
+  .sched td.cell-floor{text-align:center;vertical-align:middle;padding:5px 8px;}
+  .sched td.cell-role{vertical-align:middle;padding:5px 8px;}
+  .sched td.cell-floor .t{font-size:16px;padding:4px 8px;border-radius:7px;cursor:pointer;white-space:nowrap;display:inline-block;}
+  .sched .role-line{font-size:16px;padding:4px 8px;border-radius:7px;cursor:pointer;white-space:nowrap;}
+  .sched .t:hover, .sched .role-line:hover{background:rgba(37,99,235,.12);}
+  .sched .nm{font-weight:500;margin-right:2px;}
+  .sched .cnt{display:inline-block;margin-left:4px;padding:0 8px;border-radius:9px;background:var(--accent-soft);color:var(--accent);
+              font-size:12px;line-height:20px;font-weight:700;border:1px solid #c7d2fe;vertical-align:middle;}
+  td.emptycell .cnt{display:none;}
+  table.sched th.col-admin{background:#fff7ed;color:#c2410c;}
+  table.sched th.col-playground{background:#ecfeff;color:#0e7490;}
+  table.sched th.col-leader{background:#f0fdf4;color:#15803d;}
+
+  /* ===== 底部排班提示面板 ===== */
+  #warnings{margin-top:26px;border:1px solid #fde68a;background:#fffbeb;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+  #warnings:empty{display:none;}
+  #warnings .warn-head{padding:13px 20px;font-weight:700;font-size:14.5px;background:#fef3c7;color:#92400e;
+           display:flex;align-items:center;gap:8px;border-bottom:1px solid #fde68a;}
+  #warnings .warn-body{padding:14px 20px;color:#b45309;font-size:13.5px;line-height:2;}
+  #warnings .warn-item{display:flex;gap:9px;align-items:flex-start;}
+  #warnings .warn-item::before{content:"⚠";color:#f59e0b;flex:none;}
+
+  .empty-hint{color:var(--muted);padding:56px 24px;text-align:center;font-size:14px;}
+
+  /* ===== 导入排班模态框 ===== */
+  .modal-mask{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(3px);display:none;
+              align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .modal{background:#fff;border-radius:16px;width:min(700px,100%);max-height:88vh;display:flex;flex-direction:column;
+         box-shadow:0 30px 60px -20px rgba(15,23,42,.4);}
+  .modal-h{padding:18px 22px;font-size:16.5px;font-weight:800;border-bottom:1px solid var(--line-soft);}
+  .modal-b{padding:20px 22px;display:flex;flex-direction:column;gap:12px;overflow:auto;}
+  .modal-b textarea{min-height:280px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Courier New",monospace;
+                    font-size:13.5px;line-height:1.7;white-space:pre;}
+  .modal-f{padding:16px 22px;border-top:1px solid var(--line-soft);display:flex;justify-content:flex-end;gap:10px;}
+</style>
+</head>
+<body class="mode-edit">
+<div class="layout">
+
+  <!-- ===== 左侧侧边导航栏 ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">值周工作编排器</div>
+        <div class="brand-sub">DUTY ROSTER</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-label">工作模式</div>
+      <button class="nav-item active" id="navEdit">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+        编辑模式
+      </button>
+      <button class="nav-item" id="navArrange">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/></svg></span>
+        编排模式
+      </button>
+    </nav>
+    <div class="sidebar-foot">
+      按学期总周数自动轮岗排班<br>
+      6 楼层独立名单 · 一键导出 Excel
+    </div>
+  </aside>
+
+  <!-- ===== 右侧主区 ===== -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h2 id="pageTitle">编辑模式</h2>
+        <p id="pageSub">配置学期周数与各岗位名单，修改后点击「生成排班」即可自动轮岗。</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn ghost" id="btnImport">📥 导入排班</button>
+        <button class="btn ghost" id="btnExport">📊 导出 Excel 排班表</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="wrap">
+
+        <!-- 左：配置卡（编辑模式=名单编辑 / 编排模式=教师来源） -->
+        <aside class="panel cfg">
+          <div class="panel-h">排班配置</div>
+          <div class="panel-b">
+
+            <section class="edit-only">
+              <h3><span class="num">1</span>学期设置</h3>
+              <div class="row">
+                <label class="fld">总周数</label>
+                <input type="number" id="weeks" value="20" min="1" max="60">
+                <span class="tips">建议 16–22</span>
+              </div>
+              <div class="btn-row">
+                <button class="btn" id="btnGen">生成排班</button>
+                <button class="btn ghost" id="btnSample">载入示例</button>
+                <button class="btn warn" id="btnReset">清空</button>
+              </div>
+              <p class="tips">名单从 Excel 整列粘贴，<b>每行一个姓名</b>。各楼层值周老师每周每层 1 人，名单越多越均匀。</p>
+            </section>
+
+            <section>
+              <h3><span class="num">2</span>公共岗位名单（全校共用）</h3>
+              <p class="tips edit-only" style="margin-top:0;">以下岗位<b>全校共用</b>，仅填一次，系统按周轮岗，<b>每周各 1 人</b>。</p>
+              <div class="pub-list edit-only">
+                <div><label class="field">值周行政（每行 1 人）</label><textarea class="lock-edit" id="gAdmin" placeholder="例如：&#10;王行政&#10;钱行政"></textarea></div>
+                <div><label class="field">值周操场教师（每行 1 人）</label><textarea class="lock-edit" id="gPlayground" placeholder="例如：&#10;赵操场&#10;钱操场"></textarea></div>
+                <div><label class="field">值周组长（每行 1 人）</label><textarea class="lock-edit" id="gLeader" placeholder="例如：&#10;孙组长&#10;李组长"></textarea></div>
+              </div>
+              <div id="globalChips" class="arrange-only"></div>
+            </section>
+
+            <section>
+              <h3><span class="num">3</span>各楼层值周老师名单</h3>
+              <p class="tips edit-only" style="margin-top:0;">每周每层 1 人，从 Excel 整列粘贴，每行 1 人。</p>
+              <div class="floor-grid edit-only" id="floors"></div>
+              <div id="floorChips" class="arrange-only"></div>
+            </section>
+
+            <section>
+              <h3><span class="num">4</span>灵活值周教师</h3>
+              <textarea id="flexInput" class="edit-only" placeholder="每行一个姓名，例如：&#10;机动教师甲&#10;机动教师乙"></textarea>
+              <div id="flexChips" class="arrange-only"></div>
+              <p class="tips edit-only">进入「编排模式」后，点此姓名（或下方各楼层教师姓名）选中，再点排班表单元格即可安排。</p>
+            </section>
+
+          </div>
+        </aside>
+
+        <!-- 右：排班预览 -->
+        <div>
+          <div id="banner"></div>
+          <div class="panel">
+            <div class="panel-h">排班预览<span class="sub">行 = 周次，列 = 值周岗位 · 姓名后数字为该教师累计值周次数 · 编辑模式双击姓名即清空</span></div>
+            <div class="panel-b">
+              <div class="toolbar">
+                <button class="btn ghost" id="btnSwap">🔄 位置互换</button>
+                <button class="btn ghost" id="btnClear">🧹 清空单元格</button>
+                <span class="tips" id="swapTip">互换：点两个姓名完成互换；清空：点一个单元格即清空，可连续使用；均按 ESC 退出。</span>
+              </div>
+              <div id="schedule"><div class="empty-hint">尚未生成排班。请在左侧设置周数与各楼层名单，点击「生成排班」。</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 底部：排班提示（名单人数不足等警告信息） -->
+      <div id="warnings"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ===== 导入排班表模态框 ===== -->
+<div class="modal-mask" id="importMask">
+  <div class="modal">
+    <div class="modal-h">📥 导入排班表</div>
+    <div class="modal-b">
+      <p class="tips" style="margin:0;">粘贴排班数据，<b>每行代表一周</b>，按「周次、值周行政、1楼…6楼、值周操场教师、值周组长」顺序，用<b>制表符 / 逗号 / 2 个以上空格</b>分隔（可直接粘贴本工具导出的 Excel 内容）。导入后即可在编辑、编排模式下直接修改。</p>
+      <textarea id="importText" placeholder="第1周	王行政	李一	吴一	陈一	沈一	秦一	吕一	赵操场	郑组长&#10;第2周	钱行政	李二	吴二	陈二	沈二	秦二	吕二	钱操场	王组长&#10;……"></textarea>
+    </div>
+    <div class="modal-f">
+      <button class="btn ghost" id="importCancel">取消</button>
+      <button class="btn" id="importOk">导入</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const FLOORS = 6;
+const ROLE_LABEL = {admin:"值周行政", playground:"值周操场教师", leader:"值周组长"};
+const FLOOR_COLORS = ["#2563eb","#0891b2","#16a34a","#d97706","#dc2626","#7c3aed"];
+const ARRANGE_BANNER = '🎯 编排模式：点击左侧任意教师姓名（公共岗位 / 各楼层 / 灵活教师）选中，再点排班表单元格安排；或点单元格内姓名后点目标格移动。按 ESC 退出。';
+
+const state = {
+  totalWeeks: 20,
+  global: {admin:[], playground:[], leader:[]}, // 全校共用的公共岗位名单
+  lists: {},        // floor -> {teachers:[]}
+  schedule: {},     // week -> {admin, teacher:{1..6}, playground, leader}  公共岗位全校每周各1人
+  mode: 'edit',     // 'edit' | 'arrange'
+  arrSrc: null,     // null | {kind:'chip',name} | {kind:'cell',f,w,role,name}
+  swapping: false,  // 位置互换模式开关
+  swapSrc: null,    // 已选中的第一个交换源 {f,w,role}
+  clearing: false   // 清空单元格模式开关
+};
+
+// DOM refs (config)
+const floorsEl = document.getElementById('floors');
+const gAdmin = document.getElementById('gAdmin');
+const gPlayground = document.getElementById('gPlayground');
+const gLeader = document.getElementById('gLeader');
+const flexInput = document.getElementById('flexInput');
+const flexChips = document.getElementById('flexChips');
+const floorChipsEl = document.getElementById('floorChips');
+const globalChipsEl = document.getElementById('globalChips');
+const weeksInput = document.getElementById('weeks');
+const banner = document.getElementById('banner');
+const scheduleEl = document.getElementById('schedule');
+const warningsEl = document.getElementById('warnings');
+const btnGen = document.getElementById('btnGen');
+const btnSample = document.getElementById('btnSample');
+const btnReset = document.getElementById('btnReset');
+const navEdit = document.getElementById('navEdit');
+const navArrange = document.getElementById('navArrange');
+const btnSwap = document.getElementById('btnSwap');
+const btnClear = document.getElementById('btnClear');
+const btnImport = document.getElementById('btnImport');
+const importMask = document.getElementById('importMask');
+const importText = document.getElementById('importText');
+const importOk = document.getElementById('importOk');
+const importCancel = document.getElementById('importCancel');
+const pageTitle = document.getElementById('pageTitle');
+const pageSub = document.getElementById('pageSub');
+
+// textarea element refs: textareas[f][role]
+const textareas = {};
+
+// ---------- build config UI ----------
+function buildFloors(){
+  floorsEl.innerHTML = '';
+  for(let f=1; f<=FLOORS; f++){
+    const card = document.createElement('div');
+    card.className = 'flr';
+    card.innerHTML = `
+      <div class="flr-h" style="background:${FLOOR_COLORS[f-1]}">第 ${f} 楼</div>
+      <div class="flr-b">
+        <div class="full"><label class="field">值周老师（每周每层 1 人）</label><textarea class="lock-edit" data-f="${f}" data-role="teachers" placeholder="每行1人"></textarea></div>
+      </div>`;
+    floorsEl.appendChild(card);
+    textareas[f] = {};
+    card.querySelectorAll('textarea').forEach(ta=>{
+      textareas[f][ta.dataset.role] = ta;
+    });
+  }
+}
+
+function parseList(text){
+  return String(text||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+}
+
+function readConfig(){
+  state.totalWeeks = Math.max(1, Math.min(60, parseInt(weeksInput.value,10)||1));
+  weeksInput.value = state.totalWeeks;
+  state.global = {
+    admin: parseList(gAdmin.value),
+    playground: parseList(gPlayground.value),
+    leader: parseList(gLeader.value)
+  };
+  state.lists = {};
+  for(let f=1; f<=FLOORS; f++){
+    state.lists[f] = { teachers: parseList(textareas[f].teachers.value) };
+  }
+}
+
+// ---------- rotation generation ----------
+function generate(){
+  exitSwap();
+  readConfig();
+  const N = state.totalWeeks;
+  const G = state.global;
+  const la = G.admin.length, lp = G.playground.length, ll = G.leader.length;
+  const warns = [];
+  if(la === 0) warns.push(`「值周行政」公共名单为空。`);
+  if(lp === 0) warns.push(`「值周操场教师」公共名单为空。`);
+  if(ll === 0) warns.push(`「值周组长」公共名单为空。`);
+
+  state.schedule = {};
+  for(let w=1; w<=N; w++){
+    // 公共岗位：全校每周各 1 人，按周轮岗
+    const admin = la ? G.admin[(w-1)%la] : '';
+    const playground = lp ? G.playground[(w-1)%lp] : '';
+    const leader = ll ? G.leader[(w-1)%ll] : '';
+    const teacher = {};
+    for(let f=1; f<=FLOORS; f++){
+      const lt = state.lists[f].teachers.length;
+      if(w===1 && lt === 0) warns.push(`第 ${f} 楼「值周老师」名单为空。`);
+      teacher[f] = lt ? state.lists[f].teachers[(w-1)%lt] : '';
+    }
+    state.schedule[w] = {admin, teacher, playground, leader};
+  }
+  warningsEl.innerHTML = warns.length
+    ? '<div class="warn-head">⚠️ 排班提示（' + warns.length + ' 条）</div><div class="warn-body">' + warns.map(w=>'<div class="warn-item">'+w+'</div>').join('') + '</div>'
+    : '';
+  renderSchedule();
+}
+
+// ---------- schedule rendering ----------
+function nameCell(f, w, role, val){
+  const cls = role==='teacher' ? 't' : 'role-line';
+  const tdCls = role==='teacher' ? 'cell-floor' : 'cell-role role-'+role;
+  const cnt = val ? '<span class="cnt">0</span>' : '';
+  return `<td class="${tdCls}"><div class="${cls} clickable${val?'':' emptycell'}" data-f="${f}" data-w="${w}" data-role="${role}"><span class="nm">${val||'—'}</span>${cnt}</div></td>`;
+}
+
+function renderSchedule(){
+  if(!state.schedule || Object.keys(state.schedule).length===0){
+    scheduleEl.innerHTML = '<div class="empty-hint">尚未生成排班。请在左侧设置周数与各楼层名单，点击「生成排班」。</div>';
+    return;
+  }
+  let html = '<div class="scroll-x"><table class="sched"><thead><tr>';
+  html += '<th>周次</th>';
+  html += '<th class="col-admin">值周行政</th>';
+  for(let f=1; f<=FLOORS; f++) html += `<th style="background:${FLOOR_COLORS[f-1]}">${f}楼</th>`;
+  html += '<th class="col-playground">值周操场教师</th>';
+  html += '<th class="col-leader">值周组长</th>';
+  html += '</tr></thead><tbody>';
+  for(let w=1; w<=state.totalWeeks; w++){
+    const c = state.schedule[w];
+    html += `<tr><th>第${w}周</th>`;
+    html += nameCell(0, w, 'admin', c.admin);
+    for(let f=1; f<=FLOORS; f++){
+      html += nameCell(f, w, 'teacher', c.teacher[f]);
+    }
+    html += nameCell(0, w, 'playground', c.playground);
+    html += nameCell(0, w, 'leader', c.leader);
+    html += '</tr>';
+  }
+  html += '</tbody></table></div>';
+  scheduleEl.innerHTML = html;
+  refreshCounts();
+}
+
+// get/set schedule values (week-centric)
+function getVal(f,w,role){
+  const c = state.schedule[w];
+  if(!c) return '';
+  return role==='teacher' ? (c.teacher[f]||'') : (c[role]||'');
+}
+function setVal(f,w,role,val){
+  const c = state.schedule[w];
+  if(!c) return;
+  if(role==='teacher') c.teacher[f]=val; else c[role]=val;
+}
+// 实时次数统计：遍历整张排班，求出每位教师被安排的总次数
+function buildCountMap(){
+  const m = {};
+  for(let w=1; w<=state.totalWeeks; w++){
+    const c = state.schedule[w];
+    if(!c) continue;
+    const names = [c.admin, c.playground, c.leader];
+    for(let f=1; f<=FLOORS; f++) names.push(c.teacher[f]);
+    names.forEach(n=>{ if(n) m[n]=(m[n]||0)+1; });
+  }
+  return m;
+}
+function refreshCounts(){
+  const m = buildCountMap();
+  scheduleEl.querySelectorAll('[data-role]').forEach(el=>{
+    const nmEl = el.querySelector('.nm');
+    if(!nmEl) return;
+    const n = (nmEl.textContent||'').trim();
+    const span = el.querySelector('.cnt');
+    if(!n || n==='—'){ if(span) span.textContent=''; el.classList.add('emptycell'); return; }
+    el.classList.remove('emptycell');
+    if(span) span.textContent = m[n]||0;
+  });
+}
+function updateCellName(cell){
+  const el = scheduleEl.querySelector(`[data-f="${cell.f}"][data-w="${cell.w}"][data-role="${cell.role}"]`);
+  if(!el) return;
+  const v = getVal(cell.f,cell.w,cell.role);
+  const nm = el.querySelector('.nm');
+  nm.textContent = v||'—';
+  el.classList.toggle('emptycell', !v);
+  refreshCounts();
+}
+
+// ---------- 模式切换 ----------
+function showBanner(text, cls){
+  banner.className = cls || 'arrange';
+  banner.textContent = text;
+  banner.style.display = 'block';
+}
+function hideBanner(){ banner.style.display='none'; banner.className=''; }
+function clearCellSel(){ scheduleEl.querySelectorAll('.sel').forEach(e=>e.classList.remove('sel')); }
+function clearChipSel(){ flexChips.querySelectorAll('.chip.sel').forEach(e=>e.classList.remove('sel')); }
+function clearFloorChipSel(){ floorChipsEl.querySelectorAll('.chip.sel').forEach(e=>e.classList.remove('sel')); }
+function clearGlobalChipSel(){ globalChipsEl.querySelectorAll('.chip.sel').forEach(e=>e.classList.remove('sel')); }
+function clearSwapSel(){ scheduleEl.querySelectorAll('.swap-sel').forEach(e=>e.classList.remove('swap-sel')); }
+
+function updateTopbar(m){
+  if(m==='arrange'){
+    pageTitle.textContent = '编排模式';
+    pageSub.textContent = '点击左侧教师姓名选中，再点击排班表单元格完成安排；支持位置互换，按 ESC 退出。';
+  } else {
+    pageTitle.textContent = '编辑模式';
+    pageSub.textContent = '配置学期周数与各岗位名单，修改后点击「生成排班」即可自动轮岗。';
+  }
+}
+
+// 位置互换模式：点第一个姓名选中，点第二个姓名完成互换（可连续，ESC 退出）
+function enterSwap(){
+  exitMode();                 // 先清掉编排模式的临时选中
+  state.swapping = true;
+  state.swapSrc = null;
+  clearCellSel(); clearChipSel(); clearFloorChipSel(); clearGlobalChipSel();
+  btnSwap.classList.add('active');
+  showBanner('🔄 位置互换：请点击第一个要互换的姓名');
+}
+function exitSwap(){
+  state.swapping = false;
+  state.swapSrc = null;
+  clearSwapSel();
+  btnSwap.classList.remove('active');
+  if(state.mode==='arrange') showBanner(ARRANGE_BANNER); else hideBanner();
+}
+
+// 清空单元格模式：点一个单元格清空一个，可连续使用，ESC 退出
+function enterClear(){
+  exitMode();                 // 先清掉编排模式的临时选中与互换模式
+  state.clearing = true;
+  clearCellSel(); clearChipSel(); clearFloorChipSel();
+  btnClear.classList.add('active');
+  showBanner('🧹 清空单元格：点击要清空的单元格即可清空，可连续点击连续清空；按 ESC 退出。', 'clear');
+}
+function exitClear(){
+  state.clearing = false;
+  btnClear.classList.remove('active');
+  if(state.mode==='arrange') showBanner(ARRANGE_BANNER); else hideBanner();
+}
+
+function setMode(m){
+  exitMode();
+  state.mode = m;
+  document.body.classList.toggle('mode-arrange', m==='arrange');
+  document.body.classList.toggle('mode-edit', m==='edit');
+  const lock = (m==='arrange');
+  document.querySelectorAll('.lock-edit').forEach(ta=>{ ta.readOnly = lock; ta.classList.toggle('locked', lock); });
+  btnGen.disabled = lock; btnSample.disabled = lock; btnReset.disabled = lock;
+  navEdit.classList.toggle('active', m==='edit');
+  navArrange.classList.toggle('active', m==='arrange');
+  updateTopbar(m);
+  if(m==='arrange'){
+    renderFlexChips();
+    renderFloorChips();
+    renderGlobalChips();
+    showBanner(ARRANGE_BANNER);
+  } else {
+    hideBanner();
+  }
+}
+function exitMode(){
+  state.mode = 'edit';
+  state.arrSrc = null;
+  exitSwap();
+  exitClear();
+  clearCellSel(); clearChipSel();
+  document.querySelectorAll('.lock-edit').forEach(ta=>{ ta.readOnly=false; ta.classList.remove('locked'); });
+  btnGen.disabled = false; btnSample.disabled = false; btnReset.disabled = false;
+  navEdit.classList.add('active'); navArrange.classList.remove('active');
+  clearFloorChipSel(); clearGlobalChipSel();
+  hideBanner();
+  updateTopbar('edit');
+}
+
+// 排班表点击：位置互换模式优先，其次编排模式
+scheduleEl.addEventListener('click', e=>{
+  const el = e.target.closest('[data-role]');
+  if(!el) return;
+  const f = +el.dataset.f, w = +el.dataset.w, role = el.dataset.role;
+  const nmEl = el.querySelector('.nm');
+  const name = (nmEl? nmEl.textContent : '').trim();
+  const cell = {f,w,role};
+
+  // —— 位置互换模式 ——
+  if(state.swapping){
+    if(!state.swapSrc){
+      if(!name || name==='—') return;   // 源格必须已有姓名
+      state.swapSrc = {f,w,role};
+      clearSwapSel(); el.classList.add('swap-sel');
+      showBanner('🔄 已选「'+name+'」，请点击要互换的另一个姓名（ESC 取消）');
+      return;
+    }
+    const s = state.swapSrc;
+    if(s.f===f && s.w===w && s.role===role){   // 点回已选格 = 取消本次选择，仍停留在互换模式
+      state.swapSrc=null; clearSwapSel();
+      showBanner('🔄 位置互换：请点击第一个要互换的姓名');
+      return;
+    }
+    const a = getVal(s.f,s.w,s.role), b = getVal(f,w,role);
+    setVal(s.f,s.w,s.role, b); setVal(f,w,role, a);
+    updateCellName(s); updateCellName(cell);
+    state.swapSrc = null; clearSwapSel();
+    showBanner('🔄 已互换，可继续点两个姓名互换，或按 ESC 退出');
+    return;
+  }
+
+  // —— 清空单元格模式（连续清空，点一个清一个） ——
+  if(state.clearing){
+    setVal(f,w,role,'');
+    updateCellName({f,w,role});
+    return;
+  }
+
+  // —— 编排模式 ——
+  if(state.mode!=='arrange') return;
+  if(!state.arrSrc){
+    if(!name || name==='—') return;
+    state.arrSrc = {kind:'cell', f, w, role, name};
+    clearCellSel(); el.classList.add('sel');
+    return;
+  }
+  // 已选中来源
+  if(state.arrSrc.kind==='cell' && state.arrSrc.f===f && state.arrSrc.w===w && state.arrSrc.role===role){
+    state.arrSrc = null; el.classList.remove('sel'); return;
+  }
+  const srcName = state.arrSrc.name;
+  setVal(f,w,role,srcName);
+  updateCellName(cell);
+  if(state.arrSrc.kind==='cell'){
+    const src = {f:state.arrSrc.f, w:state.arrSrc.w, role:state.arrSrc.role};
+    setVal(src.f,src.w,src.role,'');
+    updateCellName(src);
+    state.arrSrc = null; el.classList.remove('sel');
+  }
+  // chip 来源保留选中，可重复安排到多个单元格
+});
+
+// 编辑模式：双击预览区姓名单元格，自动清空该单元格
+scheduleEl.addEventListener('dblclick', e=>{
+  if(state.mode!=='edit' || state.swapping) return;
+  const el = e.target.closest('[data-role]');
+  if(!el) return;
+  const f = +el.dataset.f, w = +el.dataset.w, role = el.dataset.role;
+  setVal(f,w,role,'');
+  updateCellName({f,w,role});
+});
+
+// ---------- 灵活教师 chips ----------
+function renderFlexChips(){
+  const names = parseList(flexInput.value);
+  flexChips.innerHTML = '';
+  if(names.length===0){ flexChips.innerHTML = '<span class="chip empty">（暂无灵活教师，请在上方文本框粘贴名单）</span>'; return; }
+  names.forEach(name=>{
+    const c = document.createElement('span');
+    c.className = 'chip';
+    c.textContent = name;
+    c.addEventListener('click', ()=>{
+      if(state.mode!=='arrange'){ alert('请先切换到「编排模式」再选择教师。'); return; }
+      if(state.arrSrc && state.arrSrc.kind==='chip' && state.arrSrc.name===name){
+        state.arrSrc = null; c.classList.remove('sel'); return;
+      }
+      if(state.arrSrc && state.arrSrc.kind==='cell'){ clearCellSel(); }
+      clearChipSel(); clearFloorChipSel(); clearGlobalChipSel();
+      state.arrSrc = {kind:'chip', name};
+      c.classList.add('sel');
+    });
+    flexChips.appendChild(c);
+  });
+}
+flexInput.addEventListener('input', ()=>{ if(state.mode==='arrange') renderFlexChips(); });
+
+// 编排模式：公共岗位（值周行政 / 操场教师 / 值周组长）也变成可点击 chip，点击姓名选中后安排到对应列
+function renderGlobalChips(){
+  globalChipsEl.innerHTML = '';
+  let any = false;
+  const groups = [
+    {role:'admin',       label:'值周行政',     el:gAdmin,       color:'#c2410c'},
+    {role:'playground',  label:'值周操场教师', el:gPlayground,  color:'#0e7490'},
+    {role:'leader',      label:'值周组长',     el:gLeader,      color:'#15803d'}
+  ];
+  groups.forEach(g=>{
+    const names = parseList(g.el.value);
+    if(names.length===0) return;
+    any = true;
+    const grp = document.createElement('div');
+    grp.className = 'fc-group';
+    const title = document.createElement('div');
+    title.className = 'fc-title';
+    title.textContent = g.label;
+    title.style.color = g.color;
+    grp.appendChild(title);
+    const chips = document.createElement('div');
+    chips.className = 'fc-chips';
+    names.forEach(name=>{
+      const c = document.createElement('span');
+      c.className = 'chip';
+      c.textContent = name;
+      c.addEventListener('click', ()=>{
+        if(state.mode!=='arrange'){ alert('请先切换到「编排模式」再选择教师。'); return; }
+        if(state.arrSrc && state.arrSrc.kind==='global' && state.arrSrc.role===g.role && state.arrSrc.name===name){
+          state.arrSrc = null; c.classList.remove('sel'); return;
+        }
+        if(state.arrSrc && state.arrSrc.kind==='cell'){ clearCellSel(); }
+        clearChipSel(); clearFloorChipSel(); clearGlobalChipSel();
+        state.arrSrc = {kind:'global', name, role:g.role};
+        c.classList.add('sel');
+      });
+      chips.appendChild(c);
+    });
+    grp.appendChild(chips);
+    globalChipsEl.appendChild(grp);
+  });
+  if(!any) globalChipsEl.innerHTML = '<span class="chip empty">（公共岗位名单为空，请先在编辑模式粘贴名单）</span>';
+}
+
+// 编排模式：各楼层值周老师也变成可点击 chip，点击姓名选中后安排到单元格
+function renderFloorChips(){
+  floorChipsEl.innerHTML = '';
+  let any = false;
+  for(let f=1; f<=FLOORS; f++){
+    const names = parseList(textareas[f].teachers.value);
+    if(names.length===0) continue;
+    any = true;
+    const grp = document.createElement('div');
+    grp.className = 'fc-group';
+    const title = document.createElement('div');
+    title.className = 'fc-title';
+    title.textContent = '第 '+f+' 楼';
+    title.style.color = FLOOR_COLORS[f-1];
+    grp.appendChild(title);
+    const chips = document.createElement('div');
+    chips.className = 'fc-chips';
+    names.forEach(name=>{
+      const c = document.createElement('span');
+      c.className = 'chip';
+      c.textContent = name;
+      c.addEventListener('click', ()=>{
+        if(state.mode!=='arrange'){ alert('请先切换到「编排模式」再选择教师。'); return; }
+        if(state.arrSrc && state.arrSrc.kind==='floor' && state.arrSrc.name===name && state.arrSrc.floor===f){
+          state.arrSrc = null; c.classList.remove('sel'); return;
+        }
+        if(state.arrSrc && state.arrSrc.kind==='cell'){ clearCellSel(); }
+        clearChipSel(); clearFloorChipSel(); clearGlobalChipSel();
+        state.arrSrc = {kind:'floor', name, floor:f};
+        c.classList.add('sel');
+      });
+      chips.appendChild(c);
+    });
+    grp.appendChild(chips);
+    floorChipsEl.appendChild(grp);
+  }
+  if(!any) floorChipsEl.innerHTML = '<span class="chip empty">（各楼层值周老师名单为空，请先在编辑模式粘贴名单）</span>';
+}
+
+// ---------- import schedule from pasted text ----------
+function parseImport(text){
+  const rows = [];
+  String(text||'').split(/\r?\n/).forEach(line=>{
+    line = line.trim();
+    if(!line) return;
+    // 跳过表头等非周行：行首必须是「第X周」或纯数字
+    const cells = line.split(/[\t,，;；]+|\s{2,}/).map(s=>s.trim()).filter(Boolean);
+    if(!cells.length) return;
+    let w = null;
+    const m = cells[0].match(/第\s*(\d+)\s*周/);
+    if(m) w = +m[1];
+    else if(/^\d{1,2}$/.test(cells[0])) w = +cells[0];
+    if(!w || w<1 || w>60) return;
+    rows.push({w, cells: cells.slice(1)});
+  });
+  return rows;
+}
+
+function openImport(){
+  importText.value = '';
+  importMask.style.display = 'flex';
+  importText.focus();
+}
+function closeImport(){ importMask.style.display = 'none'; }
+
+function applyImport(rows){
+  let maxW = 0;
+  rows.forEach(r=>{ maxW = Math.max(maxW, r.w); });
+  const N = Math.min(60, Math.max(1, maxW));
+  state.totalWeeks = N;
+  weeksInput.value = N;
+  state.schedule = {};
+  const present = [];
+  rows.forEach(r=>{
+    present.push(r.w);
+    const c = r.cells;
+    const teacher = {};
+    for(let f=1; f<=FLOORS; f++) teacher[f] = c[f]||'';   // c[1]..c[6] = 1..6 楼
+    state.schedule[r.w] = {admin: c[0]||'', teacher, playground: c[7]||'', leader: c[8]||''};
+  });
+  for(let w=1; w<=N; w++){
+    if(!state.schedule[w]){
+      const teacher = {};
+      for(let f=1; f<=FLOORS; f++) teacher[f] = '';
+      state.schedule[w] = {admin:'', teacher, playground:'', leader:''};
+    }
+  }
+  warningsEl.innerHTML = '';
+  renderSchedule();
+  return {N, present};
+}
+
+importOk.addEventListener('click', ()=>{
+  const rows = parseImport(importText.value);
+  if(!rows.length){ alert('未能识别排班数据：请确保每行以「第X周」开头，并用制表符/逗号/空格分隔各列。'); return; }
+  const {N, present} = applyImport(rows);
+  const missing = [];
+  for(let w=1; w<=N; w++) if(!present.includes(w)) missing.push(w);
+  closeImport();
+  alert('导入成功：共 ' + rows.length + ' 周（第 1–' + N + ' 周）' + (missing.length ? '，缺失第 ' + missing.join('、') + ' 周已按空白填充。' : '。'));
+});
+importCancel.addEventListener('click', closeImport);
+importMask.addEventListener('click', e=>{ if(e.target === importMask) closeImport(); });
+
+// ---------- export Excel (.xls via HTML table) ----------
+function exportExcel(){
+  if(!state.schedule || Object.keys(state.schedule).length===0){ alert('请先生成排班再导出。'); return; }
+  let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>';
+  html += '<table border="1" cellspacing="0" cellpadding="4"><tr><th>周次</th><th>值周行政</th>';
+  for(let f=1; f<=FLOORS; f++) html += `<th>${f}楼值周老师</th>`;
+  html += '<th>值周操场教师</th><th>值周组长</th></tr>';
+  for(let w=1; w<=state.totalWeeks; w++){
+    const c = state.schedule[w];
+    html += `<tr><td>第${w}周</td><td>${c.admin||''}</td>`;
+    for(let f=1; f<=FLOORS; f++) html += `<td>${c.teacher[f]||''}</td>`;
+    html += `<td>${c.playground||''}</td><td>${c.leader||''}</td></tr>`;
+  }
+  html += '</table></body></html>';
+  const blob = new Blob(['\ufeff'+html], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = '值周排班表.xls';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
+}
+
+// ---------- sample data ----------
+function loadSample(){
+  gAdmin.value = ["王行政","钱行政","孙行政","李行政","周行政","吴行政"].join('\n');
+  gPlayground.value = ["赵操场","钱操场","孙操场","李操场","周操场","吴操场"].join('\n');
+  gLeader.value = ["郑组长","王组长","冯组长","陈组长","褚组长","卫组长"].join('\n');
+  const sampleTeachers = {
+    1:["李一","李二","李三","李四","李五","李六","李七","李八"],
+    2:["吴一","吴二","吴三","吴四","吴五","吴六","吴七","吴八"],
+    3:["陈一","陈二","陈三","陈四","陈五","陈六","陈七","陈八"],
+    4:["沈一","沈二","沈三","沈四","沈五","沈六","沈七","沈八"],
+    5:["秦一","秦二","秦三","秦四","秦五","秦六","秦七","秦八"],
+    6:["吕一","吕二","吕三","吕四","吕五","吕六","吕七","吕八"]
+  };
+  for(let f=1; f<=FLOORS; f++){
+    textareas[f].teachers.value = sampleTeachers[f].join('\n');
+  }
+  flexInput.value = "机动教师甲\n机动教师乙\n机动教师丙";
+  weeksInput.value = 20;
+  generate();
+}
+
+// ---------- wire up ----------
+btnGen.addEventListener('click', generate);
+btnSample.addEventListener('click', loadSample);
+btnReset.addEventListener('click', ()=>{
+  state.schedule = {}; warningsEl.innerHTML='';
+  renderSchedule(); exitMode();
+});
+navEdit.addEventListener('click', ()=>setMode('edit'));
+navArrange.addEventListener('click', ()=>setMode('arrange'));
+btnSwap.addEventListener('click', ()=>{ state.swapping ? exitSwap() : enterSwap(); });
+btnClear.addEventListener('click', ()=>{ state.clearing ? exitClear() : enterClear(); });
+btnImport.addEventListener('click', openImport);
+document.getElementById('btnExport').addEventListener('click', exportExcel);
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Escape') return;
+  if(importMask.style.display==='flex'){ closeImport(); return; }
+  if(state.swapping){ exitSwap(); return; }
+  if(state.clearing){ exitClear(); return; }
+  if(state.mode==='arrange') exitMode();
+});
+
+buildFloors();
+renderFlexChips();
+document.body.classList.add('mode-edit');
+</script>
+</body>
+</html>
