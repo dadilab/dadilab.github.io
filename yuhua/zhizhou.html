@@ -11,67 +11,77 @@
     --line:#e5e9f2; --line-soft:#eef1f6; --accent:#2563eb; --accent-soft:#eff4ff;
     --sel:#fbbf24; --warn:#dc2626; --ok:#16a34a;
     --shadow:0 1px 2px rgba(15,23,42,.04),0 12px 32px -20px rgba(15,23,42,.22);
+    --cfg-w:392px;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
        background:var(--bg);color:var(--ink);font-size:15px;line-height:1.55;}
 
-  /* ===== 整体布局：左侧固定侧边栏 + 右侧主区 ===== */
-  .layout{display:flex;min-height:100vh;}
+  /* ===== 顶部应用栏（品牌 + 模式 Tab + 操作） ===== */
+  .appbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+          padding:0 26px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);
+          border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(15,23,42,.02);}
+  .appbar-l{display:flex;align-items:center;gap:11px;padding:10px 6px 10px 0;margin-right:14px;}
+  .brand-logo{width:38px;height:38px;flex:none;border-radius:11px;background:linear-gradient(135deg,#3b82f6,#2563eb);
+              display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 14px -6px rgba(37,99,235,.55);}
+  .brand-logo svg{width:20px;height:20px;}
+  .brand-name{font-size:17px;font-weight:800;letter-spacing:.3px;}
+  .brand-sub{font-size:11px;color:var(--muted);letter-spacing:1px;}
 
-  /* ===== 侧边导航栏 ===== */
-  .sidebar{width:256px;flex:none;background:linear-gradient(180deg,#13213f 0%,#0b1526 100%);color:#cbd5e1;
-           display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
-  .brand{display:flex;align-items:center;gap:12px;padding:26px 22px 22px;}
-  .brand-logo{width:42px;height:42px;flex:none;border-radius:12px;background:linear-gradient(135deg,#3b82f6,#2563eb);
-              display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 8px 18px -6px rgba(37,99,235,.55);}
-  .brand-logo svg{width:22px;height:22px;}
-  .brand-name{font-size:16.5px;font-weight:800;color:#f8fafc;letter-spacing:.3px;}
-  .brand-sub{font-size:11.5px;color:#64748b;margin-top:2px;letter-spacing:1.2px;}
-  .nav{padding:6px 14px;display:flex;flex-direction:column;gap:6px;flex:1;}
-  .nav-label{font-size:11.5px;font-weight:700;letter-spacing:2px;color:#475569;padding:14px 10px 8px;}
-  .nav-item{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;border:none;border-radius:11px;
-            background:transparent;color:#94a3b8;font-size:15px;font-weight:600;cursor:pointer;
-            transition:.16s;font-family:inherit;text-align:left;}
-  .nav-item:hover{background:rgba(148,163,184,.12);color:#e2e8f0;}
-  .nav-item.active{background:var(--accent);color:#fff;box-shadow:0 10px 22px -10px rgba(37,99,235,.85);}
-  .nav-item .ico{display:flex;width:22px;height:22px;flex:none;}
-  .nav-item .ico svg{width:100%;height:100%;}
-  .sidebar-foot{padding:18px 22px;border-top:1px solid rgba(148,163,184,.14);font-size:12.5px;color:#64748b;line-height:1.8;}
+  .tabs{display:flex;align-self:stretch;gap:2px;}
+  .tab{position:relative;display:inline-flex;align-items:center;gap:8px;border:none;background:none;
+       padding:0 20px;font-size:15px;font-weight:600;color:var(--muted);cursor:pointer;
+       font-family:inherit;transition:color .15s;}
+  .tab .ico{display:inline-flex;width:18px;height:18px;}
+  .tab .ico svg{width:100%;height:100%;}
+  .tab::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:transparent;transition:.15s;}
+  .tab:hover{color:var(--ink);background:linear-gradient(180deg,transparent,rgba(37,99,235,.04));}
+  .tab.active{color:var(--accent);}
+  .tab.active::after{background:var(--accent);}
 
-  /* ===== 主区 ===== */
-  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
-  .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
-          padding:32px 38px 22px;max-width:1500px;width:100%;margin:0 auto;}
-  .topbar h2{margin:0;font-size:24px;font-weight:800;letter-spacing:.3px;}
-  .topbar p{margin:6px 0 0;font-size:14px;color:var(--muted);}
-  .topbar-actions{display:flex;gap:10px;flex-wrap:wrap;}
-  .content{width:100%;max-width:1500px;margin:0 auto;padding:0 38px 38px;flex:1;}
-  .wrap{display:grid;grid-template-columns:392px 1fr;gap:24px;align-items:start;}
-  .wrap > *{min-width:0;}
-  @media(max-width:1120px){.wrap{grid-template-columns:1fr;}}
-  @media(max-width:880px){
-    .sidebar{position:static;height:auto;width:100%;}
-    .brand{padding:16px 18px 8px;}
-    .nav{flex-direction:row;padding:6px 12px 16px;}
-    .nav-item{justify-content:center;}
-    .nav-label,.sidebar-foot{display:none;}
-    .topbar{padding:20px 18px 14px;}
-    .content{padding:0 18px 24px;}
+  .appbar-r{display:flex;gap:9px;margin-left:auto;padding:9px 0;}
+  @media(max-width:900px){
+    .appbar{position:static;}
+    .appbar-l{display:none;}
+    .appbar-r{margin-left:0;}
+    .tab{padding:0 12px;height:48px;font-size:14px;}
+    .tabs{width:100%;overflow-x:auto;}
   }
+
+  /* ===== 主内容区 ===== */
+  .main{width:100%;}
+  .content{width:100%;max-width:1560px;margin:0 auto;padding:24px 30px 44px;}
+  @media(max-width:900px){.content{padding:16px 14px 30px;}}
+
+  .vhead{margin:2px 0 18px;}
+  .vhead h2{margin:0;font-size:23px;font-weight:800;letter-spacing:.3px;}
+  .vhead p{margin:6px 0 0;font-size:14px;color:var(--muted);}
+
+  .wrap{display:grid;grid-template-columns:var(--cfg-w) 1fr;gap:28px;align-items:start;position:relative;}
+  .wrap > *{min-width:0;}
+  @media(max-width:1120px){.wrap{grid-template-columns:1fr!important;gap:18px;}}
+
+  /* 配置面板宽度拖拽条（长按右侧边框左右拖动） */
+  .resizer{position:absolute;top:0;height:100%;width:16px;z-index:20;cursor:col-resize;
+           display:flex;align-items:center;justify-content:center;}
+  .resizer::after{content:"";width:4px;height:52px;border-radius:4px;background:#cbd5e1;transition:.15s;}
+  .resizer:hover::after,.resizer.dragging::after{background:var(--accent);width:5px;}
+  body.resizing{cursor:col-resize;}
+  body.resizing *{cursor:col-resize!important;user-select:none!important;}
+  @media(max-width:1120px){.resizer{display:none;}}
 
   /* ===== 卡片 ===== */
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);}
-  .panel-h{padding:16px 20px;font-weight:700;font-size:15.5px;border-bottom:1px solid var(--line-soft);
+  .panel-h{padding:15px 20px;font-weight:700;font-size:15.5px;border-bottom:1px solid var(--line-soft);
            display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
   .panel-h .sub{font-weight:500;font-size:12.5px;color:var(--muted);}
-  .panel-b{padding:20px;}
+  .panel-b{padding:18px 20px;}
 
   /* ===== 左侧配置卡 ===== */
-  .cfg{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto;}
+  .cfg{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto;}
   @media(max-width:1120px){.cfg{position:static;max-height:none;overflow:visible;}}
-  .cfg section{border-top:1px solid var(--line-soft);padding-top:20px;margin-top:20px;}
+  .cfg section{border-top:1px solid var(--line-soft);padding-top:18px;margin-top:18px;}
   body.mode-edit .cfg section:first-child{border-top:none;padding-top:0;margin-top:0;}
   body.mode-arrange .cfg section:nth-of-type(2){border-top:none;padding-top:0;margin-top:0;}
   body.mode-arrange .cfg h3 .num{display:none;}
@@ -89,14 +99,14 @@
   input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.14);}
   .field{font-size:12.5px;color:var(--muted);display:block;margin-bottom:7px;font-weight:600;}
 
-  .pub-list{display:flex;flex-direction:column;gap:16px;}
+  .pub-list{display:flex;flex-direction:column;gap:14px;}
   .floor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:10px;}
   .flr{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fbfcfe;}
   .flr-h{padding:8px 12px;color:#fff;font-weight:700;font-size:13.5px;letter-spacing:.3px;}
   .flr-b{padding:11px;}
 
   /* ===== 按钮 ===== */
-  .btn{border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;
+  .btn{border:none;border-radius:10px;padding:9px 17px;font-size:14px;font-weight:600;cursor:pointer;
        background:var(--accent);color:#fff;transition:.16s;white-space:nowrap;font-family:inherit;}
   .btn:hover{filter:brightness(1.07);transform:translateY(-1px);}
   .btn:active{transform:translateY(0);}
@@ -120,22 +130,25 @@
   .chip.sel{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 6px 14px -6px rgba(37,99,235,.6);}
   .chip.empty{background:none;border:none;color:var(--muted);cursor:default;font-weight:400;padding:4px 0;}
 
-  /* ===== 模式可见性：编辑模式显示 .edit-only，编排模式显示 .arrange-only ===== */
+  /* ===== 视图可见性：编辑 .edit-only / 编排 .arrange-only / 统计独立视图 ===== */
   body.mode-arrange .edit-only{display:none !important;}
   body.mode-edit .arrange-only{display:none !important;}
+  #viewStats{display:none;}
+  body.mode-stats #viewStats{display:block;}
+  body.mode-stats #viewWork{display:none;}
 
   .fc-group{margin-bottom:14px;}
   .fc-title{font-size:15px;font-weight:700;margin:2px 0 8px;}
   .fc-chips{display:flex;flex-wrap:wrap;gap:8px;}
 
   /* ===== 模式提示条 ===== */
-  #banner{position:sticky;top:0;z-index:30;display:none;padding:12px 18px;font-weight:600;font-size:15px;
-          border-radius:12px;margin-bottom:18px;box-shadow:var(--shadow);}
+  #banner{position:sticky;top:0;z-index:30;display:none;padding:11px 16px;font-weight:600;font-size:15px;
+          border-radius:12px;margin-bottom:16px;box-shadow:var(--shadow);}
   #banner.arrange{background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;}
   #banner.clear{background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;}
 
   /* ===== 排班表 ===== */
-  .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+  .toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .scroll-x{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff;}
   table.sched{border-collapse:collapse;width:100%;font-size:16px;min-width:840px;}
   table.sched th,table.sched td{border:1px solid var(--line-soft);padding:8px 11px;text-align:center;white-space:nowrap;}
@@ -163,15 +176,38 @@
   table.sched th.col-leader{background:#f0fdf4;color:#15803d;}
 
   /* ===== 底部排班提示面板 ===== */
-  #warnings{margin-top:26px;border:1px solid #fde68a;background:#fffbeb;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+  #warnings{margin-top:24px;border:1px solid #fde68a;background:#fffbeb;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
   #warnings:empty{display:none;}
-  #warnings .warn-head{padding:13px 20px;font-weight:700;font-size:14.5px;background:#fef3c7;color:#92400e;
+  #warnings .warn-head{padding:12px 20px;font-weight:700;font-size:14.5px;background:#fef3c7;color:#92400e;
            display:flex;align-items:center;gap:8px;border-bottom:1px solid #fde68a;}
-  #warnings .warn-body{padding:14px 20px;color:#b45309;font-size:13.5px;line-height:2;}
+  #warnings .warn-body{padding:13px 20px;color:#b45309;font-size:13.5px;line-height:2;}
   #warnings .warn-item{display:flex;gap:9px;align-items:flex-start;}
   #warnings .warn-item::before{content:"⚠";color:#f59e0b;flex:none;}
 
   .empty-hint{color:var(--muted);padding:56px 24px;text-align:center;font-size:14px;}
+
+  /* ===== 次数统计视图 ===== */
+  .stats-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:16px;margin-bottom:20px;}
+  .stat-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px 20px;}
+  .stat-card .sc-num{font-size:30px;font-weight:800;letter-spacing:.5px;line-height:1.15;}
+  .stat-card .sc-label{font-size:13px;color:var(--muted);margin-top:4px;font-weight:600;}
+  .stat-card.c-blue .sc-num{color:var(--accent);}
+  .stat-card.c-green .sc-num{color:var(--ok);}
+  .stat-card.c-amber .sc-num{color:#d97706;}
+  .stat-card.c-red .sc-num{color:var(--warn);}
+  table.stats-table{width:100%;border-collapse:collapse;font-size:15px;}
+  table.stats-table th,table.stats-table td{border-bottom:1px solid var(--line-soft);padding:9px 14px;text-align:left;}
+  table.stats-table thead th{position:sticky;top:0;background:#f8fafc;font-size:13.5px;color:var(--muted);z-index:3;font-weight:700;}
+  table.stats-table tbody tr:hover{background:rgba(37,99,235,.04);}
+  table.stats-table td.c,table.stats-table th.c{text-align:center;}
+  table.stats-table input.tgt{width:88px;text-align:center;font-size:15px;}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap;}
+  .badge.st-free{background:#f1f5f9;color:#64748b;}
+  .badge.st-run{background:#e0f2fe;color:#0369a1;}
+  .badge.st-done{background:#dcfce7;color:#15803d;}
+  .badge.st-over{background:#fee2e2;color:#b91c1c;}
+  .src-tag{display:inline-block;margin:1px 5px 1px 0;padding:1px 10px;border-radius:999px;background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;font-size:12.5px;font-weight:600;}
+  #statsEmpty{color:var(--muted);text-align:center;padding:44px 20px;font-size:14px;}
 
   /* ===== 导入排班模态框 ===== */
   .modal-mask{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(3px);display:none;
@@ -186,11 +222,11 @@
 </style>
 </head>
 <body class="mode-edit">
-<div class="layout">
+<div class="app">
 
-  <!-- ===== 左侧侧边导航栏 ===== -->
-  <aside class="sidebar">
-    <div class="brand">
+  <!-- ===== 顶部：品牌 + 模式 Tab + 操作 ===== -->
+  <header class="appbar">
+    <div class="appbar-l">
       <div class="brand-logo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
       </div>
@@ -199,107 +235,136 @@
         <div class="brand-sub">DUTY ROSTER</div>
       </div>
     </div>
-    <nav class="nav">
-      <div class="nav-label">工作模式</div>
-      <button class="nav-item active" id="navEdit">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
-        编辑模式
+    <nav class="tabs">
+      <button class="tab active" id="tabEdit">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>编辑模式
       </button>
-      <button class="nav-item" id="navArrange">
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/></svg></span>
-        编排模式
+      <button class="tab" id="tabArrange">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/></svg></span>编排模式
+      </button>
+      <button class="tab" id="tabStats">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 17v-5M13 17V7M18 17v-3"/></svg></span>次数统计
       </button>
     </nav>
-    <div class="sidebar-foot">
-      按学期总周数自动轮岗排班<br>
-      6 楼层独立名单 · 一键导出 Excel
+    <div class="appbar-r">
+      <button class="btn ghost" id="btnImport">📥 导入排班</button>
+      <button class="btn ghost" id="btnExport">📊 导出 Excel 排班表</button>
     </div>
-  </aside>
+  </header>
 
-  <!-- ===== 右侧主区 ===== -->
   <main class="main">
-    <div class="topbar">
-      <div>
-        <h2 id="pageTitle">编辑模式</h2>
-        <p id="pageSub">配置学期周数与各岗位名单，修改后点击「生成排班」即可自动轮岗。</p>
-      </div>
-      <div class="topbar-actions">
-        <button class="btn ghost" id="btnImport">📥 导入排班</button>
-        <button class="btn ghost" id="btnExport">📊 导出 Excel 排班表</button>
-      </div>
-    </div>
-
     <div class="content">
-      <div class="wrap">
 
-        <!-- 左：配置卡（编辑模式=名单编辑 / 编排模式=教师来源） -->
-        <aside class="panel cfg">
-          <div class="panel-h">排班配置</div>
-          <div class="panel-b">
+      <!-- ===== 视图一/二：编辑与编排（共用排班配置 + 排班预览） ===== -->
+      <div id="viewWork">
+        <div class="vhead">
+          <h2 id="pageTitle">编辑模式</h2>
+          <p id="pageSub">配置学期周数与各岗位名单，修改后点击「生成排班」即可自动轮岗。</p>
+        </div>
 
-            <section class="edit-only">
-              <h3><span class="num">1</span>学期设置</h3>
-              <div class="row">
-                <label class="fld">总周数</label>
-                <input type="number" id="weeks" value="20" min="1" max="60">
-                <span class="tips">建议 16–22</span>
+        <div class="wrap" id="wrapEl">
+          <div id="cfgCol">
+            <aside class="panel cfg">
+              <div class="panel-h">排班配置</div>
+              <div class="panel-b">
+
+                <section class="edit-only">
+                  <h3><span class="num">1</span>学期设置</h3>
+                  <div class="row">
+                    <label class="fld">总周数</label>
+                    <input type="number" id="weeks" value="20" min="1" max="60">
+                    <span class="tips">建议 16–22</span>
+                  </div>
+                  <div class="btn-row">
+                    <button class="btn" id="btnGen">生成排班</button>
+                    <button class="btn ghost" id="btnSample">载入示例</button>
+                    <button class="btn warn" id="btnReset">清空</button>
+                  </div>
+                  <p class="tips">名单从 Excel 整列粘贴，<b>每行一个姓名</b>。各楼层值周老师每周每层 1 人，名单越多越均匀。</p>
+                </section>
+
+                <section>
+                  <h3><span class="num">2</span>公共岗位名单（全校共用）</h3>
+                  <p class="tips edit-only" style="margin-top:0;">以下岗位<b>全校共用</b>，仅填一次，系统按周轮岗，<b>每周各 1 人</b>。</p>
+                  <div class="pub-list edit-only">
+                    <div><label class="field">值周行政（每行 1 人）</label><textarea class="lock-edit" id="gAdmin" placeholder="例如：&#10;王行政&#10;钱行政"></textarea></div>
+                    <div><label class="field">值周操场教师（每行 1 人）</label><textarea class="lock-edit" id="gPlayground" placeholder="例如：&#10;赵操场&#10;钱操场"></textarea></div>
+                    <div><label class="field">值周组长（每行 1 人）</label><textarea class="lock-edit" id="gLeader" placeholder="例如：&#10;孙组长&#10;李组长"></textarea></div>
+                  </div>
+                  <div id="globalChips" class="arrange-only"></div>
+                </section>
+
+                <section>
+                  <h3><span class="num">3</span>各楼层值周老师名单</h3>
+                  <p class="tips edit-only" style="margin-top:0;">每周每层 1 人，从 Excel 整列粘贴，每行 1 人。</p>
+                  <div class="floor-grid edit-only" id="floors"></div>
+                  <div id="floorChips" class="arrange-only"></div>
+                </section>
+
+                <section>
+                  <h3><span class="num">4</span>灵活值周教师</h3>
+                  <textarea id="flexInput" class="edit-only" placeholder="每行一个姓名，例如：&#10;机动教师甲&#10;机动教师乙"></textarea>
+                  <div id="flexChips" class="arrange-only"></div>
+                  <p class="tips edit-only">进入「编排模式」后，点此姓名（或下方各楼层教师姓名）选中，再点排班表单元格即可安排。</p>
+                </section>
+
               </div>
-              <div class="btn-row">
-                <button class="btn" id="btnGen">生成排班</button>
-                <button class="btn ghost" id="btnSample">载入示例</button>
-                <button class="btn warn" id="btnReset">清空</button>
-              </div>
-              <p class="tips">名单从 Excel 整列粘贴，<b>每行一个姓名</b>。各楼层值周老师每周每层 1 人，名单越多越均匀。</p>
-            </section>
-
-            <section>
-              <h3><span class="num">2</span>公共岗位名单（全校共用）</h3>
-              <p class="tips edit-only" style="margin-top:0;">以下岗位<b>全校共用</b>，仅填一次，系统按周轮岗，<b>每周各 1 人</b>。</p>
-              <div class="pub-list edit-only">
-                <div><label class="field">值周行政（每行 1 人）</label><textarea class="lock-edit" id="gAdmin" placeholder="例如：&#10;王行政&#10;钱行政"></textarea></div>
-                <div><label class="field">值周操场教师（每行 1 人）</label><textarea class="lock-edit" id="gPlayground" placeholder="例如：&#10;赵操场&#10;钱操场"></textarea></div>
-                <div><label class="field">值周组长（每行 1 人）</label><textarea class="lock-edit" id="gLeader" placeholder="例如：&#10;孙组长&#10;李组长"></textarea></div>
-              </div>
-              <div id="globalChips" class="arrange-only"></div>
-            </section>
-
-            <section>
-              <h3><span class="num">3</span>各楼层值周老师名单</h3>
-              <p class="tips edit-only" style="margin-top:0;">每周每层 1 人，从 Excel 整列粘贴，每行 1 人。</p>
-              <div class="floor-grid edit-only" id="floors"></div>
-              <div id="floorChips" class="arrange-only"></div>
-            </section>
-
-            <section>
-              <h3><span class="num">4</span>灵活值周教师</h3>
-              <textarea id="flexInput" class="edit-only" placeholder="每行一个姓名，例如：&#10;机动教师甲&#10;机动教师乙"></textarea>
-              <div id="flexChips" class="arrange-only"></div>
-              <p class="tips edit-only">进入「编排模式」后，点此姓名（或下方各楼层教师姓名）选中，再点排班表单元格即可安排。</p>
-            </section>
-
+            </aside>
+            <div class="resizer" id="resizer" title="拖动调整配置面板宽度"></div>
           </div>
-        </aside>
 
-        <!-- 右：排班预览 -->
-        <div>
-          <div id="banner"></div>
-          <div class="panel">
-            <div class="panel-h">排班预览<span class="sub">行 = 周次，列 = 值周岗位 · 姓名后数字为该教师累计值周次数 · 编辑模式双击姓名即清空</span></div>
-            <div class="panel-b">
-              <div class="toolbar">
-                <button class="btn ghost" id="btnSwap">🔄 位置互换</button>
-                <button class="btn ghost" id="btnClear">🧹 清空单元格</button>
-                <span class="tips" id="swapTip">互换：点两个姓名完成互换；清空：点一个单元格即清空，可连续使用；均按 ESC 退出。</span>
+          <!-- 右：排班预览 -->
+          <div class="work-right">
+            <div id="banner"></div>
+            <div class="panel">
+              <div class="panel-h">排班预览<span class="sub">行 = 周次，列 = 值周岗位 · 姓名后数字为该教师累计值周次数 · 编辑模式双击姓名即清空</span></div>
+              <div class="panel-b">
+                <div class="toolbar">
+                  <button class="btn ghost" id="btnSwap">🔄 位置互换</button>
+                  <button class="btn ghost" id="btnClear">🧹 清空单元格</button>
+                  <span class="tips" id="swapTip">互换：点两个姓名完成互换；清空：点一个单元格即清空，可连续使用；均按 ESC 退出。</span>
+                </div>
+                <div id="schedule"><div class="empty-hint">尚未生成排班。请在左侧设置周数与各楼层名单，点击「生成排班」。</div></div>
               </div>
-              <div id="schedule"><div class="empty-hint">尚未生成排班。请在左侧设置周数与各楼层名单，点击「生成排班」。</div></div>
             </div>
           </div>
         </div>
 
+        <!-- 底部：排班提示 -->
+        <div id="warnings"></div>
       </div>
 
-      <!-- 底部：排班提示（名单人数不足等警告信息） -->
-      <div id="warnings"></div>
+      <!-- ===== 视图三：次数统计 ===== -->
+      <div id="viewStats">
+        <div class="vhead">
+          <h2>次数统计</h2>
+          <p>实时统计每位教师已值周次数；可为每位教师设定固定目标次数，点「生成排班」时自动按上限轮岗（0 或留空 = 不限制）。</p>
+        </div>
+        <div class="stats-cards">
+          <div class="stat-card c-blue"><div class="sc-num" id="stTotal">0</div><div class="sc-label">教师总数</div></div>
+          <div class="stat-card c-blue"><div class="sc-num" id="stAssign">0</div><div class="sc-label">本学期已排人次</div></div>
+          <div class="stat-card c-amber"><div class="sc-num" id="stTgt">0</div><div class="sc-label">已设定目标人数</div></div>
+          <div class="stat-card c-red"><div class="sc-num" id="stOver">0</div><div class="sc-label">超出目标人数</div></div>
+          <div class="stat-card c-green"><div class="sc-num" id="stDone">0</div><div class="sc-label">已达目标人数</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h">教师值周次数一览<span class="sub">「目标次数」修改后自动保存，并在下次「生成排班」时生效</span></div>
+          <div class="panel-b" style="padding:0;">
+            <div class="scroll-x" style="border:none;border-radius:0;">
+              <table class="stats-table">
+                <thead><tr>
+                  <th>教师</th><th>所属岗位</th>
+                  <th class="c" style="width:110px;">当前已值</th>
+                  <th class="c" style="width:150px;">目标次数</th>
+                  <th class="c">状态</th>
+                </tr></thead>
+                <tbody id="statsBody"></tbody>
+              </table>
+              <div id="statsEmpty"></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
   </main>
@@ -310,7 +375,7 @@
   <div class="modal">
     <div class="modal-h">📥 导入排班表</div>
     <div class="modal-b">
-      <p class="tips" style="margin:0;">粘贴排班数据，<b>每行代表一周</b>，按「周次、值周行政、1楼…6楼、值周操场教师、值周组长」顺序，用<b>制表符 / 逗号 / 2 个以上空格</b>分隔（可直接粘贴本工具导出的 Excel 内容）。导入后即可在编辑、编排模式下直接修改。</p>
+      <p class="tips" style="margin:0;">粘贴排班数据，<b>每行代表一周</b>，按「周次、值周行政、1楼…6楼、值周操场教师、值周组长」顺序，用<b>制表符 / 逗号 / 2 个以上空格</b>分隔（可直接粘贴本工具导出的 Excel 内容）。导入后即可在编辑、编排模式下直接修改，且会根据字段名自动归类各岗位名单。</p>
       <textarea id="importText" placeholder="第1周	王行政	李一	吴一	陈一	沈一	秦一	吕一	赵操场	郑组长&#10;第2周	钱行政	李二	吴二	陈二	沈二	秦二	吕二	钱操场	王组长&#10;……"></textarea>
     </div>
     <div class="modal-f">
@@ -327,20 +392,30 @@ const FLOORS = 6;
 const ROLE_LABEL = {admin:"值周行政", playground:"值周操场教师", leader:"值周组长"};
 const FLOOR_COLORS = ["#2563eb","#0891b2","#16a34a","#d97706","#dc2626","#7c3aed"];
 const ARRANGE_BANNER = '🎯 编排模式：点击左侧任意教师姓名（公共岗位 / 各楼层 / 灵活教师）选中，再点排班表单元格安排；或点单元格内姓名后点目标格移动。按 ESC 退出。';
+const TARGETS_KEY = 'zzy_gz_targets_v1';
 
 const state = {
   totalWeeks: 20,
   global: {admin:[], playground:[], leader:[]}, // 全校共用的公共岗位名单
   lists: {},        // floor -> {teachers:[]}
-  schedule: {},     // week -> {admin, teacher:{1..6}, playground, leader}  公共岗位全校每周各1人
-  mode: 'edit',     // 'edit' | 'arrange'
+  schedule: {},     // week -> {admin, teacher:{1..6}, playground, leader}
+  mode: 'edit',     // 'edit' | 'arrange' | 'stats'
   arrSrc: null,     // null | {kind:'chip',name} | {kind:'cell',f,w,role,name}
   swapping: false,  // 位置互换模式开关
   swapSrc: null,    // 已选中的第一个交换源 {f,w,role}
-  clearing: false   // 清空单元格模式开关
+  clearing: false,  // 清空单元格模式开关
+  targets: {}       // name -> 固定目标次数（0/缺省 = 不限制）
 };
 
-// DOM refs (config)
+function loadTargets(){
+  try{ return JSON.parse(localStorage.getItem(TARGETS_KEY)||'{}'); }catch(e){ return {}; }
+}
+function saveTargets(){
+  try{ localStorage.setItem(TARGETS_KEY, JSON.stringify(state.targets)); }catch(e){}
+}
+state.targets = loadTargets();
+
+// DOM refs
 const floorsEl = document.getElementById('floors');
 const gAdmin = document.getElementById('gAdmin');
 const gPlayground = document.getElementById('gPlayground');
@@ -356,8 +431,9 @@ const warningsEl = document.getElementById('warnings');
 const btnGen = document.getElementById('btnGen');
 const btnSample = document.getElementById('btnSample');
 const btnReset = document.getElementById('btnReset');
-const navEdit = document.getElementById('navEdit');
-const navArrange = document.getElementById('navArrange');
+const tabEdit = document.getElementById('tabEdit');
+const tabArrange = document.getElementById('tabArrange');
+const tabStats = document.getElementById('tabStats');
 const btnSwap = document.getElementById('btnSwap');
 const btnClear = document.getElementById('btnClear');
 const btnImport = document.getElementById('btnImport');
@@ -367,6 +443,11 @@ const importOk = document.getElementById('importOk');
 const importCancel = document.getElementById('importCancel');
 const pageTitle = document.getElementById('pageTitle');
 const pageSub = document.getElementById('pageSub');
+const wrapEl = document.getElementById('wrapEl');
+const cfgEl = document.querySelector('#cfgCol .cfg');
+const resizer = document.getElementById('resizer');
+const statsBody = document.getElementById('statsBody');
+const statsEmpty = document.getElementById('statsEmpty');
 
 // textarea element refs: textareas[f][role]
 const textareas = {};
@@ -413,37 +494,56 @@ function readConfig(){
   }
 }
 
-// ---------- rotation generation ----------
+// ---------- rotation generation（支持固定目标次数：贪心选择当前次数最少且未超上限者） ----------
+function pickNames(names, targets, N, label, warns){
+  const out = new Array(N).fill('');
+  if(!names.length) return out;
+  const cnt = {};
+  names.forEach(n=>cnt[n]=0);
+  let warned = false;
+  for(let w=0; w<N; w++){
+    let cand = null;
+    for(const n of names){
+      if(targets[n] && cnt[n]>=targets[n]) continue;   // 已达固定次数上限，跳过
+      if(cand===null || cnt[n]<cnt[cand]) cand = n;
+    }
+    if(cand===null){
+      if(!warned){ warned = true; warns.push(`${label}：老师们在设定目标次数内已排满，剩余 ${N-w} 周将空岗，请提高目标次数或补充名单。`); }
+    } else { out[w] = cand; cnt[cand]++; }
+  }
+  return out;
+}
+
 function generate(){
   exitSwap();
   exitClear();
   readConfig();
   const N = state.totalWeeks;
   const G = state.global;
-  const la = G.admin.length, lp = G.playground.length, ll = G.leader.length;
+  const T = state.targets;
   const warns = [];
-  if(la === 0) warns.push(`「值周行政」公共名单为空。`);
-  if(lp === 0) warns.push(`「值周操场教师」公共名单为空。`);
-  if(ll === 0) warns.push(`「值周组长」公共名单为空。`);
+  if(G.admin.length===0) warns.push('「值周行政」公共名单为空。');
+  if(G.playground.length===0) warns.push('「值周操场教师」公共名单为空。');
+  if(G.leader.length===0) warns.push('「值周组长」公共名单为空。');
+  for(let f=1; f<=FLOORS; f++) if(state.lists[f].teachers.length===0) warns.push(`第 ${f} 楼「值周老师」名单为空。`);
+
+  const adminArr = pickNames(G.admin,      T, N, '「值周行政」',     warns);
+  const pgArr    = pickNames(G.playground, T, N, '「值周操场教师」', warns);
+  const ldArr    = pickNames(G.leader,     T, N, '「值周组长」',     warns);
+  const floorArr = {};
+  for(let f=1; f<=FLOORS; f++) floorArr[f] = pickNames(state.lists[f].teachers, T, N, `第 ${f} 楼「值周老师」`, warns);
 
   state.schedule = {};
   for(let w=1; w<=N; w++){
-    // 公共岗位：全校每周各 1 人，按周轮岗
-    const admin = la ? G.admin[(w-1)%la] : '';
-    const playground = lp ? G.playground[(w-1)%lp] : '';
-    const leader = ll ? G.leader[(w-1)%ll] : '';
     const teacher = {};
-    for(let f=1; f<=FLOORS; f++){
-      const lt = state.lists[f].teachers.length;
-      if(w===1 && lt === 0) warns.push(`第 ${f} 楼「值周老师」名单为空。`);
-      teacher[f] = lt ? state.lists[f].teachers[(w-1)%lt] : '';
-    }
-    state.schedule[w] = {admin, teacher, playground, leader};
+    for(let f=1; f<=FLOORS; f++) teacher[f] = floorArr[f][w-1];
+    state.schedule[w] = {admin: adminArr[w-1], teacher, playground: pgArr[w-1], leader: ldArr[w-1]};
   }
   warningsEl.innerHTML = warns.length
     ? '<div class="warn-head">⚠️ 排班提示（' + warns.length + ' 条）</div><div class="warn-body">' + warns.map(w=>'<div class="warn-item">'+esc(w)+'</div>').join('') + '</div>'
     : '';
   renderSchedule();
+  if(state.mode==='stats') renderStats();
 }
 
 // ---------- schedule rendering ----------
@@ -527,7 +627,7 @@ function updateCellName(cell){
   refreshCounts();
 }
 
-// ---------- 模式切换 ----------
+// ---------- 提示与选中清理 ----------
 function showBanner(text, cls){
   banner.className = cls || 'arrange';
   banner.textContent = text;
@@ -539,26 +639,15 @@ function clearChipSel(){ flexChips.querySelectorAll('.chip.sel').forEach(e=>e.cl
 function clearFloorChipSel(){ floorChipsEl.querySelectorAll('.chip.sel').forEach(e=>e.classList.remove('sel')); }
 function clearGlobalChipSel(){ globalChipsEl.querySelectorAll('.chip.sel').forEach(e=>e.classList.remove('sel')); }
 function clearSwapSel(){ scheduleEl.querySelectorAll('.swap-sel').forEach(e=>e.classList.remove('swap-sel')); }
-
-function updateTopbar(m){
-  if(m==='arrange'){
-    pageTitle.textContent = '编排模式';
-    pageSub.textContent = '点击左侧教师姓名选中，再点击排班表单元格完成安排；支持位置互换，按 ESC 退出。';
-  } else {
-    pageTitle.textContent = '编辑模式';
-    pageSub.textContent = '配置学期周数与各岗位名单，修改后点击「生成排班」即可自动轮岗。';
-  }
-}
-
 // 统一清除编排模式的所有临时选中（不改动当前模式）
 function clearArrangeSel(){
   state.arrSrc = null;
   clearCellSel(); clearChipSel(); clearFloorChipSel(); clearGlobalChipSel(); clearSwapSel();
 }
 
-// 位置互换模式：点第一个姓名选中，点第二个姓名完成互换（可连续，ESC 退出）
+// 位置互换模式
 function enterSwap(){
-  exitClear();                 // 先退出清空模式，保证互斥
+  exitClear();
   clearArrangeSel();
   state.swapping = true;
   state.swapSrc = null;
@@ -573,9 +662,9 @@ function exitSwap(){
   if(state.mode==='arrange') showBanner(ARRANGE_BANNER); else hideBanner();
 }
 
-// 清空单元格模式：点一个单元格清空一个，可连续使用，ESC 退出
+// 清空单元格模式
 function enterClear(){
-  exitSwap();                  // 先退出互换模式，保证互斥
+  exitSwap();
   clearArrangeSel();
   state.clearing = true;
   btnClear.classList.add('active');
@@ -587,41 +676,48 @@ function exitClear(){
   if(state.mode==='arrange') showBanner(ARRANGE_BANNER); else hideBanner();
 }
 
-function setMode(m){
-  exitMode();
-  state.mode = m;
-  document.body.classList.toggle('mode-arrange', m==='arrange');
-  document.body.classList.toggle('mode-edit', m==='edit');
-  const lock = (m==='arrange');
-  document.querySelectorAll('.lock-edit').forEach(ta=>{ ta.readOnly = lock; ta.classList.toggle('locked', lock); });
-  btnGen.disabled = lock; btnSample.disabled = lock; btnReset.disabled = lock;
-  navEdit.classList.toggle('active', m==='edit');
-  navArrange.classList.toggle('active', m==='arrange');
-  updateTopbar(m);
+// ---------- 顶部 Tab 切换 ----------
+function updateTopbar(m){
   if(m==='arrange'){
-    renderFlexChips();
-    renderFloorChips();
-    renderGlobalChips();
-    showBanner(ARRANGE_BANNER);
+    pageTitle.textContent = '编排模式';
+    pageSub.textContent = '点击左侧教师姓名选中，再点击排班表单元格完成安排；支持位置互换、清空单元格，按 ESC 退出临时操作。';
+  } else if(m==='stats'){
+    pageTitle.textContent = '次数统计';
+    pageSub.textContent = '实时统计每位教师已值周次数；可设定固定目标次数，生成排班时自动遵守上限。';
   } else {
-    hideBanner();
+    pageTitle.textContent = '编辑模式';
+    pageSub.textContent = '配置学期周数与各岗位名单，修改后点击「生成排班」即可自动轮岗。';
   }
 }
-function exitMode(){
-  state.mode = 'edit';
-  state.arrSrc = null;
-  exitSwap();
-  exitClear();
-  clearCellSel(); clearChipSel();
-  document.querySelectorAll('.lock-edit').forEach(ta=>{ ta.readOnly=false; ta.classList.remove('locked'); });
-  btnGen.disabled = false; btnSample.disabled = false; btnReset.disabled = false;
-  navEdit.classList.add('active'); navArrange.classList.remove('active');
-  clearFloorChipSel(); clearGlobalChipSel();
+
+function setMode(m){   // 'edit' | 'arrange' | 'stats'
+  // 退出所有临时操作状态
+  state.swapping = false; state.swapSrc = null; state.clearing = false; state.arrSrc = null;
+  clearCellSel(); clearChipSel(); clearFloorChipSel(); clearGlobalChipSel(); clearSwapSel();
+  btnSwap.classList.remove('active'); btnClear.classList.remove('active');
+  // 设置 body 视图类
+  document.body.classList.remove('mode-edit','mode-arrange','mode-stats');
+  document.body.classList.add('mode-'+m);
+  state.mode = m;
+  // 编辑控件锁定：仅编辑模式可编辑名单
+  const lock = (m!=='edit');
+  document.querySelectorAll('.lock-edit').forEach(ta=>{ ta.readOnly = lock; ta.classList.toggle('locked', lock); });
+  btnGen.disabled = lock; btnSample.disabled = lock; btnReset.disabled = lock;
+  // Tab 高亮
+  tabEdit.classList.toggle('active', m==='edit');
+  tabArrange.classList.toggle('active', m==='arrange');
+  tabStats.classList.toggle('active', m==='stats');
+  updateTopbar(m);
   hideBanner();
-  updateTopbar('edit');
+  if(m==='arrange'){
+    renderFlexChips(); renderFloorChips(); renderGlobalChips();
+    showBanner(ARRANGE_BANNER);
+  } else if(m==='stats'){
+    renderStats();
+  }
 }
 
-// 排班表点击：位置互换模式优先，其次编排模式
+// 排班表点击：位置互换模式优先 → 清空模式 → 编排模式
 scheduleEl.addEventListener('click', e=>{
   const el = e.target.closest('[data-role]');
   if(!el) return;
@@ -640,7 +736,7 @@ scheduleEl.addEventListener('click', e=>{
       return;
     }
     const s = state.swapSrc;
-    if(s.f===f && s.w===w && s.role===role){   // 点回已选格 = 取消本次选择，仍停留在互换模式
+    if(s.f===f && s.w===w && s.role===role){   // 点回已选格 = 取消本次选择
       state.swapSrc=null; clearSwapSel();
       showBanner('🔄 位置互换：请点击第一个要互换的姓名');
       return;
@@ -653,7 +749,7 @@ scheduleEl.addEventListener('click', e=>{
     return;
   }
 
-  // —— 清空单元格模式（连续清空，点一个清一个） ——
+  // —— 清空单元格模式 ——
   if(state.clearing){
     setVal(f,w,role,'');
     updateCellName({f,w,role});
@@ -720,7 +816,7 @@ function renderFlexChips(){
 }
 flexInput.addEventListener('input', ()=>{ if(state.mode==='arrange') renderFlexChips(); });
 
-// 编排模式：公共岗位（值周行政 / 操场教师 / 值周组长）也变成可点击 chip，点击姓名选中后安排到对应列
+// 编排模式：公共岗位 chips
 function renderGlobalChips(){
   globalChipsEl.innerHTML = '';
   let any = false;
@@ -766,7 +862,7 @@ function renderGlobalChips(){
   if(!any) globalChipsEl.innerHTML = '<span class="chip empty">（公共岗位名单为空，请先在编辑模式粘贴名单）</span>';
 }
 
-// 编排模式：各楼层值周老师也变成可点击 chip，点击姓名选中后安排到单元格
+// 编排模式：各楼层值周老师 chips
 function renderFloorChips(){
   floorChipsEl.innerHTML = '';
   let any = false;
@@ -807,8 +903,97 @@ function renderFloorChips(){
   if(!any) floorChipsEl.innerHTML = '<span class="chip empty">（各楼层值周老师名单为空，请先在编辑模式粘贴名单）</span>';
 }
 
+// ---------- 次数统计视图 ----------
+function rosterGroups(){
+  // Map: name -> Set(岗位标签)
+  const map = new Map();
+  const add = (name, grp)=>{ if(!name) return; if(!map.has(name)) map.set(name, new Set()); map.get(name).add(grp); };
+  parseList(gAdmin.value).forEach(n=>add(n,'值周行政'));
+  parseList(gPlayground.value).forEach(n=>add(n,'值周操场教师'));
+  parseList(gLeader.value).forEach(n=>add(n,'值周组长'));
+  for(let f=1; f<=FLOORS; f++) parseList(textareas[f].teachers.value).forEach(n=>add(n, f+'楼'));
+  parseList(flexInput.value).forEach(n=>add(n,'灵活'));
+  return map;
+}
+
+function statBadgeHtml(count, tgt){
+  if(!tgt) return '<span class="badge st-free">不限制</span>';
+  if(count > tgt) return '<span class="badge st-over">超出 '+(count-tgt)+' 次</span>';
+  if(count === tgt) return '<span class="badge st-done">已达目标</span>';
+  return '<span class="badge st-run">还需 '+(tgt-count)+' 次</span>';
+}
+
+function renderStats(){
+  const map = rosterGroups();
+  const counts = buildCountMap();
+  const names = [...map.keys()];
+  names.sort((a,b)=>(counts[b]||0)-(counts[a]||0) || a.localeCompare(b,'zh'));
+  // 汇总
+  let assign = 0;
+  for(let w=1; w<=state.totalWeeks; w++){
+    const c = state.schedule[w];
+    if(!c) continue;
+    if(c.admin) assign++;
+    if(c.playground) assign++;
+    if(c.leader) assign++;
+    for(let f=1; f<=FLOORS; f++) if(c.teacher[f]) assign++;
+  }
+  let nTgt=0, nOver=0, nDone=0;
+  names.forEach(n=>{
+    const t = state.targets[n]||0, cnt = counts[n]||0;
+    if(t>0){ nTgt++; if(cnt>t) nOver++; else if(cnt===t) nDone++; }
+  });
+  document.getElementById('stTotal').textContent = names.length;
+  document.getElementById('stAssign').textContent = assign;
+  document.getElementById('stTgt').textContent = nTgt;
+  document.getElementById('stOver').textContent = nOver;
+  document.getElementById('stDone').textContent = nDone;
+  // 表格
+  if(names.length===0){
+    statsBody.innerHTML = '';
+    statsEmpty.innerHTML = '暂无名单数据。请先在「编辑模式」粘贴各岗位名单并生成排班。';
+    return;
+  }
+  statsEmpty.innerHTML = '';
+  statsBody.innerHTML = names.map(n=>{
+    const cnt = counts[n]||0, tgt = state.targets[n]||0;
+    const groups = [...map.get(n)].map(g=>'<span class="src-tag">'+esc(g)+'</span>').join('');
+    return '<tr>'
+      + '<td style="font-weight:600;">'+esc(n)+'</td>'
+      + '<td>'+groups+'</td>'
+      + '<td class="c"><b style="font-size:16px;">'+cnt+'</b></td>'
+      + '<td class="c"><input type="number" class="tgt" min="0" max="60" data-name="'+esc(n).replace(/"/g,'&quot;')+'" value="'+tgt+'" title="0=不限制"></td>'
+      + '<td class="c">'+statBadgeHtml(cnt,tgt)+'</td>'
+      + '</tr>';
+  }).join('');
+}
+
+// 统计页输入目标次数：实时保存并更新该行状态与汇总卡
+statsBody.addEventListener('input', e=>{
+  const inp = e.target;
+  if(!inp.classList || !inp.classList.contains('tgt')) return;
+  const n = inp.dataset.name;
+  let v = parseInt(inp.value,10);
+  if(!(v>=0)) v = 0;
+  if(v>0) state.targets[n] = v; else delete state.targets[n];
+  saveTargets();
+  const cnt = buildCountMap();
+  const row = inp.closest('tr');
+  if(row) row.querySelector('td:last-child').innerHTML = statBadgeHtml(cnt[n]||0, v);
+  let nTgt=0, nOver=0, nDone=0;
+  Object.keys(state.targets).forEach(k=>{
+    const t = state.targets[k];
+    if(!(t>0)) return;
+    nTgt++;
+    const c = cnt[k]||0;
+    if(c>t) nOver++; else if(c===t) nDone++;
+  });
+  document.getElementById('stTgt').textContent = nTgt;
+  document.getElementById('stOver').textContent = nOver;
+  document.getElementById('stDone').textContent = nDone;
+});
+
 // ---------- import schedule from pasted text ----------
-// 根据字段名识别列角色：floor:N / admin / playground / leader / week / null
 function detectColumn(header){
   const h = String(header||'').trim();
   if(!h) return null;
@@ -828,7 +1013,6 @@ function parseImport(text){
   for(const line of lines){
     const cells = line.split(/[\t,，;；]+|\s{2,}/).map(s=>s.trim()).filter(Boolean);
     if(!cells.length) continue;
-    // 数据行：行首必须是「第X周」或纯数字
     let w = null;
     const m = cells[0].match(/第\s*(\d+)\s*周/);
     if(m) w = +m[1];
@@ -843,7 +1027,7 @@ function parseImport(text){
 }
 
 function openImport(){
-  exitSwap();                  // 退出互换/清空等临时状态，并清除编排选中（保留当前模式）
+  exitSwap();
   exitClear();
   clearArrangeSel();
   importText.value = '';
@@ -858,7 +1042,7 @@ function uniq(arr){
   return out;
 }
 
-// 按列角色归类姓名：{admin:[], playground:[], leader:[], floors:{f:[]}}
+// 按列角色归类姓名
 function collectNames(rows, roleOf){
   const b = {admin:[], playground:[], leader:[], floors:{}};
   const push = (arr, v)=>{ if(v && !arr.includes(v)) arr.push(v); };
@@ -879,7 +1063,6 @@ function collectNames(rows, roleOf){
   return b;
 }
 
-// 将归类结果填充到左侧「排班配置」对应名单，返回归类摘要
 function fillBuckets(b){
   const summary = [];
   if(b.admin.length){ gAdmin.value = b.admin.join('\n'); state.global.admin = b.admin; summary.push('值周行政 '+b.admin.length+' 人'); }
@@ -919,11 +1102,11 @@ function applyImport(rows, header){
       state.schedule[w] = {admin:'', teacher, playground:'', leader:''};
     }
   }
-  // 根据字段名归类姓名到左侧名单，便于后续再次排班
+  // 根据字段名归类姓名到左侧名单
   const viaHeader = header && header.some(r=>r && r!=='week');
   const buckets = viaHeader
     ? collectNames(rows, i=>header[i]||null)
-    : collectNames(rows, i=>{                       // 无表头：按标准列顺序
+    : collectNames(rows, i=>{
         if(i===0) return 'admin';
         if(i>=1 && i<=FLOORS) return 'floor:'+i;
         if(i===FLOORS+1) return 'playground';
@@ -934,6 +1117,7 @@ function applyImport(rows, header){
   warningsEl.innerHTML = '';
   renderSchedule();
   if(state.mode==='arrange'){ renderFlexChips(); renderFloorChips(); renderGlobalChips(); }
+  if(state.mode==='stats') renderStats();
   return {N, present, summary, viaHeader};
 }
 
@@ -996,15 +1180,40 @@ function loadSample(){
   generate();
 }
 
+// ---------- 配置面板宽度拖拽 ----------
+function placeResizer(){
+  const w = cfgEl ? cfgEl.getBoundingClientRect().width : 0;
+  if(resizer) resizer.style.left = Math.max(0, w - 8) + 'px';
+}
+function clampResize(v, a, b){ return Math.max(a, Math.min(b, v)); }
+let drag = null;
+resizer.addEventListener('mousedown', e=>{
+  drag = { startX: e.clientX, startW: cfgEl.getBoundingClientRect().width };
+  document.body.classList.add('resizing');
+  resizer.classList.add('dragging');
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e=>{
+  if(!drag) return;
+  const w = clampResize(drag.startW + (e.clientX - drag.startX), 300, 720);
+  wrapEl.style.gridTemplateColumns = w + 'px 1fr';
+  placeResizer();
+});
+document.addEventListener('mouseup', ()=>{
+  if(drag){ drag = null; document.body.classList.remove('resizing'); resizer.classList.remove('dragging'); }
+});
+window.addEventListener('resize', ()=>{ placeResizer(); });
+
 // ---------- wire up ----------
 btnGen.addEventListener('click', generate);
 btnSample.addEventListener('click', loadSample);
 btnReset.addEventListener('click', ()=>{
   state.schedule = {}; warningsEl.innerHTML='';
-  renderSchedule(); exitMode();
+  renderSchedule(); setMode('edit');
 });
-navEdit.addEventListener('click', ()=>setMode('edit'));
-navArrange.addEventListener('click', ()=>setMode('arrange'));
+tabEdit.addEventListener('click', ()=>setMode('edit'));
+tabArrange.addEventListener('click', ()=>setMode('arrange'));
+tabStats.addEventListener('click', ()=>setMode('stats'));
 btnSwap.addEventListener('click', ()=>{ state.swapping ? exitSwap() : enterSwap(); });
 btnClear.addEventListener('click', ()=>{ state.clearing ? exitClear() : enterClear(); });
 btnImport.addEventListener('click', openImport);
@@ -1014,12 +1223,13 @@ document.addEventListener('keydown', e=>{
   if(importMask.style.display==='flex'){ closeImport(); return; }
   if(state.swapping){ exitSwap(); return; }
   if(state.clearing){ exitClear(); return; }
-  if(state.mode==='arrange') exitMode();
+  if(state.mode==='arrange') setMode('edit');
 });
 
 buildFloors();
 renderFlexChips();
-document.body.classList.add('mode-edit');
+setMode('edit');
+placeResizer();
 </script>
 </body>
 </html>
