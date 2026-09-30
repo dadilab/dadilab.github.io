@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>文件批量清理工具（支持按后缀保护）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: #f5f6f8; color: #222; padding: 24px; line-height: 1.5;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sub { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .card {
+    background: #fff; border-radius: 8px; padding: 18px 20px;
+    margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .card h2 { font-size: 15px; margin-bottom: 12px; color: #333; }
+  button {
+    background: #2563eb; color: #fff; border: none; padding: 9px 18px;
+    border-radius: 6px; cursor: pointer; font-size: 14px;
+  }
+  button:hover { background: #1d4ed8; }
+  button.secondary { background: #e5e7eb; color: #333; }
+  button.secondary:hover { background: #d1d5db; }
+  button:disabled { background: #93c5fd; cursor: not-allowed; }
+  .hint { font-size: 12px; color: #888; margin-top: 8px; }
+  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  input[type=text] {
+    padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px;
+    font-size: 13px; flex: 1; min-width: 280px;
+  }
+  .ext-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ext-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid #d1d5db; border-radius: 20px; padding: 5px 12px;
+    font-size: 13px; cursor: pointer; user-select: none; background: #fafafa;
+  }
+  /* 深红 = 确认会被删除；深绿 = 不会被删除（受保护/保留） */
+  .ext-chip.danger { background: #c23323; border-color: #b91c1c; color: #7f1d1d; }
+  .ext-chip.safe   { background: #05ee47; border-color: #15803d; color: #14532d; }
+  .ext-chip .count { color: #888; font-size: 11px; }
+  .ext-chip.safe .count, .ext-chip.danger .count { color: inherit; opacity: .8; }
+  .stats { font-size: 13px; color: #555; margin-top: 10px; line-height: 1.7; }
+  .stats b { color: #b91c1c; }
+  .stats .keep { color: #15803d; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #f0f0f0; }
+  th { background: #fafafa; font-weight: 600; color: #555; }
+  td.path { font-family: Consolas, Menlo, monospace; font-size: 12px; color: #444; word-break: break-all; }
+  .file-list { max-height: 320px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px; }
+  pre.bat {
+    background: #1e293b; color: #e2e8f0; padding: 14px; border-radius: 6px;
+    font-family: Consolas, Menlo, monospace; font-size: 12px;
+    white-space: pre; overflow-x: auto; max-height: 360px; overflow-y: auto;
+  }
+  .row { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+  .warn { color: #b45309; font-size: 12px; margin-top: 8px; }
+  .mode-switch { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
+  .mode-switch label { font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .legend { font-size: 12px; color: #666; margin: 8px 0 12px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .legend .dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  .legend .danger { background: #b91c1c; }
+  .legend .safe { background: #15803d; }
+  .scan-status {
+    margin-top: 10px; font-size: 13px; color: #2563eb;
+    background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 8px 12px;
+  }
+  .cate-note {
+    font-size: 12px; color: #555; margin-top: 10px; padding: 10px 12px;
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; line-height: 1.7;
+  }
+  .cate-note code { background: #e2e8f0; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>文件清理工具（支持按后缀保护）</h1>
+  <div class="sub">在浏览器里选文件夹 → 选择模式并勾选后缀 → 自动生成 bat 脚本，复制后到 Windows 双击运行即可。网页不会真的删任何文件。</div>
+
+  <!-- 第1步：选目录 -->
+  <div class="card">
+    <h2>① 选择要处理的文件夹</h2>
+    <div class="toolbar">
+      <button id="pickBtn">选择文件夹</button>
+      <span id="dirLabel" style="font-size:13px;color:#555;">未选择</span>
+    </div>
+    <div class="scan-status" id="scanStatus" style="display:none;"></div>
+    <div class="hint">需要 Chrome / Edge 桌面版浏览器。选择后网页只会读取文件列表，不会上传或修改你的文件。</div>
+  </div>
+
+  <!-- 第2步：模式 + 后缀勾选 -->
+  <div class="card" id="extCard" style="display:none;">
+    <h2 id="extTitle">② 选择模式并勾选文件后缀</h2>
+    <div class="mode-switch">
+      <span style="font-size:13px;color:#555;">模式：</span>
+      <label><input type="radio" name="mode" value="delete" checked> 勾选删除（勾选 = 删除）</label>
+      <label><input type="radio" name="mode" value="protect"> 勾选保护（勾选 = 保留）</label>
+    </div>
+    <div class="legend">
+      <span><span class="dot danger"></span>红色 = 执行删除时会被删除</span>
+      <span><span class="dot safe"></span>绿色 = 受保护 / 不会删除</span>
+    </div>
+    <div class="toolbar" style="margin-bottom:10px;">
+      <button class="secondary" id="selectAll">全选</button>
+      <button class="secondary" id="clearAll">全不选</button>
+      <button class="secondary" id="invertBtn">反选</button>
+    </div>
+    <div class="ext-grid" id="extGrid"></div>
+    <div class="cate-note">
+      归类说明：
+      <code>(无后缀)</code> = 没有扩展名的文件（如 <code>README</code>、<code>Makefile</code>）；
+      <code>(隐藏文件)</code> = 文件名以 <code>.</code> 开头的文件（如 <code>.gitignore</code>、<code>.bashrc</code>）。
+      这两类各自归为一个独立复选框，方便单独保护。注意：浏览器无法读取 Windows 的“隐藏”属性，隐藏文件仅按“以 . 开头”这一惯例识别。
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <!-- 第3步：文件清单 -->
+  <div class="card" id="listCard" style="display:none;">
+    <h2>③ 将被删除的文件清单（预览，最多显示 500 条）</h2>
+    <div class="file-list">
+      <table>
+        <thead><tr><th style="width:40px;">#</th><th>相对路径</th></tr></thead>
+        <tbody id="fileBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 第4步：生成 bat -->
+  <div class="card" id="batCard" style="display:none;">
+    <h2>④ 生成的 bat 脚本（复制保存为 .bat，或直接下载）</h2>
+    <div class="toolbar" style="margin-bottom:10px;">
+      <label style="font-size:13px;">目标目录(脚本将 cd 到这里)：</label>
+      <input type="text" id="targetDir" placeholder="例如 D:\我的资料\某文件夹">
+    </div>
+    <pre class="bat" id="batOut"></pre>
+    <div class="row">
+      <button id="copyBtn">复制 bat 内容</button>
+      <button class="secondary" id="downloadBtn">下载 .bat 文件</button>
+    </div>
+    <div class="warn">⚠️ 不可逆操作。运行 bat 前请确认路径正确、清单无误，并备份重要文件。</div>
+  </div>
+</div>
+
+<script>
+let allFiles = [];        // {rel, ext, hidden}
+let extState = {};        // bucket(后缀/特殊分类) -> true/false
+let mode = 'delete';      // 'delete' | 'protect'
+
+document.getElementById('pickBtn').onclick = async () => {
+  if (!window.showDirectoryPicker) {
+    alert('当前浏览器不支持选择文件夹，请用 Chrome 或 Edge 桌面版打开本页面。');
+    return;
+  }
+  try {
+    const dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+    document.getElementById('dirLabel').textContent = '已选择：' + dirHandle.name;
+
+    const statusEl = document.getElementById('scanStatus');
+    statusEl.style.display = '';
+    statusEl.textContent = '正在扫描……';
+    allFiles = [];
+    let found = 0;
+    await scanDir(dirHandle, '', () => {
+      found++;
+      if (found % 50 === 0) statusEl.textContent = `正在扫描…… 已发现 ${found} 个文件`;
+    });
+    statusEl.textContent = `扫描完成，共发现 ${allFiles.length} 个文件（其中隐藏文件 ${allFiles.filter(f=>f.hidden).length} 个、无后缀文件 ${allFiles.filter(f=>!f.hidden && f.ext==='').length} 个）。`;
+
+    buildExtGrid();
+    document.getElementById('extCard').style.display = '';
+    document.getElementById('listCard').style.display = '';
+    document.getElementById('batCard').style.display = '';
+    refresh();
+  } catch (e) {
+    if (e.name !== 'AbortError') alert('读取失败：' + e.message);
+  }
+};
+
+async function scanDir(dirHandle, prefix, onProgress) {
+  for await (const entry of dirHandle.values()) {
+    const rel = prefix ? prefix + '/' + entry.name : entry.name;
+    if (entry.kind === 'directory') {
+      await scanDir(entry, rel, onProgress);
+    } else {
+      const hidden = entry.name.startsWith('.');
+      let ext = '';
+      const m = entry.name.match(/(\.[^.]+)$/);
+      if (m) ext = m[1].toLowerCase();
+      allFiles.push({ rel, ext, hidden });
+      onProgress && onProgress();
+    }
+  }
+}
+
+// 每个文件精确归入一个分类（互斥），便于勾选
+function bucketOf(f) {
+  if (f.hidden) return '(隐藏文件)';
+  return f.ext === '' ? '(无后缀)' : f.ext;
+}
+
+function buildExtGrid() {
+  const countMap = {};
+  allFiles.forEach(f => {
+    const key = bucketOf(f);
+    countMap[key] = (countMap[key] || 0) + 1;
+  });
+  // 默认选择：删除模式默认删掉除 .pdf 外的一切；保护模式默认全部保护（不删）
+  extState = {};
+  Object.keys(countMap).forEach(ext => {
+    if (mode === 'delete') {
+      extState[ext] = (ext !== '.pdf');
+    } else {
+      extState[ext] = true;   // 保护模式：默认全保护，用户取消勾选才删除
+    }
+  });
+  updateTitle();
+  renderExtGrid(countMap);
+}
+
+function updateTitle() {
+  const el = document.getElementById('extTitle');
+  if (mode === 'delete') {
+    el.textContent = '② 勾选要删除的文件后缀（红色 = 会被删除）';
+  } else {
+    el.textContent = '② 勾选要保护（保留）的文件后缀（绿色 = 受保护，其余将被删除）';
+  }
+}
+
+function renderExtGrid(countMap) {
+  const grid = document.getElementById('extGrid');
+  grid.innerHTML = '';
+  const keys = Object.keys(countMap);
+  keys.sort((a, b) => {
+    const sa = a.startsWith('(') ? 0 : 1, sb = b.startsWith('(') ? 0 : 1;
+    if (sa !== sb) return sa - sb;
+    return countMap[b] - countMap[a] || a.localeCompare(b);
+  });
+  keys.forEach(ext => {
+    const checked = !!extState[ext];
+    // 该分类下的文件是否会在执行删除时被删
+    const willDelete = mode === 'delete' ? checked : !checked;
+    const chip = document.createElement('label');
+    chip.className = 'ext-chip ' + (willDelete ? 'danger' : 'safe');
+    chip.innerHTML = `<input type="checkbox" style="display:none" ${checked?'checked':''}>
+                      <span>${escapeHtml(ext)}</span><span class="count">${countMap[ext]}个</span>`;
+    chip.onclick = (e) => {
+      e.preventDefault();
+      extState[ext] = !extState[ext];
+      const nowDelete = mode === 'delete' ? extState[ext] : !extState[ext];
+      chip.className = 'ext-chip ' + (nowDelete ? 'danger' : 'safe');
+      chip.querySelector('input').checked = extState[ext];
+      refresh();
+    };
+    grid.appendChild(chip);
+  });
+}
+
+document.querySelectorAll('input[name=mode]').forEach(r => {
+  r.onchange = () => {
+    mode = document.querySelector('input[name=mode]:checked').value;
+    buildExtGrid();   // 切换模式时按该模式默认重置选择
+    refresh();
+  };
+});
+
+document.getElementById('selectAll').onclick = () => {
+  Object.keys(extState).forEach(k => extState[k] = true);
+  refresh();
+};
+document.getElementById('clearAll').onclick = () => {
+  Object.keys(extState).forEach(k => extState[k] = false);
+  refresh();
+};
+document.getElementById('invertBtn').onclick = () => {
+  Object.keys(extState).forEach(k => extState[k] = !extState[k]);
+  refresh();
+};
+
+// 选中（将被删除）的文件集合
+function selectedFiles() {
+  return allFiles.filter(f => {
+    const key = bucketOf(f);
+    return mode === 'delete' ? !!extState[key] : !extState[key];
+  });
+}
+
+function refresh() {
+  const sel = selectedFiles();
+  const keep = allFiles.length - sel.length;
+  const hiddenTotal = allFiles.filter(f => f.hidden).length;
+  const noExtTotal = allFiles.filter(f => !f.hidden && f.ext === '').length;
+
+  const keepLabel = mode === 'delete' ? '未勾选(保留)' : '受保护(保留)';
+  document.getElementById('stats').innerHTML =
+    `共 <b>${allFiles.length}</b> 个文件 → 将删除 <b>${sel.length}</b> 个，` +
+    `<span class="keep">${keepLabel} ${keep} 个</span>。` +
+    `<br>扫描到隐藏文件 <b>${hiddenTotal}</b> 个、无后缀文件 <b>${noExtTotal}</b> 个（均已归入对应复选框，可单独保护）。`;
+
+  const body = document.getElementById('fileBody');
+  body.innerHTML = '';
+  sel.slice(0, 500).forEach((f, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td><td class="path">${escapeHtml(f.rel)}</td>`;
+    body.appendChild(tr);
+  });
+  if (sel.length > 500) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="2" style="color:#888;">… 还有 ${sel.length - 500} 个未显示，bat 脚本会包含全部。</td>`;
+    body.appendChild(tr);
+  }
+  genBat();
+}
+
+function genBat() {
+  const sel = selectedFiles();
+  const lines = [];
+  lines.push('@echo off');
+  lines.push('chcp 65001 >nul');
+  lines.push('REM 自动生成的清理脚本');
+  lines.push('REM 模式：' + (mode === 'delete'
+    ? '勾选删除（勾选的后缀将被删除）'
+    : '勾选保护（勾选的后缀受保护，其余删除）'));
+  // 列出受保护的分类，便于在脚本里核对
+  const protectedBuckets = [];
+  Object.keys(extState).forEach(k => {
+    const isProtected = mode === 'delete' ? !extState[k] : extState[k];
+    if (isProtected) protectedBuckets.push(k);
+  });
+  lines.push('REM 受保护(不删除)的分类：' + (protectedBuckets.join(' ') || '（无）'));
+  lines.push('REM 将删除 ' + sel.length + ' 个文件，保留 ' + (allFiles.length - sel.length) + ' 个。');
+  lines.push('');
+  const dir = document.getElementById('targetDir').value.trim();
+  if (dir) {
+    lines.push(`cd /d "${dir}"`);
+  } else {
+    lines.push('REM 请把下面这行改成你实际的目标目录，或把本 bat 放到目标文件夹里运行');
+    lines.push('REM cd /d "D:\\你的目录"');
+  }
+  lines.push('');
+  lines.push('echo 即将删除 ' + sel.length + ' 个文件，按任意键继续...');
+  lines.push('pause >nul');
+  lines.push('');
+  sel.forEach(f => {
+    const winPath = f.rel.replace(/\//g, '\\');
+    lines.push(`del /f /q "${winPath}"`);
+  });
+  lines.push('');
+  lines.push('echo 完成！共删除 ' + sel.length + ' 个文件。');
+  lines.push('pause');
+  document.getElementById('batOut').textContent = lines.join('\r\n');
+}
+
+document.getElementById('targetDir').oninput = genBat;
+
+document.getElementById('copyBtn').onclick = () => {
+  const txt = document.getElementById('batOut').textContent;
+  navigator.clipboard.writeText(txt).then(() => alert('已复制到剪贴板，粘贴到记事本保存为 .bat 即可。'));
+};
+
+document.getElementById('downloadBtn').onclick = () => {
+  const txt = document.getElementById('batOut').textContent;
+  const blob = new Blob(['\ufeff' + txt], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'clean_files.bat';
+  a.click();
+};
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
