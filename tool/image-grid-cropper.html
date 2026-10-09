@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -166,8 +165,8 @@
   /* 8 个缩放手柄 */
   .pv-crop .hnd{
     position:absolute;z-index:2;box-sizing:border-box;touch-action:none;
-    background:#fff;border:1.5px solid var(--accent);border-radius:3px;
-    box-shadow:0 1px 4px rgba(16,24,40,.32);
+    background:var(--accent);border:1.5px solid #fff;border-radius:3px;
+    box-shadow:0 0 0 1px rgba(16,24,40,.28), 0 1px 4px rgba(16,24,40,.35);
   }
   .pv-crop .hnd[data-h="nw"],.pv-crop .hnd[data-h="ne"],
   .pv-crop .hnd[data-h="sw"],.pv-crop .hnd[data-h="se"]{width:11px;height:11px}
@@ -181,7 +180,7 @@
   .pv-crop .hnd[data-h="s"]{bottom:-5px}
   .pv-crop .hnd[data-h="w"]{left:-5px}
   .pv-crop .hnd[data-h="e"]{right:-5px}
-  .pv-crop .hnd:hover{background:var(--accent-soft)}
+  .pv-crop .hnd:hover{background:#6b93ff}
   .pv-crop.locked .hnd{display:none}
   .pv-grid{position:absolute;inset:0}
   .pv-grid i{position:absolute;background:rgba(255,255,255,.8);box-shadow:0 0 0 .5px rgba(0,0,0,.3)}
@@ -525,6 +524,7 @@
   var tiles = [];
   var busy = false;
   var seq = 0;                // 并发序号，防止旧切片任务回写
+  var zipSeq = 0;             // 打包序号，每次打包 +1，用于日期时间文件名
 
   // 预览视口状态
   var scale = 1;              // 显示比例 = 显示宽度 / 原图宽度
@@ -1100,6 +1100,15 @@
     var old = zipBtn.innerHTML;
     zipBtn.textContent = '正在打包…';
 
+    // 本次打包的统一前缀：日期_时间_序号（如 20261009_083950_001）
+    zipSeq++;
+    var d = new Date();
+    function p2(n) { n = '' + n; return n.length < 2 ? '0' + n : n; }
+    function p3(n) { n = '' + n; while (n.length < 3) n = '0' + n; return n; }
+    var stamp = d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '_' +
+      p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds()) + '_' +
+      p3(zipSeq);
+
     var entries = [];
     var i = 0;
 
@@ -1107,7 +1116,7 @@
       if (i >= tiles.length) {
         try {
           var zip = buildZip(entries);
-          downloadBlob(zip, srcBase + '_' + gridN + 'x' + gridN + '.zip');
+          downloadBlob(zip, stamp + '.zip');
           toast('已打包 ' + entries.length + ' 张（' + fmtSize(zip.size) + '）');
         } catch (err) {
           console.error(err);
@@ -1121,7 +1130,11 @@
       var t = tiles[i];
       setProgress((i + 1) / tiles.length);
       t.blob.arrayBuffer().then(function (ab) {
-        entries.push({ name: t.name, data: new Uint8Array(ab) });
+        var ext = t.name.slice(t.name.lastIndexOf('.') + 1);
+        entries.push({
+          name: stamp + '_' + (t.r + 1) + '-' + (t.c + 1) + '.' + ext,
+          data: new Uint8Array(ab)
+        });
         i++;
         step();
       }).catch(function () { i++; step(); });
