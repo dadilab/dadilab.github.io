@@ -5,28 +5,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>连锁时间表 · 前项驱动 | 时长自动生成时间范围</title>
-    <!-- SortableJS 轻量级拖拽排序库 -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
+        }
+        /* 统一间距标尺：纵向节奏与左右 gutter 都取自这里 */
+        :root {
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 20px;
+            --space-6: 24px;
+            --space-7: 32px;
+            --gutter: var(--space-6);      /* 卡片内左右内边距，所有区块共用 */
+            --stack: var(--space-4);       /* 卡片内区块之间的纵向间距 */
         }
         body {
             background: #eef2f8;
             font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
             margin: 0;
-            padding: 32px 20px;
+            padding: var(--space-6) var(--space-5) var(--space-7);
             color: #0f172a;
+            line-height: 1.5;
         }
         /* 主容器：居中 + 最大宽度 */
         .dashboard {
-            max-width: 1200px;
+            max-width: 1160px;
             margin: 0 auto;
             width: 100%;
         }
         .main-header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: var(--space-5);
         }
         .main-header h1 {
             font-size: 2rem;
@@ -36,19 +47,20 @@
             -webkit-background-clip: text;
             color: transparent;
             letter-spacing: -0.3px;
-            margin-bottom: 8px;
+            margin: 0 0 var(--space-2) 0;
         }
         .main-header p {
             color: #475569;
             font-size: 0.9rem;
             border-bottom: 1px solid #cbd5e1;
             display: inline-block;
-            padding-bottom: 6px;
+            margin: 0;
+            padding-bottom: var(--space-2);
         }
         /* 单一工作区卡片 */
         .region {
             background: white;
-            border-radius: 32px;
+            border-radius: 24px;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
             overflow: hidden;
             transition: all 0.2s;
@@ -58,17 +70,17 @@
             box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
         }
         .region-header {
-            padding: 20px 24px 12px 24px;
+            padding: var(--space-5) var(--gutter) var(--space-4);
             border-bottom: 2px solid #e2edf7;
             background: #fefefe;
         }
         .region-title {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin: 0 0 12px 0;
+            gap: var(--space-2);
+            margin: 0 0 var(--stack) 0;
             color: #1e3a5f;
         }
         .region-title span {
@@ -81,13 +93,13 @@
         }
         .start-time-bar {
             background: #f8fafc;
-            border-radius: 48px;
-            padding: 8px 20px;
-            margin: 8px 0 12px 0;
+            border-radius: 40px;
+            padding: var(--space-2) var(--space-4);
+            margin: 0 0 var(--stack) 0;
             display: flex;
             align-items: center;
             flex-wrap: wrap;
-            gap: 14px;
+            gap: var(--space-2) var(--space-3);
             border: 1px solid #e2e8f0;
         }
         .start-time-label {
@@ -111,17 +123,17 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
-            margin: 12px 0 4px 0;
+            gap: var(--space-3);
+            margin: 0;
         }
         .btn-group {
             display: flex;
-            gap: 12px;
+            gap: var(--space-3);
         }
         button {
             background: #ffffff;
             border: 1px solid #cbd5e1;
-            padding: 6px 18px;
+            padding: 7px 18px;
             border-radius: 40px;
             font-weight: 500;
             font-size: 0.8rem;
@@ -141,16 +153,19 @@
         }
         .total-stats {
             background: #f1f5f9;
-            border-radius: 60px;
+            border-radius: 40px;
             padding: 5px 18px;
             font-size: 0.8rem;
             font-weight: 500;
             display: inline-flex;
             align-items: baseline;
-            gap: 12px;
+            gap: var(--space-3);
             flex-wrap: wrap;
         }
-        .total-stats span {
+        .total-stats .stats-label {
+            color: #475569;
+        }
+        .total-stats span:not(.stats-label) {
             font-weight: 700;
             color: #0f3b5c;
             background: white;
@@ -161,13 +176,14 @@
         }
         .table-wrapper {
             overflow-x: auto;
-            padding: 0 20px 24px 20px;
+            padding: var(--space-3) var(--gutter) var(--space-6);
         }
         .time-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.8rem;
-            min-width: 600px;
+            min-width: 640px;
+            table-layout: fixed;
             border-radius: 18px;
             overflow: hidden;
         }
@@ -175,17 +191,20 @@
             background: #eef2ff;
             color: #1e293b;
             font-weight: 600;
-            padding: 14px 8px;
+            padding: var(--space-3) var(--space-2);
             border-bottom: 2px solid #cbd5e1;
             text-align: center;
             font-size: 0.85rem;
         }
         .time-table td {
             background-color: #ffffff;
-            padding: 10px 6px;
+            padding: var(--space-2) var(--space-3);
             border-bottom: 1px solid #e9edf2;
             vertical-align: middle;
             text-align: center;
+        }
+        .time-table tbody tr:last-child td {
+            border-bottom: none;
         }
         .drag-handle {
             cursor: grab;
@@ -194,20 +213,24 @@
             font-weight: 400;
             color: #94a3b8;
             transition: color 0.2s;
-            width: 44px;
+            width: 64px;
             user-select: none;
+            touch-action: none;
         }
         .drag-handle:active { cursor: grabbing; }
         .drag-handle:hover { color: #3b82f6; background: #f1f5f9; }
         .activity-textarea {
             width: 100%;
+            min-height: 34px;
+            max-height: 88px;
             border: 1px solid #cbd5e1;
             border-radius: 14px;
-            padding: 8px 10px;
+            padding: 6px 10px;
             font-size: 0.75rem;
             font-family: inherit;
             background: #fefefe;
-            resize: vertical;
+            resize: none;
+            overflow-y: auto;
             transition: 0.2s;
             line-height: 1.4;
         }
@@ -217,11 +240,12 @@
             box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
         }
         .duration-input {
-            width: 95px;
+            width: 100%;
+            max-width: 95px;
             text-align: center;
             border: 1px solid #cbd5e1;
             border-radius: 24px;
-            padding: 8px 4px;
+            padding: 7px 4px;
             font-family: monospace;
             font-weight: 500;
             background: #fff;
@@ -241,6 +265,7 @@
             font-size: 0.8rem;
             text-align: center;
             letter-spacing: 0.3px;
+            white-space: nowrap;
         }
         .error-range {
             color: #dc2626;
@@ -250,32 +275,56 @@
         .delete-btn {
             background: transparent;
             border: none;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             color: #94a3b8;
-            padding: 4px 12px;
+            padding: 5px 10px;
             border-radius: 30px;
+            white-space: nowrap;
         }
         .delete-btn:hover {
             background: #fee2e2;
             color: #e11d48;
         }
-        .sortable-ghost { opacity: 0.4; background: #bfdbfe; }
-        .sortable-drag { opacity: 0.6; background: #e2e8f0; }
+        .row-dragging td,
+        .row-dragging .activity-textarea,
+        .row-dragging .duration-input,
+        .row-dragging .time-range-cell {
+            background-color: #dbeafe;
+        }
+        .row-dragging .drag-handle { cursor: grabbing; color: #2563eb; }
         footer {
-            margin-top: 32px;
+            margin-top: var(--space-5);
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.72rem;
+            line-height: 1.9;
             color: #5e6f8d;
             border-top: 1px solid #cbd5e1;
-            padding-top: 20px;
+            padding-top: var(--space-4);
+        }
+        @media (max-width: 900px) {
+            :root {
+                --gutter: var(--space-4);
+            }
+            .toolbar { align-items: flex-start; }
         }
         @media (max-width: 700px) {
-            body { padding: 16px; }
-            .region-header { padding: 16px; }
-            .table-wrapper { padding: 0 12px 20px 12px; }
-            .duration-input { width: 80px; font-size: 0.7rem; }
+            :root {
+                --gutter: var(--space-3);
+                --stack: var(--space-3);
+            }
+            body { padding: var(--space-4) var(--space-3) var(--space-5); }
+            .main-header { margin-bottom: var(--space-4); }
+            .main-header h1 { font-size: 1.5rem; }
+            .main-header p { font-size: 0.8rem; }
+            .region-header { padding: var(--space-4) var(--gutter) var(--space-2); }
+            .region-title { font-size: 1.2rem; flex-wrap: wrap; }
             .start-time-bar { flex-direction: column; align-items: flex-start; }
+            .btn-group { flex-wrap: wrap; }
+            .time-table { min-width: 560px; }
+            .time-table th { padding: 10px 6px; font-size: 0.78rem; }
+            .time-table td { padding: 6px var(--space-2); }
+            .duration-input { max-width: 80px; font-size: 0.7rem; }
         }
     </style>
 </head>
@@ -313,11 +362,11 @@
             <table class="time-table">
                 <thead>
                     <tr>
-                        <th style="width:44px">☰ 拖动</th>
+                        <th style="width:64px">☰ 拖动</th>
                         <th>📝 活动描述</th>
-                        <th>⏱️ 时长(分钟) *手动</th>
-                        <th>📅 时间范围(自动)</th>
-                        <th style="width:70px">🗑️</th>
+                        <th style="width:140px">⏱️ 时长(分钟) *手动</th>
+                        <th style="width:170px">📅 时间范围(自动)</th>
+                        <th style="width:96px">🗑️</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -384,7 +433,6 @@
             this.totalHoursSpan = document.getElementById('totalHoursDisplay');
             this.addBtn = document.getElementById('addRowBtn');
             this.resetBtn = document.getElementById('resetExampleBtn');
-            this.sortableInstance = null;
 
             if (!this.tbody) throw new Error('tbody not found');
             this.init();
@@ -407,6 +455,13 @@
                 const row = this.createTableRow(item.description, item.durationMinutes);
                 this.tbody.appendChild(row);
             });
+            this.tbody.querySelectorAll('.activity-textarea').forEach(ta => this.sizeTextarea(ta));
+        }
+
+        // 描述框随内容增高，行高保持紧凑
+        sizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(88, Math.max(34, textarea.scrollHeight)) + 'px';
         }
 
         // 创建新行 (描述, 时长分钟)
@@ -421,9 +476,10 @@
             const tdDesc = document.createElement('td');
             const textarea = document.createElement('textarea');
             textarea.className = 'activity-textarea';
-            textarea.rows = 2;
+            textarea.rows = 1;
             textarea.placeholder = '输入活动描述 ... 晨会、课程、休息';
             textarea.value = descriptionText || '';
+            textarea.addEventListener('input', () => this.sizeTextarea(textarea));
             tdDesc.appendChild(textarea);
             // 时长输入列（分钟）
             const tdDuration = document.createElement('td');
@@ -566,19 +622,60 @@
             // 起始时间变更不影响总时长，但需要重新刷新范围
         }
 
-        // 初始化拖拽排序 (使用SortableJS)
+        // 拖拽排序：Pointer Events 原生实现，鼠标与触摸通用
         initDragDrop() {
-            if (this.sortableInstance) this.sortableInstance.destroy();
-            this.sortableInstance = new Sortable(this.tbody, {
-                handle: '.drag-handle',
-                animation: 200,
-                ghostClass: 'sortable-ghost',
-                dragClass: 'sortable-drag',
-                onEnd: () => {
-                    // 拖拽改变顺序后，重新计算所有时间范围（基于新的顺序）
-                    this.refreshAllTimeRanges();
-                    this.updateTotalDuration();
-                }
+            const tbody = this.tbody;
+            let dragging = null;
+
+            const onMove = (e) => {
+                const under = document.elementFromPoint(e.clientX, e.clientY);
+                const over = under && under.closest('tr');
+                if (!over || over === dragging || over.parentNode !== tbody) return;
+                const rect = over.getBoundingClientRect();
+                const after = e.clientY > rect.top + rect.height / 2;
+                const others = [...tbody.children].filter(r => r !== dragging);
+                const tops = others.map(r => r.offsetTop);
+                tbody.insertBefore(dragging, after ? over.nextSibling : over);
+                this.flipRows(others.map((row, i) => [row, tops[i] - row.offsetTop]));
+            };
+
+            // 松手即结束：顺序变化后重算整条时间链
+            const finish = () => {
+                if (!dragging) return;
+                dragging.classList.remove('row-dragging');
+                dragging = null;
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', finish);
+                document.removeEventListener('pointercancel', finish);
+                this.refreshAllTimeRanges();
+                this.updateTotalDuration();
+            };
+
+            tbody.addEventListener('pointerdown', (e) => {
+                const handle = e.target.closest('.drag-handle');
+                if (!handle || e.button !== 0) return;
+                dragging = handle.closest('tr');
+                dragging.classList.add('row-dragging');
+                e.preventDefault();
+                // 监听挂在 document 上：行节点被移动后事件流不会断
+                document.addEventListener('pointermove', onMove);
+                document.addEventListener('pointerup', finish);
+                document.addEventListener('pointercancel', finish);
+            });
+        }
+
+        // FLIP：换位后其余行从旧位置滑到新位置，moves 为 [行, 位移差]
+        flipRows(moves) {
+            const rows = moves.filter(([, delta]) => Math.abs(delta) > 0.5);
+            if (rows.length === 0) return;
+            rows.forEach(([row, delta]) => {
+                row.style.transition = 'none';
+                row.style.transform = `translateY(${delta}px)`;
+            });
+            void this.tbody.offsetHeight;   // 强制回流，让反向位移先落到屏幕上
+            rows.forEach(([row]) => {
+                row.style.transition = 'transform 200ms ease';
+                row.style.transform = '';
             });
         }
 
@@ -589,6 +686,10 @@
             if (this.startTimeInput) {
                 this.startTimeInput.addEventListener('change', () => this.onStartTimeChange());
             }
+            // 列宽随视口变化后，描述框需要重新测量高度
+            window.addEventListener('resize', () => {
+                this.tbody.querySelectorAll('.activity-textarea').forEach(ta => this.sizeTextarea(ta));
+            });
         }
 
         // 辅助：时间字符串转分钟
