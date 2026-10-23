@@ -1,0 +1,830 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>智慧每一天 · 天气监控大屏</title>
+<style>
+  :root{
+    --bg:#070b16;
+    --bg2:#0b1124;
+    --panel:rgba(18,26,48,.55);
+    --panel-line:rgba(120,160,255,.16);
+    --cyan:#38e1ff;
+    --blue:#4f8cff;
+    --amber:#ffb547;
+    --green:#42e6a4;
+    --purple:#a98bff;
+    --txt:#e8f0ff;
+    --txt2:#8aa0c8;
+    --txt3:#5b6f96;
+    --mono:"SF Mono","JetBrains Mono","Roboto Mono",Consolas,monospace;
+    --sans:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    color:var(--txt);
+    background:
+      radial-gradient(1200px 700px at 18% -10%, rgba(56,225,255,.10), transparent 60%),
+      radial-gradient(1100px 800px at 100% 0%, rgba(169,139,255,.10), transparent 55%),
+      radial-gradient(900px 600px at 50% 120%, rgba(79,140,255,.08), transparent 60%),
+      var(--bg);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(rgba(120,160,255,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(120,160,255,.05) 1px,transparent 1px);
+    background-size:46px 46px;
+    mask-image:radial-gradient(120% 120% at 50% 40%,#000 55%,transparent 100%);
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    box-shadow:inset 0 0 240px 40px rgba(0,0,0,.65);
+  }
+
+  .screen{
+    position:relative;z-index:1;height:100vh;width:100vw;
+    display:grid;grid-template-rows:auto auto 1fr auto;
+    gap:14px;padding:16px 20px 18px;
+  }
+
+  /* ===== Header ===== */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 10px;}
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand__mark{
+    width:42px;height:42px;border-radius:12px;position:relative;
+    background:linear-gradient(135deg,var(--cyan),var(--blue));
+    box-shadow:0 0 22px rgba(56,225,255,.55),inset 0 1px 0 rgba(255,255,255,.4);
+    display:grid;place-items:center;
+  }
+  .brand__mark svg{width:24px;height:24px}
+  .brand__title{font-size:22px;font-weight:700;letter-spacing:2px;
+    background:linear-gradient(90deg,#fff,var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand__sub{font-size:12px;color:var(--txt2);letter-spacing:4px;margin-top:2px}
+  .topbar__right{display:flex;align-items:center;gap:14px}
+  .loc{font-size:12px;color:var(--cyan);font-family:var(--mono);letter-spacing:1px;
+    padding:6px 12px;border:1px solid rgba(56,225,255,.25);border-radius:999px;background:rgba(56,225,255,.06)}
+  .clock{font-family:var(--mono);font-size:20px;color:var(--cyan);letter-spacing:2px;text-shadow:0 0 12px rgba(56,225,255,.5)}
+  .clock small{display:block;font-size:13px;color:var(--txt);letter-spacing:2px;text-align:right}
+  .status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--green);
+    padding:6px 12px;border:1px solid rgba(66,230,164,.3);border-radius:999px;background:rgba(66,230,164,.08)}
+  .status .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 1.8s infinite}
+  .src{font-size:10px;color:var(--txt3);font-family:var(--mono)}
+  .city-switch{display:flex;align-items:center;gap:6px}
+  .city-input{width:96px;padding:6px 10px;border-radius:999px;border:1px solid rgba(56,225,255,.25);
+    background:rgba(10,16,34,.6);color:var(--txt);font-family:var(--sans);font-size:12px;outline:none}
+  .city-input::placeholder{color:var(--txt3)}
+  .city-input:focus{border-color:var(--cyan);box-shadow:0 0 10px rgba(56,225,255,.3)}
+  .city-btn{padding:6px 12px;border-radius:999px;border:1px solid rgba(56,225,255,.4);
+    background:rgba(56,225,255,.12);color:var(--cyan);font-family:var(--sans);font-size:12px;cursor:pointer;transition:.2s}
+  .city-btn:hover{background:rgba(56,225,255,.22)}
+  .city-btn:disabled{opacity:.5;cursor:default}
+  .city-btn--ghost{background:rgba(255,255,255,.04);color:var(--txt2);border-color:rgba(120,160,255,.2)}
+  .city-btn--ghost:hover{background:rgba(255,255,255,.08);color:var(--txt)}
+  .city-dropdown{position:relative}
+  .city-menu{position:absolute;top:calc(100% + 6px);right:0;min-width:150px;background:rgba(18,26,48,.92);
+    border:1px solid rgba(56,225,255,.22);border-radius:10px;padding:6px;backdrop-filter:blur(10px);
+    display:none;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.55),0 0 16px rgba(56,225,255,.08)}
+  .city-menu.open{display:block}
+  .city-item{padding:7px 10px;border-radius:7px;font-size:12px;color:var(--txt);cursor:pointer}
+  .city-item:hover{background:rgba(56,225,255,.14);color:var(--cyan)}
+  .city-empty{padding:8px 10px;font-size:11px;color:var(--txt3)}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.55}}
+
+  /* ===== KPI row ===== */
+  .kpi{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
+  .kpi__card{
+    position:relative;padding:12px 13px;border-radius:14px;
+    background:var(--panel);border:1px solid var(--panel-line);
+    backdrop-filter:blur(6px);overflow:hidden;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .kpi__card::before{content:"";position:absolute;left:0;top:0;height:100%;width:3px;background:var(--accent,var(--cyan));box-shadow:0 0 14px var(--accent,var(--cyan))}
+  .kpi__card .glow{position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:50%;
+    background:var(--accent,var(--cyan));opacity:.18;filter:blur(20px);animation:breathe 3.4s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(.9);opacity:.12}50%{transform:scale(1.15);opacity:.28}}
+  .kpi__label{font-size:12px;color:var(--txt);letter-spacing:1px;display:flex;align-items:center;gap:6px}
+  .kpi__label .ic{width:13px;height:13px;color:var(--accent,var(--cyan))}
+  .kpi__val{font-family:var(--mono);font-size:25px;font-weight:700;margin-top:6px;line-height:1;color:#fff;text-shadow:0 0 16px var(--accent,var(--cyan));white-space:nowrap}
+  .kpi__val .unit{font-size:13px;color:var(--txt);margin-left:3px;text-shadow:none}
+  .kpi__foot{font-size:11px;color:var(--txt);margin-top:8px;display:flex;justify-content:space-between}
+  .kpi__foot b{color:var(--accent,var(--cyan));font-family:var(--mono)}
+
+  /* ===== Main 3D zone ===== */
+  .main{display:grid;grid-template-columns:1.25fr .9fr 1fr;gap:14px;min-height:0}
+  .panel{position:relative;border-radius:16px;background:var(--panel);border:1px solid var(--panel-line);
+    backdrop-filter:blur(6px);padding:14px 16px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .panel__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .panel__title{font-size:14px;font-weight:600;letter-spacing:1px;display:flex;align-items:center;gap:8px}
+  .panel__title::before{content:"";width:4px;height:14px;border-radius:2px;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+  .panel__tag{font-size:11px;color:var(--txt3);font-family:var(--mono)}
+  .panel .corner{position:absolute;width:14px;height:14px;border-color:rgba(56,225,255,.4);border-style:solid;border-width:0}
+  .panel .c-tl{top:8px;left:8px;border-top-width:2px;border-left-width:2px}
+  .panel .c-tr{top:8px;right:8px;border-top-width:2px;border-right-width:2px}
+  .panel .c-bl{bottom:8px;left:8px;border-bottom-width:2px;border-left-width:2px}
+  .panel .c-br{bottom:8px;right:8px;border-bottom-width:2px;border-right-width:2px}
+
+  /* ==== 3D Bars ==== */
+  .bars3d{flex:1;display:flex;flex-direction:column;perspective:1100px;perspective-origin:50% 30%;min-height:0;position:relative}
+  .bars3d__stage{flex:1;display:flex;align-items:flex-end;justify-content:space-around;
+    transform:none;transform-style:preserve-3d;padding:30px 10px 0;position:relative;z-index:2}
+  .bars3d__floor{position:absolute;left:0;right:0;bottom:18px;height:120px;
+    background:
+      linear-gradient(rgba(56,225,255,.10) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(56,225,255,.10) 1px,transparent 1px);
+    background-size:26px 26px;
+    transform:rotateX(72deg);transform-origin:bottom;opacity:.5;
+    -webkit-mask-image:linear-gradient(transparent,#000 70%);mask-image:linear-gradient(transparent,#000 70%)}
+  .bars3d__axis{position:absolute;left:18px;right:18px;top:36px;bottom:28px;pointer-events:none;z-index:1}
+  .axis-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(120,160,255,.20),transparent)}
+  .axis-label{position:absolute;left:0;transform:translateY(-100%);font-family:var(--mono);font-size:10px;color:var(--txt);white-space:nowrap}
+  .axis-label.avg{color:var(--cyan);text-shadow:0 0 8px rgba(56,225,255,.5)}
+  .col{display:flex;flex-direction:column;align-items:center;gap:8px;z-index:2;height:100%;justify-content:flex-end}
+  .col__val{position:absolute;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:14px;font-weight:700;color:#fff;text-shadow:0 0 10px var(--c1);white-space:nowrap;pointer-events:none}
+  .col__val .u{font-size:10px;color:var(--txt)}
+  .col__bar{flex:1;min-height:0;position:relative;display:flex;align-items:flex-end;justify-content:center}
+  .bar{position:relative;width:34px;transform:scaleY(0);transform-origin:bottom;
+    transition:transform 1.5s cubic-bezier(.16,1,.3,1)}
+  .bar.is-on{transform:scaleY(1)}
+  .bar__front{position:absolute;inset:0;border-radius:5px 5px 0 0;
+    background:linear-gradient(180deg,var(--c1),var(--c2));
+    box-shadow:0 0 16px var(--c1),inset 0 1px 0 rgba(255,255,255,.25),inset -6px 0 14px rgba(0,0,0,.18)}
+  /* depth faces removed: bars render as straight front rectangles */
+  .col__day{font-size:11px;color:var(--txt);letter-spacing:1px}
+  .col:hover .bar__front{filter:brightness(1.3);box-shadow:0 0 26px var(--c1),inset 0 1px 0 rgba(255,255,255,.35)}
+  .col:hover .col__val{text-shadow:0 0 16px var(--c1),0 0 4px #fff}
+  .bars3d__stage.spot .col:not(:hover) .bar__front{filter:brightness(.45);opacity:.55;transition:filter .2s,opacity .2s}
+  .bars3d__stage.spot .col:not(:hover) .col__val{opacity:.45;transition:opacity .2s}
+  .bar-tip{position:absolute;pointer-events:none;z-index:30;padding:7px 12px;border-radius:9px;
+    background:rgba(10,16,34,.96);border:1px solid rgba(56,225,255,.45);
+    box-shadow:0 8px 22px rgba(0,0,0,.55),0 0 14px rgba(56,225,255,.35);
+    font-family:var(--mono);font-size:12px;color:var(--txt);white-space:nowrap;
+    transform:translate(-50%,-100%);opacity:0;transition:opacity .15s;left:0;top:0}
+  .bar-tip.on{opacity:1}
+  .bar-tip .t-day{font-size:11px;color:var(--txt)}
+  .bar-tip .t-row{display:flex;align-items:center;gap:6px;margin:2px 0}
+  .bar-tip .wico{width:20px;height:20px;display:block}
+  .bar-tip .t-cond{font-size:13px;color:var(--txt)}
+  .bar-tip .t-val{color:var(--cyan);font-size:15px;font-weight:700;text-shadow:0 0 10px rgba(56,225,255,.6)}
+
+  /* ==== Node connection ==== */
+  .nodes{flex:1;position:relative;min-height:0}
+  .nodes svg{width:100%;height:100%;display:block}
+  .flow{fill:none;stroke-width:1.6;stroke-dasharray:6 10;animation:flow 1.6s linear infinite}
+  @keyframes flow{to{stroke-dashoffset:-32}}
+  .node-dot{filter:drop-shadow(0 0 6px currentColor)}
+  .center-core{transform-origin:center;animation:spin 14s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .sat-label{font-size:14px;font-weight:600;fill:var(--txt);font-family:var(--sans)}
+  .sat-sub{font-size:12px;fill:var(--txt2);font-family:var(--mono)}
+  @keyframes dotrun{from{offset-distance:0%}to{offset-distance:100%}}
+  @keyframes scan{from{offset-distance:0%}to{offset-distance:100%}}
+
+  /* ==== Ring dials ==== */
+  .rings{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start;min-height:0}
+  .ring{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:6px;border-radius:14px;background:rgba(10,16,34,.4);border:1px solid rgba(120,160,255,.08)}
+  .ring svg{width:92px;height:92px;transform:rotate(-90deg)}
+  .ring__track{fill:none;stroke:rgba(120,160,255,.12);stroke-width:9}
+  .ring__prog{fill:none;stroke-width:9;stroke-linecap:round;
+    stroke-dasharray:var(--c);stroke-dashoffset:var(--c);
+    transition:stroke-dashoffset 1.8s cubic-bezier(.16,1,.3,1);
+    filter:drop-shadow(0 0 6px var(--rc))}
+  .ring__center{position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);text-align:center}
+  .ring__num{font-family:var(--mono);font-size:24px;font-weight:700;color:#fff;text-shadow:0 0 14px var(--rc)}
+  .ring__num .u{font-size:12px;color:var(--txt)}
+  .ring__name{font-size:13px;color:var(--txt);margin-top:2px}
+  .ring__tag{font-size:12px;font-family:var(--mono);color:var(--rc);margin-top:1px}
+
+  /* ===== Life guides ===== */
+  .panel__scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column}
+  .panel__scroll::-webkit-scrollbar{width:6px}
+  .panel__scroll::-webkit-scrollbar-track{background:transparent}
+  .panel__scroll::-webkit-scrollbar-thumb{background:rgba(56,225,255,.25);border-radius:3px}
+  .panel__scroll::-webkit-scrollbar-thumb:hover{background:rgba(56,225,255,.45)}
+  .panel__scroll{scrollbar-width:thin;scrollbar-color:rgba(56,225,255,.3) transparent}
+  .guides{flex:1 0 auto;min-height:0;display:flex;flex-direction:column;gap:8px;margin-top:10px;overflow:visible}
+  .guide{display:flex;gap:10px;align-items:center;padding:7px 10px;border-radius:10px;
+    background:rgba(10,16,34,.42);border:1px solid rgba(120,160,255,.10)}
+  .guide__ic{flex:0 0 30px;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    background:rgba(56,225,255,.10);color:var(--cyan)}
+  .guide__ic svg{width:17px;height:17px}
+  .guide__body{flex:1;min-width:0}
+  .guide__t{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;color:var(--txt)}
+  .g-tag{font-size:10px;font-family:var(--mono);font-weight:700;padding:1px 7px;border-radius:20px;white-space:nowrap}
+  .g-tag--ok{color:#7dffb0;background:rgba(66,230,164,.14)}
+  .g-tag--warn{color:#ffd27a;background:rgba(255,178,71,.14)}
+  .g-tag--bad{color:#ff9ab0;background:rgba(255,77,114,.16)}
+  .guide__d{margin-top:2px;font-size:11px;line-height:1.4;color:var(--txt2);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+  /* ===== Trend ===== */
+  .trend{height:200px;display:flex;flex-direction:column}
+  .trend__body{flex:1;position:relative;min-height:0}
+  .trend svg{width:100%;height:100%;display:block}
+  .tline{fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:var(--len);stroke-dashoffset:var(--len);
+    transition:stroke-dashoffset 2.2s ease}
+  .tpoint{animation:ptpulse 2.4s ease-in-out infinite}
+  @keyframes ptpulse{0%,100%{r:3;opacity:1}50%{r:5;opacity:.6}}
+  .legend{display:flex;gap:18px;font-size:12px;color:var(--txt2);margin-top:4px}
+  .legend i{display:inline-block;width:18px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  /* trend value labels (HTML overlay, crisp & aligned with stretched SVG) */
+  .trend__labels{position:absolute;inset:0;pointer-events:none;z-index:2}
+  .tl{position:absolute;font-family:var(--mono);font-size:10px;white-space:nowrap;transform:translate(-50%,-50%)}
+  .tl--t{color:var(--cyan);text-shadow:0 0 8px rgba(56,225,255,.7);transform:translate(-50%,-145%)}
+  .tl--h{color:var(--green);text-shadow:0 0 8px rgba(66,230,164,.7);transform:translate(-50%,45%)}
+  .tl--x{color:var(--txt);font-size:12px;font-weight:600;transform:translate(-50%,0)}
+
+  .scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+    opacity:.35;animation:scanmove 6s linear infinite;pointer-events:none}
+  @keyframes scanmove{0%{top:0}100%{top:100%}}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important}
+    .bar{transition:none!important;transform:scaleY(1)!important}
+    .ring__prog,.tline{transition:none!important;stroke-dashoffset:0!important}
+  }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <!-- Header -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand__mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#04121f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v2M5.6 5.6l1.4 1.4M3 12h2M19 12h2M17 17l1.4 1.4M12 21a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand__title">智慧每一天 · 天气监控</div>
+        <div class="brand__sub">SMART WEATHER MONITOR</div>
+      </div>
+    </div>
+    <div class="topbar__right">
+      <div class="loc" id="loc">定位中…</div>
+      <div class="city-switch">
+        <input id="cityInput" class="city-input" placeholder="输入城市" />
+        <button id="cityBtn" class="city-btn">切换</button>
+        <div class="city-dropdown">
+          <button id="cityHistBtn" class="city-btn">历史 ▾</button>
+          <div id="cityHistMenu" class="city-menu"></div>
+        </div>
+        <button id="locBtn" class="city-btn city-btn--ghost">我的位置</button>
+      </div>
+      <div class="clock"><span id="clk">--:--:--</span><small id="date">----/--/--</small></div>
+      <div class="status"><span class="dot"></span>系统运行中</div>
+      <div class="src" id="src">数据源: 演示</div>
+    </div>
+  </header>
+
+  <!-- KPI -->
+  <section class="kpi" id="kpi"></section>
+
+  <!-- Main 3D zone -->
+  <section class="main">
+    <div class="panel">
+      <span class="corner c-tl"></span><span class="corner c-tr"></span><span class="corner c-bl"></span><span class="corner c-br"></span>
+      <div class="panel__head"><div class="panel__title">一周气温趋势</div><div class="panel__tag">℃ / 7DAY</div></div>
+      <div class="bars3d"><div class="bars3d__axis" id="barsAxis"></div><div class="bars3d__stage" id="bars"></div></div>
+    </div>
+
+    <div class="panel">
+      <span class="corner c-tl"></span><span class="corner c-tr"></span><span class="corner c-bl"></span><span class="corner c-br"></span>
+      <div class="panel__head"><div class="panel__title">气象数据中枢</div><div class="panel__tag">REALTIME</div></div>
+      <div class="nodes">
+        <svg viewBox="0 0 400 320" id="net">
+          <g id="net-lines"></g>
+          <g id="net-pulse"></g>
+          <g>
+            <circle class="center-core" cx="200" cy="160" r="32" fill="none" stroke="rgba(56,225,255,.4)" stroke-width="1.5" stroke-dasharray="4 6"/>
+            <circle cx="200" cy="160" r="26" fill="rgba(56,225,255,.15)" stroke="var(--cyan)" stroke-width="1.5"/>
+            <circle cx="200" cy="160" r="6" fill="var(--cyan)" class="node-dot" style="color:var(--cyan)"/>
+            <text id="netCenter" x="200" y="164" text-anchor="middle" font-size="11" fill="#fff" font-weight="600">定位中…</text>
+          </g>
+          <g id="net-nodes"></g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="panel">
+      <span class="corner c-tl"></span><span class="corner c-tr"></span><span class="corner c-bl"></span><span class="corner c-br"></span>
+      <div class="panel__head"><div class="panel__title">生活指数盘</div><div class="panel__tag">LIFE</div></div>
+      <div class="panel__scroll">
+        <div class="rings" id="rings"></div>
+        <div class="guides" id="guides"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trend -->
+  <section class="panel trend">
+    <span class="corner c-tl"></span><span class="corner c-tr"></span><span class="corner c-bl"></span><span class="corner c-br"></span>
+    <div class="scan"></div>
+    <div class="panel__head"><div class="panel__title">24 小时温湿度趋势</div>
+      <div class="legend">
+        <span><i style="background:var(--cyan)"></i>温度 ℃</span>
+        <span><i style="background:var(--green)"></i>湿度 %</span>
+      </div>
+    </div>
+    <div class="trend__body"><svg viewBox="0 0 1000 200" preserveAspectRatio="none" id="trend"></svg><div class="trend__labels" id="trendLabels"></div></div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var SVGNS="http://www.w3.org/2000/svg";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var pad=function(n){return (n<10?'0':'')+n;};
+
+  /* ---------- state (demo defaults; overwritten by live data) ---------- */
+  var state={
+    temp:26.4, apparent:28.1, wind:3.2, windDir:'东南', humidity:63, aqi:42, weatherCode:0,
+    weatherText:'晴', precip:8, visibility:12.5, pressure:1012, uv:7, comfort:85,
+    weekMax:[22,24,27,29,26,23,25],
+    weekWeather:[0,2,3,95,61,1,0],
+    temp24:[21,20,20,19,20,22,24,26,28,29,30,31,30,29,28,27,26,25,24,23,22,22,21,21],
+    hum24:[78,80,82,83,81,76,70,64,58,55,52,50,53,57,61,65,69,72,75,77,79,80,79,78]
+  };
+
+  /* ---------- helpers ---------- */
+  function $(id){return document.getElementById(id);}
+  function aqiLevel(a){return a<=50?'优':a<=100?'良':a<=150?'轻度':a<=200?'中度':a<=300?'重度':'严重';}
+  function comfortText(c){return c>=80?'舒适':c>=60?'一般':c>=40?'偏闷':'不适';}
+  function degToDir(d){var dirs=['北','东北','东','东南','南','西南','西','西北'];return dirs[Math.round(d/45)%8];}
+  function tempColor(t){
+    if(t<16) return ['#7fb6ff','#3f7fe0','#2756a0','#bfe0ff'];
+    if(t<22) return ['#7fe9ff','#2bb6e6','#1b7fb0','#bff4ff'];
+    if(t<27) return ['#9fffd0','#42e6a4','#1f9e6e','#c4ffe6'];
+    if(t<30) return ['#ffd27f','#ffb547','#c97f1f','#ffe6b0'];
+    return ['#ffb38a','#ff8a5c','#c75a32','#ffd2bf'];
+  }
+  /* week bar relative gradient (cold->warm) + uniform fallback palette */
+  var WEEK_RAMP=[
+    ['#6aa8ff','#2f6fd6','#1b3f8a','#bcd6ff'],
+    ['#5fb8ff','#1f86e6','#13609e','#bfe6ff'],
+    ['#5fe6ff','#1fb6e6','#136f9e','#bdf2ff'],
+    ['#5fffd0','#1fe0b0','#129e72','#c2ffe8'],
+    ['#7dff9a','#33d85a','#1f9e34','#cdffd2'],
+    ['#d6ff6a','#a6d83a','#6f9e22','#eaffc2'],
+    ['#ffe07a','#ffc23a','#c9881f','#fff0bf'],
+    ['#ffb070','#ff8a3a','#c75a22','#ffd6bf'],
+    ['#ff7a9a','#ff4d72','#c72a52','#ffc2d2']
+  ];
+  var WEEK_PALETTE=[
+    ['#5fe6ff','#1fb6e6','#136f9e','#bdf2ff'],
+    ['#5fffd0','#1fe0b0','#129e72','#c2ffe8'],
+    ['#7dff9a','#33d85a','#1f9e34','#cdffd2'],
+    ['#d6ff6a','#a6d83a','#6f9e22','#eaffc2'],
+    ['#ffe07a','#ffc23a','#c9881f','#fff0bf'],
+    ['#ffb070','#ff8a3a','#c75a22','#ffd6bf'],
+    ['#b98cff','#8a4dff','#5a2ac7','#e0c2ff']
+  ];
+  function hex2rgb(h){h=h.replace('#','');return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
+  function rgb2hex(a){return '#'+a.map(function(x){var s=('0'+Math.max(0,Math.min(255,x)).toString(16));return s.slice(-2);}).join('');}
+  function rampColor(p){
+    p=Math.max(0,Math.min(1,p));
+    var n=WEEK_RAMP.length-1,x=p*n,i=Math.floor(x),f=x-i;
+    if(i>=n) return WEEK_RAMP[n].slice();
+    function mix(a,b,t){var ca=hex2rgb(a),cb=hex2rgb(b);return [Math.round(ca[0]+(cb[0]-ca[0])*t),Math.round(ca[1]+(cb[1]-ca[1])*t),Math.round(ca[2]+(cb[2]-ca[2])*t)];}
+    return [rgb2hex(mix(WEEK_RAMP[i][0],WEEK_RAMP[i+1][0],f)),rgb2hex(mix(WEEK_RAMP[i][1],WEEK_RAMP[i+1][1],f)),rgb2hex(mix(WEEK_RAMP[i][2],WEEK_RAMP[i+1][2],f)),rgb2hex(mix(WEEK_RAMP[i][3],WEEK_RAMP[i+1][3],f))];
+  }
+  function WMO(code){
+    var m={0:['晴'],1:['大致晴朗'],2:['局部多云'],3:['阴'],45:['雾'],48:['雾凇'],
+      51:['毛毛雨'],53:['小雨'],55:['中雨'],56:['冻雨'],57:['冻雨'],
+      61:['小雨'],63:['中雨'],65:['大雨'],66:['冻雨'],67:['冻雨'],
+      71:['小雪'],73:['中雪'],75:['大雪'],77:['雪粒'],
+      80:['阵雨'],81:['阵雨'],82:['强阵雨'],85:['阵雪'],86:['强阵雪'],
+      95:['雷阵雨'],96:['雷阵雨伴雹'],99:['强雷暴']};
+    return (m[code]||['未知'])[0];
+  }
+  function weatherIcon(code){
+    var s='<svg class="wico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
+    var sun='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+    var cloud='<path d="M7 18a4 4 0 0 1-.5-7.96A5 5 0 0 1 16 9.5 3.5 3.5 0 0 1 17 18H7z"/>';
+    var rain='<path d="M8 20l-1 2.6M12 20l-1 2.6M16 20l-1 2.6"/>';
+    var snow='<path d="M9 20.4l-1 1.6M13 20.4l-1 1.6M17 20.4l-1 1.6"/>';
+    var bolt='<path d="M12 15.5l-2.6 4h3.2l-2.6 4"/>';
+    var fog='<path d="M5 19.5h14M6.5 22h11"/>';
+    if(code<=1) return s+sun+'</svg>';
+    if(code===2) return s+sun+cloud+'</svg>';
+    if(code===3) return s+cloud+'</svg>';
+    if(code===45||code===48) return s+cloud+fog+'</svg>';
+    if((code>=51&&code<=67)||(code>=80&&code<=82)) return s+cloud+rain+'</svg>';
+    if((code>=71&&code<=77)||(code>=85&&code<=86)) return s+cloud+snow+'</svg>';
+    if(code>=95) return s+cloud+bolt+'</svg>';
+    return s+cloud+'</svg>';
+  }
+
+  /* ---------- clock ---------- */
+  function tick(){
+    var d=new Date();
+    $('clk').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+    $('date').textContent=d.getFullYear()+'/'+pad(d.getMonth()+1)+'/'+pad(d.getDate());
+  }
+  tick(); setInterval(tick,1000);
+
+  /* ---------- count up ---------- */
+  function countUp(el,target,dec){
+    var uEl=el.querySelector('.unit')||el.querySelector('.u');
+    var unit=uEl?uEl.outerHTML:'';
+    if(reduce){ el.innerHTML=target.toFixed(dec)+unit; return; }
+    var dur=1600,start=null;
+    function frame(t){
+      if(!start)start=t;
+      var k=Math.min((t-start)/dur,1);
+      var e=1-Math.pow(1-k,3);
+      el.innerHTML=(target*e).toFixed(dec)+unit;
+      if(k<1) requestAnimationFrame(frame);
+      else el.innerHTML=target.toFixed(dec)+unit;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- KPI ---------- */
+  function renderKPI(){
+    var maxT=Math.max.apply(null,state.weekMax), minT=Math.min.apply(null,state.weekMax);
+    var cards=[
+      {label:'实时气温',val:state.temp,dec:1,unit:'℃',ac:'cyan',foot:['天气',state.weatherText]},
+      {label:'天气状况',text:state.weatherText,ac:'amber',foot:['今日最高气温',maxT+'℃']},
+      {label:'风速',val:state.wind,dec:1,unit:'m/s',ac:'blue',foot:['风向',state.windDir]},
+      {label:'体感温度',val:state.apparent,dec:1,unit:'℃',ac:'purple',foot:['湿度',state.humidity+'%']},
+      {label:'空气质量',val:state.aqi,dec:0,unit:'AQI',ac:'green',foot:['等级',aqiLevel(state.aqi)]},
+      {label:'降水概率',val:state.precip,dec:0,unit:'%',ac:'blue',foot:['今日最低气温',minT+'℃']},
+      {label:'能见度',val:state.visibility,dec:1,unit:'km',ac:'cyan',foot:['气压',state.pressure+'hPa']}
+    ];
+    var icUrl={
+      cyan:'M14 14.76V5a2 2 0 0 0-4 0v9.76a4 4 0 1 0 4 0z',
+      amber:'M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2',
+      blue:'M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h9a2.5 2.5 0 1 1-2.5 2.5',
+      purple:'M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z',
+      green:'M3 12h4l3 8 4-16 3 8h4'
+    };
+    var wrap=$('kpi'); wrap.innerHTML='';
+    cards.forEach(function(c){
+      var el=document.createElement('div'); el.className='kpi__card';
+      el.style.setProperty('--accent','var(--'+c.ac+')');
+      var valHtml = c.text!=null
+        ? '<div class="kpi__val" style="font-size:23px">'+c.text+'</div>'
+        : '<div class="kpi__val" data-target="'+c.val+'" data-dec="'+c.dec+'">0<span class="unit">'+c.unit+'</span></div>';
+      el.innerHTML='<span class="glow"></span>'+
+        '<div class="kpi__label"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="'+icUrl[c.ac]+'"/></svg>'+c.label+'</div>'+
+        valHtml+
+        '<div class="kpi__foot"><span>'+c.foot[0]+'</span><b>'+c.foot[1]+'</b></div>';
+      wrap.appendChild(el);
+      var v=el.querySelector('[data-target]');
+      if(v) countUp(v,parseFloat(v.getAttribute('data-target')),parseInt(v.getAttribute('data-dec'),10));
+    });
+  }
+
+  /* ---------- 3D bars ---------- */
+  function renderBars(){
+    var days=['周一','周二','周三','周四','周五','周六','周日'];
+    var data=state.weekMax;
+    var tmin=Math.min.apply(null,data), tmax=Math.max.apply(null,data);
+    var tSpan=tmax-tmin;
+    var scaleMin=Math.floor((tmin-2)/5)*5;
+    var scaleMax=Math.ceil((tmax+2)/5)*5;
+    if(scaleMax-scaleMin<10) scaleMax=scaleMin+10;
+    var span=scaleMax-scaleMin;
+    function pct(t){ return Math.max(4,(t-scaleMin)/span*100); }
+
+    // axis: gridlines + ℃ labels + average line
+    var axis=$('barsAxis'); axis.innerHTML='';
+    for(var g=scaleMin; g<=scaleMax; g+=5){
+      var f=(g-scaleMin)/span;
+      var lab=document.createElement('div'); lab.className='axis-label'; lab.style.top=((1-f)*100)+'%'; lab.textContent=g+'℃';
+      axis.appendChild(lab);
+    }
+    // 平均参考线已按用户要求去除，仅保留刻度数字
+
+    var stage=$('bars');
+    stage.innerHTML='<div class="bars3d__floor"></div>';
+    var barsWrap=document.querySelector('.bars3d');
+    var tip=$('barTip');
+    if(!tip){ tip=document.createElement('div'); tip.id='barTip'; tip.className='bar-tip'; barsWrap.appendChild(tip); }
+    data.forEach(function(t,i){
+      var c = tSpan<1 ? WEEK_PALETTE[i%WEEK_PALETTE.length] : rampColor((t-tmin)/tSpan);
+      var col=document.createElement('div'); col.className='col';
+      col.innerHTML=
+        '<div class="col__bar"><div class="bar" style="height:'+pct(t).toFixed(1)+'%;--c1:'+c[0]+';--c2:'+c[1]+'">'+
+          '<span class="bar__front"></span></div>'+
+          '<div class="col__val" data-target="'+t+'" data-dec="0" style="--c1:'+c[0]+';bottom:'+(pct(t)+1.5).toFixed(1)+'%">0<span class="u">℃</span></div></div>'+
+        '<div class="col__day">'+days[i]+'</div>';
+      stage.appendChild(col);
+      countUp(col.querySelector('.col__val'),t,0);
+      col.addEventListener('mouseenter',function(){
+        var wc=state.weekWeather[i];
+        tip.innerHTML=
+          '<div class="t-day">'+days[i]+' 最高温</div>'+
+          '<div class="t-row">'+weatherIcon(wc)+'<span class="t-cond">'+WMO(wc)+'</span></div>'+
+          '<div class="t-val">'+t+'℃</div>';
+        var barEl=col.querySelector('.bar');
+        var br=barEl.getBoundingClientRect(), pr=barsWrap.getBoundingClientRect();
+        tip.style.left=(br.left+br.width/2-pr.left)+'px';
+        tip.style.top=(br.top-pr.top-8)+'px';
+        tip.classList.add('on');
+        stage.classList.add('spot');
+      });
+      col.addEventListener('mouseleave',function(){
+        tip.classList.remove('on');
+        stage.classList.remove('spot');
+      });
+    });
+    if(!reduce){
+      setTimeout(function(){
+        stage.querySelectorAll('.bar').forEach(function(b,i){ setTimeout(function(){b.classList.add('is-on');},i*90); });
+      },250);
+    } else { stage.querySelectorAll('.bar').forEach(function(b){b.classList.add('is-on');}); }
+  }
+
+  /* ---------- ring dials ---------- */
+  function renderRings(){
+    var data=[
+      {name:'紫外线',num:state.uv,unit:'',tag:'指数',sub:'/11',rc:'var(--amber)',pct:state.uv/11},
+      {name:'空气质量',num:state.aqi,unit:'',tag:aqiLevel(state.aqi),sub:'AQI',rc:'var(--green)',pct:1-state.aqi/300},
+      {name:'湿度',num:state.humidity,unit:'%',tag:'舒适',sub:'',rc:'var(--blue)',pct:state.humidity/100},
+      {name:'生活指数',num:state.comfort,unit:'',tag:comfortText(state.comfort),sub:'/100',rc:'var(--purple)',pct:state.comfort/100}
+    ];
+    var R=52,C=2*Math.PI*R, wrap=$('rings'); wrap.innerHTML='';
+    data.forEach(function(r){
+      var d=document.createElement('div'); d.className='ring'; d.style.setProperty('--rc',r.rc);
+      d.innerHTML=
+        '<svg viewBox="0 0 130 130"><circle class="ring__track" cx="65" cy="65" r="'+R+'"></circle>'+
+        '<circle class="ring__prog" cx="65" cy="65" r="'+R+'" stroke="'+r.rc+'" style="--c:'+C.toFixed(1)+'"></circle></svg>'+
+        '<div class="ring__center"><div class="ring__num" data-target="'+r.num+'" data-dec="0">0<span class="u">'+r.unit+'</span></div>'+
+        '<div class="ring__name">'+r.name+'</div><div class="ring__tag">'+r.tag+' '+r.sub+'</div></div>';
+      wrap.appendChild(d);
+      countUp(d.querySelector('.ring__num'),r.num,0);
+      var prog=d.querySelector('.ring__prog');
+      if(reduce) prog.style.strokeDashoffset='0';
+      else setTimeout(function(){prog.style.strokeDashoffset=(C*(1-r.pct)).toFixed(1);},200);
+    });
+  }
+
+  /* ---------- life guides (dressing / travel / exercise) ---------- */
+  function renderGuides(){
+    var t=state.temp, ap=state.apparent, wc=state.weatherCode, uv=state.uv, aqi=state.aqi, precip=state.precip, hum=state.humidity;
+    var rainy=(wc>=51&&wc<=67)||(wc>=80&&wc<=82);
+    var snowy=(wc>=71&&wc<=77)||(wc>=85&&wc<=86);
+    var storm=wc>=95;
+    // 穿衣
+    var dress,dressLv;
+    if(ap>=28){ dress='建议穿短袖、短裤等清凉夏装，注意防晒补水'; dressLv='轻薄'; }
+    else if(ap>=20){ dress='薄长袖或衬衫，早晚温差可加薄外套'; dressLv='舒适'; }
+    else if(ap>=10){ dress='长袖加外套，注意保暖'; dressLv='保暖'; }
+    else { dress='厚外套或毛衣，防寒保暖'; dressLv='厚暖'; }
+    if(snowy) dress+='；有降雪，注意防滑保暖';
+    else if(rainy||precip>=60) dress+='；'+(rainy?'有降水，建议携带雨具':'降水概率较高，备好雨具');
+    // 出行
+    var out,outLv;
+    if(storm){ out='雷雨等恶劣天气，尽量避免外出'; outLv='不宜'; }
+    else if(aqi>200){ out='空气严重污染，减少外出并佩戴口罩'; outLv='不宜'; }
+    else if(aqi>150){ out='空气中度污染，敏感人群减少外出'; outLv='注意'; }
+    else if(precip>=70){ out='降水概率大，外出请随身携带雨具'; outLv='注意'; }
+    else if(uv>=8){ out='紫外线较强，外出做好防晒措施'; outLv='注意'; }
+    else if(t>=33||t<=0){ out='气温'+(t>=33?'偏高':'偏低')+'，外出注意'+(t>=33?'防暑降温':'防寒保暖'); outLv='注意'; }
+    else { out='天气条件良好，适宜正常出行'; outLv='适宜'; }
+    // 运动
+    var ex,exLv;
+    if(storm||precip>=70){ ex='不适宜户外运动，建议改室内锻炼'; exLv='不宜'; }
+    else if(aqi>150){ ex='空气质量差，不宜户外剧烈运动'; exLv='不宜'; }
+    else if(t>=33||t<5){ ex='气温'+(t>=33?'过高':'偏低')+'，运动需谨慎并充分补水'; exLv='注意'; }
+    else if(t>=28&&hum>=70){ ex='闷热潮湿，户外运动注意强度与补水'; exLv='注意'; }
+    else { ex='气象条件适宜，适合户外锻炼'; exLv='适宜'; }
+    function lvClass(lv){ return lv==='适宜'?'g-tag--ok':lv==='注意'?'g-tag--warn':'g-tag--bad'; }
+    var items=[
+      {name:'穿衣指南',lv:dressLv,desc:dress,ic:'<path d="M8.5 3.5 12 6l3.5-2.5 4 3-2.2 2.8-1.8-1v9.2H8.5V8.3L6.7 9.3 4.5 6.5z"/>'},
+      {name:'出行预防',lv:outLv,desc:out,ic:'<path d="M12 3a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8z"/><path d="M12 11v8a2 2 0 0 0 4 0"/>'},
+      {name:'运动建议',lv:exLv,desc:ex,ic:'<path d="M4 9v6M7 6.5v11M17 6.5v11M20 9v6M7 12h10"/>'}
+    ];
+    var wrap=$('guides'); wrap.innerHTML='';
+    items.forEach(function(it){
+      var el=document.createElement('div'); el.className='guide';
+      el.innerHTML='<div class="guide__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+it.ic+'</svg></div>'+
+        '<div class="guide__body"><div class="guide__t"><span>'+it.name+'</span><span class="g-tag '+lvClass(it.lv)+'">'+it.lv+'</span></div>'+
+        '<div class="guide__d">'+it.desc+'</div></div>';
+      wrap.appendChild(el);
+    });
+  }
+
+  /* ---------- node network ---------- */
+  function renderNodes(){
+    var nodes=[
+      {x:70,y:70,label:'天气',sub:state.weatherText+' '+Math.round(state.temp)+'℃',c:'var(--cyan)'},
+      {x:330,y:70,label:'紫外线',sub:'指数 '+state.uv,c:'var(--amber)'},
+      {x:70,y:250,label:'空气质量',sub:'AQI '+state.aqi,c:'var(--green)'},
+      {x:330,y:250,label:'生活指数',sub:comfortText(state.comfort)+' '+state.comfort,c:'var(--purple)'}
+    ];
+    var cx=200,cy=160;
+    var linesG=$('net-lines'),pulseG=$('net-pulse'),nodesG=$('net-nodes');
+    linesG.innerHTML='';pulseG.innerHTML='';nodesG.innerHTML='';
+    nodes.forEach(function(n){
+      var mx=(cx+n.x)/2,my=(cy+n.y)/2-18;
+      var dPath='M'+cx+','+cy+' Q'+mx+','+my+' '+n.x+','+n.y;
+      var path=document.createElementNS(SVGNS,'path');
+      path.setAttribute('d',dPath);path.setAttribute('class','flow');path.setAttribute('stroke',n.c);path.style.color=n.c;
+      linesG.appendChild(path);
+      var dot=document.createElementNS(SVGNS,'circle');
+      dot.setAttribute('r','3.5');dot.setAttribute('fill',n.c);dot.setAttribute('class','node-dot');dot.style.color=n.c;
+      if(!reduce){dot.style.offsetPath="path('"+dPath+"')";dot.style.animation='dotrun 3s linear infinite';}
+      pulseG.appendChild(dot);
+      var g=document.createElementNS(SVGNS,'g');
+      g.innerHTML=
+        '<circle cx="'+n.x+'" cy="'+n.y+'" r="16" fill="rgba(10,16,34,.85)" stroke="'+n.c+'" stroke-width="1.5"/>'+
+        '<circle cx="'+n.x+'" cy="'+n.y+'" r="4" fill="'+n.c+'" class="node-dot" style="color:'+n.c+'"/>'+
+        '<text x="'+n.x+'" y="'+(n.y-26)+'" text-anchor="middle" class="sat-label">'+n.label+'</text>'+
+        '<text x="'+n.x+'" y="'+(n.y+32)+'" text-anchor="middle" class="sat-sub" style="fill:'+n.c+'">'+n.sub+'</text>';
+      nodesG.appendChild(g);
+    });
+  }
+
+  /* ---------- trend line ---------- */
+  function renderTrend(){
+    var temp=state.temp24,hum=state.hum24,W=1000,H=200,pad=14,n=temp.length;
+    function pts(arr,min,max){return arr.map(function(v,i){
+      var x=pad+(W-2*pad)*i/(n-1);
+      var y=H-pad-(H-2*pad)*(v-min)/(max-min);
+      return [x,y];
+    });}
+    function dstr(p){return p.map(function(pt,i){return (i?'L':'M')+pt[0].toFixed(1)+','+pt[1].toFixed(1);}).join(' ');}
+    var tmin=Math.min.apply(null,temp),tmax=Math.max.apply(null,temp);
+    var hmin=Math.min.apply(null,hum),hmax=Math.max.apply(null,hum);
+    var tPd=(tmax-tmin)*0.12||1.5, hPd=(hmax-hmin)*0.12||2;
+    var tP=pts(temp,tmin-tPd,tmax+tPd),hP=pts(hum,hmin-hPd,hmax+hPd);
+    var tg='<defs><linearGradient id="gt" x1="0" y1="0" x2="1" y2="0">'+
+      '<stop offset="0" stop-color="#38e1ff" stop-opacity=".2"/><stop offset="1" stop-color="#38e1ff"/></linearGradient>'+
+      '<linearGradient id="gh" x1="0" y1="0" x2="1" y2="0">'+
+      '<stop offset="0" stop-color="#42e6a4" stop-opacity=".2"/><stop offset="1" stop-color="#42e6a4"/></linearGradient></defs>';
+    tg+='<path d="'+dstr(tP)+' L'+tP[n-1][0].toFixed(1)+','+(H-pad)+' L'+tP[0][0].toFixed(1)+','+(H-pad)+' Z" fill="url(#gt)" opacity=".12"/>';
+    tg+='<path class="tline" id="lineT" d="'+dstr(tP)+'" stroke="url(#gt)"/>';
+    tg+='<path class="tline" id="lineH" d="'+dstr(hP)+'" stroke="url(#gh)"/>';
+    tP.forEach(function(pt,i){if(i%4===0)tg+='<circle class="tpoint" cx="'+pt[0].toFixed(1)+'" cy="'+pt[1].toFixed(1)+'" r="3" fill="#38e1ff"/>';});
+    hP.forEach(function(pt,i){if(i%4===0)tg+='<circle class="tpoint" cx="'+pt[0].toFixed(1)+'" cy="'+pt[1].toFixed(1)+'" r="3" fill="#42e6a4" style="animation-delay:.6s"/>';});
+    tg+='<circle id="scanner" r="5" fill="#fff" style="filter:drop-shadow(0 0 8px #38e1ff)"/>';
+    var trend=$('trend'); trend.innerHTML=tg;
+
+    // value labels overlay (percent-based, aligned with stretched SVG)
+    var labels=$('trendLabels'); labels.innerHTML='';
+    function addLabel(cls,x,y,text){var d=document.createElement('div');d.className='tl '+cls;d.style.left=x+'%';d.style.top=y+'%';d.textContent=text;labels.appendChild(d);}
+    for(var i=0;i<n;i+=4){
+      addLabel('tl--t',(tP[i][0]/W*100).toFixed(2),(tP[i][1]/H*100).toFixed(2),Math.round(temp[i])+'℃');
+      addLabel('tl--h',(hP[i][0]/W*100).toFixed(2),(hP[i][1]/H*100).toFixed(2),Math.round(hum[i])+'%');
+    }
+    [0,6,12,18,23].forEach(function(i){
+      addLabel('tl--x',(tP[i][0]/W*100).toFixed(2),'95',(i===23?'24':i)+'h');
+    });
+    var lineT=$('lineT'),lineH=$('lineH');
+    var lt=lineT.getTotalLength(),lh=lineH.getTotalLength();
+    lineT.style.strokeDasharray=lt;lineT.style.strokeDashoffset=lt;
+    lineH.style.strokeDasharray=lh;lineH.style.strokeDashoffset=lh;
+    var scanner=$('scanner');
+    if(reduce){lineT.style.strokeDashoffset=0;lineH.style.strokeDashoffset=0;scanner.style.display='none';}
+    else{
+      setTimeout(function(){lineT.style.strokeDashoffset=0;lineH.style.strokeDashoffset=0;},150);
+      scanner.style.offsetPath="path('"+dstr(tP)+"')";
+      scanner.style.animation='scan 6s linear infinite';
+    }
+  }
+
+  function renderAll(){ renderKPI(); renderBars(); renderRings(); renderNodes(); renderTrend(); renderGuides(); }
+
+  /* ---------- live data (Open-Meteo) ---------- */
+  function hourIndex(times){
+    var d=new Date();
+    var key=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours());
+    var i=times.findIndex(function(t){return t.indexOf(key)===0;});
+    return i<0?0:i;
+  }
+  function slice24(arr,idx){var out=arr.slice(idx,idx+24);while(out.length<24)out.push(out[out.length-1]||0);return out;}
+
+  var manualCity=null; // {lat,lon,label} when user manually switches
+  var cityHistory=[];   // recent manually switched cities
+
+  function pushHistory(city){
+    cityHistory=cityHistory.filter(function(c){return c.label!==city.label;});
+    cityHistory.unshift({label:city.label,lat:city.lat,lon:city.lon});
+    if(cityHistory.length>6) cityHistory=cityHistory.slice(0,6);
+  }
+  function renderHistory(){
+    var m=$('cityHistMenu'); if(!m) return; m.innerHTML='';
+    if(!cityHistory.length){ m.innerHTML='<div class="city-empty">暂无切换记录</div>'; return; }
+    cityHistory.forEach(function(c){
+      var it=document.createElement('div'); it.className='city-item'; it.textContent=c.label;
+      it.addEventListener('click',function(){ applyCity(c); m.classList.remove('open'); });
+      m.appendChild(it);
+    });
+  }
+  function applyCity(city){
+    manualCity={lat:city.lat,lon:city.lon,label:city.label};
+    pushHistory(city);
+    fetchWeather(city.lat,city.lon,city.label);
+  }
+
+  async function fetchWeather(lat,lon,cityName){
+    $('loc').textContent=cityName;
+    var cn=cityName; if(cn.length>6) cn=cn.slice(0,6)+'…';
+    var nc=$('netCenter'); if(nc) nc.textContent=cn;
+    var fUrl='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+
+      '&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m,visibility,pressure_msl'+
+      '&hourly=temperature_2m,relative_humidity_2m,uv_index'+
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max'+
+      '&timezone=auto&wind_speed_unit=ms';
+    var aUrl='https://air-quality-api.open-meteo.com/v1/air-quality?latitude='+lat+'&longitude='+lon+
+      '&current=us_aqi,pm2_5,pm10&timezone=auto';
+    try{
+      var res=await Promise.all([fetch(fUrl).then(function(r){return r.json();}),fetch(aUrl).then(function(r){return r.json();})]);
+      var f=res[0],a=res[1];
+      var cur=f.current||{},h=f.hourly||{},dly=f.daily||{};
+      var idx=hourIndex(h.time||[]);
+      state.temp=cur.temperature_2m!=null?cur.temperature_2m:state.temp;
+      state.apparent=cur.apparent_temperature!=null?cur.apparent_temperature:state.apparent;
+      state.wind=cur.wind_speed_10m!=null?cur.wind_speed_10m:state.wind;
+      state.windDir=cur.wind_direction_10m!=null?degToDir(cur.wind_direction_10m):state.windDir;
+      state.humidity=cur.relative_humidity_2m!=null?cur.relative_humidity_2m:state.humidity;
+      state.weatherText=cur.weather_code!=null?WMO(cur.weather_code):state.weatherText;
+      state.weatherCode=cur.weather_code!=null?cur.weather_code:state.weatherCode;
+      state.precip=cur.precipitation_probability!=null?cur.precipitation_probability:state.precip;
+      state.visibility=cur.visibility!=null?(cur.visibility/1000):state.visibility;
+      state.pressure=cur.pressure_msl!=null?Math.round(cur.pressure_msl):state.pressure;
+      state.uv=(h.uv_index&&h.uv_index[idx]!=null)?h.uv_index[idx]:((dly.uv_index_max&&dly.uv_index_max[0]!=null)?dly.uv_index_max[0]:state.uv);
+      if(a&&a.current){ state.aqi=a.current.us_aqi!=null?a.current.us_aqi:state.aqi; }
+      if(dly.temperature_2m_max) state.weekMax=dly.temperature_2m_max.slice(0,7);
+      if(dly.weather_code) state.weekWeather=dly.weather_code.slice(0,7);
+      if(h.temperature_2m&&h.relative_humidity_2m){
+        state.temp24=slice24(h.temperature_2m,idx);
+        state.hum24=slice24(h.relative_humidity_2m,idx);
+      }
+      // derived 生活指数(舒适度): based on apparent temp & humidity
+      var comfort=100-Math.abs(state.apparent-23)*3.5-Math.abs(state.humidity-55)*0.4;
+      state.comfort=Math.max(0,Math.min(100,Math.round(comfort)));
+      $('src').textContent='数据源: Open-Meteo 实时';
+      renderAll();
+    }catch(e){
+      $('src').textContent='数据源: 演示(离线)';
+      renderAll(); // keep demo state
+    }
+  }
+
+  async function loadWeather(){
+    if(manualCity){ fetchWeather(manualCity.lat,manualCity.lon,manualCity.label); return; }
+    var lat=39.9042,lon=116.4074,auto=false;
+    try{
+      var pos=await new Promise(function(res,rej){
+        if(!navigator.geolocation) return rej();
+        navigator.geolocation.getCurrentPosition(res,rej,{timeout:6000,maximumAge:600000});
+      });
+      lat=pos.coords.latitude;lon=pos.coords.longitude;auto=true;
+    }catch(e){/* fallback Beijing */}
+    // city name (best-effort, free reverse geocode, no key)
+    var cityName=auto?'我的位置':'北京';
+    try{
+      var rg=await fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude='+lat+'&longitude='+lon+'&localityLanguage=zh');
+      var rj=await rg.json();
+      cityName=rj.city||rj.locality||rj.principalSubdivision||cityName;
+    }catch(e){}
+    fetchWeather(lat,lon,cityName);
+  }
+
+  async function switchCity(name){
+    name=(name||'').trim(); if(!name) return;
+    var btn=$('cityBtn'); if(btn) btn.disabled=true;
+    try{
+      var g='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(name)+'&count=1&language=zh&format=json';
+      var gj=await (await fetch(g)).json();
+      if(gj&&gj.results&&gj.results.length){
+        var r=gj.results[0];
+        applyCity({label:r.name,lat:r.latitude,lon:r.longitude});
+      }else{
+        $('loc').textContent='未找到: '+name;
+      }
+    }catch(e){
+      $('loc').textContent='切换失败';
+    }finally{
+      if(btn) btn.disabled=false;
+    }
+  }
+
+  /* ---------- init ---------- */
+  renderAll();                 // instant demo paint
+  loadWeather();               // then try live data
+  setInterval(loadWeather,10*60*1000); // refresh every 10 min
+  $('cityBtn').addEventListener('click',function(){ switchCity($('cityInput').value); });
+  $('cityInput').addEventListener('keydown',function(e){ if(e.key==='Enter') switchCity(this.value); });
+  $('cityHistBtn').addEventListener('click',function(e){ e.stopPropagation(); renderHistory(); $('cityHistMenu').classList.toggle('open'); });
+  $('locBtn').addEventListener('click',function(){ manualCity=null; $('cityHistMenu').classList.remove('open'); loadWeather(); });
+  document.addEventListener('click',function(){ $('cityHistMenu').classList.remove('open'); });
+})();
+</script>
+</body>
+</html>
