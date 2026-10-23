@@ -1,0 +1,1495 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CodeCat 代码猫 · 程序员健康工作站</title>
+<meta name="description" content="程序员的健康管家：番茄专注、护眼提醒、喝水打卡、微运动指导、健康数据统计。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%B1%3C/text%3E%3C/svg%3E">
+<style>
+/* ============ 主题变量 ============ */
+:root{
+  --bg:#F3F6F5; --bg2:#EAEFED; --card:#FFFFFF; --card2:#F8FAF9;
+  --ink:#171B20; --ink2:#5B6470; --ink3:#96A0AB;
+  --line:#E5EAE8; --line2:#D8E0DC;
+  --brand:#12C87A; --brand-deep:#0A8F55; --brand-ink:#0A7A49; --brand-bg:#E7F9F0; --brand-line:#BDE8D3;
+  --accent:#FFB020; --accent-bg:#FFF6E5;
+  --blue:#3E9DFF; --blue-bg:#EAF4FF;
+  --red:#FF6B6B; --red-bg:#FFEFEF;
+  --purple:#8B5CF6; --purple-bg:#F3EFFF;
+  --sh-1:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+  --sh-2:0 6px 18px rgba(16,24,40,.07),0 2px 6px rgba(16,24,40,.04);
+  --sh-3:0 14px 40px rgba(16,24,40,.12),0 4px 12px rgba(16,24,40,.06);
+  --r:18px; --r-sm:12px;
+}
+[data-theme="dark"]{
+  --bg:#101317; --bg2:#171C22; --card:#1A1F25; --card2:#20262D;
+  --ink:#E8EDF2; --ink2:#A8B2BD; --ink3:#69747F;
+  --line:#262D35; --line2:#313A44;
+  --brand:#1FD98C; --brand-deep:#12C87A; --brand-ink:#7FE7BE; --brand-bg:rgba(31,217,140,.12); --brand-line:rgba(31,217,140,.3);
+  --accent:#FFB020; --accent-bg:rgba(255,176,32,.12);
+  --blue:#5FB0FF; --blue-bg:rgba(95,176,255,.12);
+  --red:#FF7B7B; --red-bg:rgba(255,123,123,.12);
+  --purple:#A78BFA; --purple-bg:rgba(167,139,250,.12);
+  --sh-1:0 1px 2px rgba(0,0,0,.3);
+  --sh-2:0 6px 18px rgba(0,0,0,.35);
+  --sh-3:0 14px 40px rgba(0,0,0,.45);
+}
+/* ============ 基础 ============ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh;
+  -webkit-font-smoothing:antialiased;transition:background .3s,color .3s;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 420px at 10% -6%,rgba(18,200,122,.10),transparent 60%),
+    radial-gradient(800px 400px at 95% 0%,rgba(62,157,255,.08),transparent 58%),
+    radial-gradient(700px 500px at 50% 110%,rgba(255,176,32,.06),transparent 60%);
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;color:inherit}
+::selection{background:rgba(18,200,122,.25)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 64px}
+/* ============ 顶栏 ============ */
+.nav{
+  position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--line);
+}
+.nav-in{max-width:1180px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;min-width:0}
+.logo svg{width:38px;height:38px;flex:none;filter:drop-shadow(0 3px 6px rgba(18,200,122,.3))}
+.logo b{font-size:17px;letter-spacing:-.02em;display:block;line-height:1.2}
+.logo span{font-size:12px;color:var(--ink3);display:block;line-height:1.2}
+.nav-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.streak{
+  display:flex;align-items:center;gap:6px;background:var(--accent-bg);color:var(--accent);
+  border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);
+  font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;white-space:nowrap;
+}
+.icon-btn{
+  width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:17px;
+  background:var(--card);border:1px solid var(--line);box-shadow:var(--sh-1);transition:.18s;
+}
+.icon-btn:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-1px)}
+/* ============ 卡片通用 ============ */
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--sh-1);padding:20px;transition:background .3s,border-color .3s;
+}
+.card-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.card-h .ic{
+  width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px;flex:none;
+  background:var(--brand-bg);border:1px solid var(--brand-line);
+}
+.card-h h3{font-size:15.5px;letter-spacing:-.01em}
+.card-h .sub{font-size:12px;color:var(--ink3);margin-left:auto;white-space:nowrap}
+.grid{display:grid;gap:16px;margin-top:16px}
+.g-hero{grid-template-columns:1fr 1.1fr}
+.g-3{grid-template-columns:repeat(3,1fr)}
+.g-2{grid-template-columns:1.35fr 1fr}
+@media (max-width:1020px){.g-hero,.g-2{grid-template-columns:1fr}.g-3{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.g-3{grid-template-columns:1fr}}
+/* ============ 按钮 ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  border-radius:12px;font-size:14px;font-weight:600;padding:10px 18px;transition:.18s;
+  border:1px solid var(--line2);background:var(--card);color:var(--ink);
+}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--sh-2)}
+.btn:active{transform:translateY(0)}
+.btn-primary{
+  background:linear-gradient(135deg,#19E08A,#0FAE68);color:#fff;border:none;
+  box-shadow:0 6px 16px rgba(15,174,104,.32);
+}
+.btn-primary:hover{box-shadow:0 10px 24px rgba(15,174,104,.4)}
+.btn-ghost{background:var(--card2)}
+.btn-sm{padding:7px 13px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.5;pointer-events:none}
+/* ============ 猫咪舞台 ============ */
+.stage-card{position:relative;overflow:hidden}
+.stage{
+  position:relative;border-radius:var(--r-sm);overflow:hidden;
+  background:
+    radial-gradient(320px 200px at 50% 108%,rgba(18,200,122,.16),transparent 70%),
+    linear-gradient(180deg,var(--card2),var(--card));
+  border:1px solid var(--line);padding:8px;
+}
+.stage .sky{position:absolute;inset:0;pointer-events:none}
+.stage .orb{position:absolute;border-radius:50%;filter:blur(2px);opacity:.5}
+.stage .orb.a{width:90px;height:90px;background:radial-gradient(circle at 35% 35%,#FFE9A8,#FFD45E);top:14px;right:22px}
+.stage .orb.b{width:10px;height:10px;background:#fff;top:40px;left:60px;box-shadow:60px 90px 0 #ffffffaa,-30px 120px 0 #ffffff88,120px 150px 0 #ffffff66}
+.cat-box{position:relative;width:100%;max-width:340px;margin:0 auto;display:block}
+.cat-box svg{width:100%;height:auto;display:block}
+.quote{
+  text-align:center;font-size:13px;color:var(--ink2);margin-top:10px;min-height:22px;
+  transition:opacity .4s;
+}
+.quote b{color:var(--brand-ink);font-weight:600}
+.stage-tag{
+  position:absolute;top:12px;left:12px;font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;
+  background:var(--card);border:1px solid var(--line);box-shadow:var(--sh-1);color:var(--ink2);
+  display:flex;align-items:center;gap:6px;
+}
+.stage-tag i{width:8px;height:8px;border-radius:50%;background:var(--brand);animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* ---- 猫咪动画 ---- */
+.cat-all{transition:transform .5s cubic-bezier(.34,1.56,.64,1);transform-box:fill-box;transform-origin:50% 90%}
+.eye-g{transform-box:fill-box;transform-origin:center}
+.eyes-normal,.eyes-focus,.eyes-happy,.eyes-closed{display:none}
+.st-idle .eyes-normal,.st-focus .eyes-focus,.st-short .eyes-happy,.st-long .eyes-closed,.st-party .eyes-happy,.st-resting .eyes-closed{display:block}
+.st-resting .eyes-normal,.st-resting .eyes-focus,.st-resting .eyes-happy,.st-party .eyes-normal,.st-party .eyes-focus,.st-party .eyes-closed{display:none}
+.st-idle .blink{animation:blink 4.8s infinite}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.06)}}
+.cat-tail{transform-box:fill-box;transform-origin:8% 92%;animation:wag 2.6s ease-in-out infinite}
+@keyframes wag{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(9deg)}}
+.breath{transform-box:fill-box;transform-origin:50% 100%;animation:breathe 3.4s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.028)}}
+.laptop-g{display:none}
+.st-focus .laptop-g{display:block}
+.st-focus .screen{animation:screenGlow 2s ease-in-out infinite}
+@keyframes screenGlow{0%,100%{opacity:.85}50%{opacity:1}}
+.paw{transform-box:fill-box}
+.st-focus .paw-l{animation:tap .48s ease-in-out infinite}
+.st-focus .paw-r{animation:tap .48s ease-in-out .24s infinite}
+@keyframes tap{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.yarn-g{display:none}
+.st-short .yarn-g{display:block;animation:yarnRoll 1.1s ease-in-out infinite}
+@keyframes yarnRoll{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(-26px) rotate(-160deg)}}
+.zzz-g{display:none}
+.st-long .zzz-g{display:block}
+.st-long .zzz-g .z1{animation:zzzFloat 2.2s ease-in-out infinite}
+.st-long .zzz-g .z2{animation:zzzFloat 2.2s ease-in-out .7s}
+.st-long .zzz-g .z3{animation:zzzFloat 2.2s ease-in-out 1.4s}
+@keyframes zzzFloat{0%{opacity:0;transform:translate(0,0) scale(.7)}25%{opacity:1}100%{opacity:0;transform:translate(16px,-34px) scale(1.15)}}
+.st-long .cat-all{transform:rotate(-9deg) translateY(8px)}
+.st-short .cat-all{transform:translateY(-4px)}
+.st-party .cat-all{animation:jump .58s ease-in-out 3}
+@keyframes jump{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-26px) scale(1.03)}}
+.hearts-g{display:none}
+.st-party .hearts-g{display:block}
+.st-party .heart{animation:heartUp 1.1s ease-out infinite}
+.st-party .heart.h2{animation-delay:.35s}
+.st-party .heart.h3{animation-delay:.7s}
+@keyframes heartUp{0%{opacity:0;transform:translateY(0) scale(.5)}20%{opacity:1}100%{opacity:0;transform:translateY(-52px) scale(1.2)}}
+/* ============ 番茄钟 ============ */
+.pomo-top{display:flex;gap:8px;margin-bottom:16px}
+.mode-btn{
+  flex:1;padding:9px 4px;border-radius:11px;font-size:13.5px;font-weight:600;text-align:center;
+  background:var(--card2);border:1px solid var(--line);color:var(--ink2);transition:.18s;
+}
+.mode-btn.on{background:var(--brand-bg);border-color:var(--brand-line);color:var(--brand-ink)}
+.mode-btn small{display:block;font-size:11px;font-weight:400;opacity:.75}
+.ring-box{position:relative;width:236px;height:236px;margin:4px auto 6px}
+.ring-box svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--line);stroke-width:13}
+.ring-fg{fill:none;stroke:url(#ringGrad);stroke-width:13;stroke-linecap:round;transition:stroke-dashoffset .45s linear}
+.ring-c{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring-c .t{font-size:46px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.ring-c .m{font-size:13px;color:var(--ink3);margin-top:2px}
+.ring-c .rd{font-size:12px;color:var(--brand-ink);font-weight:700;margin-top:6px}
+.pomo-ctl{display:flex;gap:10px;justify-content:center;margin:10px 0 4px}
+.pomo-ctl .btn{min-width:104px}
+.rounds{display:flex;gap:7px;justify-content:center;margin-top:12px}
+.rounds i{width:9px;height:9px;border-radius:50%;background:var(--line2);transition:.3s}
+.rounds i.done{background:var(--brand);box-shadow:0 0 0 3px var(--brand-bg)}
+.rounds i.cur{background:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+.kbd-hint{text-align:center;font-size:12px;color:var(--ink3);margin-top:10px}
+.kbd-hint kbd{
+  background:var(--card2);border:1px solid var(--line2);border-bottom-width:2px;border-radius:6px;
+  padding:1px 7px;font-size:11px;font-family:inherit;
+}
+/* ============ 数据小块 ============ */
+.mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media (max-width:640px){.mini-grid{grid-template-columns:repeat(2,1fr)}}
+.mini{
+  background:var(--card2);border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:12px 10px;text-align:center;
+}
+.mini .v{font-size:21px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.mini .v small{font-size:12px;font-weight:600;color:var(--ink3)}
+.mini .k{font-size:12px;color:var(--ink3);margin-top:1px}
+.mini.c1 .v{color:var(--brand-ink)}.mini.c2 .v{color:var(--blue)}.mini.c3 .v{color:var(--accent)}.mini.c4 .v{color:var(--purple)}
+/* ============ 护眼卡 ============ */
+.eye-timer{
+  font-size:44px;font-weight:800;text-align:center;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+  color:var(--blue);line-height:1.15;margin:2px 0 2px;
+}
+.eye-sub{text-align:center;font-size:12.5px;color:var(--ink3);margin-bottom:14px}
+.eye-rule{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.eye-rule span{
+  font-size:11.5px;background:var(--blue-bg);color:var(--blue);border-radius:8px;padding:3px 9px;font-weight:600;
+}
+.switch-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink2)}
+.switch{margin-left:auto;position:relative;width:44px;height:25px;flex:none}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer}
+.switch i{
+  position:absolute;inset:0;border-radius:999px;background:var(--line2);transition:.25s;pointer-events:none;
+}
+.switch i::after{
+  content:"";position:absolute;left:3px;top:3px;width:19px;height:19px;border-radius:50%;
+  background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.25);transition:.25s;
+}
+.switch input:checked+i{background:var(--brand)}
+.switch input:checked+i::after{left:22px}
+/* ============ 喝水卡 ============ */
+.water-body{display:flex;align-items:center;gap:18px}
+.glass{width:92px;flex:none}
+.glass svg{width:100%;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(62,157,255,.18))}
+.wave-a{animation:waveMove 2.6s linear infinite}
+.wave-b{animation:waveMove 2.6s linear infinite reverse}
+@keyframes waveMove{0%{transform:translateX(0)}100%{transform:translateX(-40px)}}
+.water-info{flex:1;min-width:0}
+.water-num{font-size:15px;color:var(--ink2)}
+.water-num b{font-size:30px;color:var(--blue);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.water-num i{font-style:normal;font-size:13px;color:var(--ink3)}
+.water-bar{height:9px;border-radius:99px;background:var(--line);margin:10px 0 12px;overflow:hidden}
+.water-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#7CC4FF,#3E9DFF);transition:width .5s cubic-bezier(.34,1.3,.64,1)}
+.water-btns{display:flex;gap:8px}
+.water-btns .btn{flex:1}
+/* ============ 微运动卡 ============ */
+.ex-list{display:grid;gap:9px}
+.ex{
+  display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--r-sm);
+  background:var(--card2);border:1px solid var(--line);text-align:left;transition:.18s;width:100%;
+}
+.ex:hover{border-color:var(--brand);transform:translateX(3px)}
+.ex .ei{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:19px;background:var(--brand-bg);flex:none}
+.ex b{font-size:14px;display:block}
+.ex span{font-size:12px;color:var(--ink3)}
+.ex .go{margin-left:auto;color:var(--ink3);font-size:16px;flex:none}
+/* ============ 图表 ============ */
+.chart-box{position:relative;height:190px;margin-top:4px}
+.chart-box canvas{width:100%;height:100%;display:block}
+.chart-legend{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--ink2);margin-top:8px}
+.chart-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.score-row{display:flex;align-items:center;gap:14px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+.score-donut{position:relative;width:76px;height:76px;flex:none}
+.score-donut svg{width:100%;height:100%;transform:rotate(-90deg)}
+.score-donut .v{
+  position:absolute;inset:0;display:grid;place-items:center;font-size:20px;font-weight:800;color:var(--brand-ink);
+}
+.score-info b{font-size:14.5px}
+.score-info p{font-size:12.5px;color:var(--ink3)}
+/* ============ 成就 ============ */
+.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:640px){.ach-grid{grid-template-columns:repeat(2,1fr)}}
+.ach{
+  position:relative;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--card2);
+  padding:13px 8px 11px;text-align:center;transition:.2s;cursor:default;
+}
+.ach .ai{font-size:26px;line-height:1.2;filter:grayscale(1);opacity:.35;transition:.3s}
+.ach b{font-size:12.5px;display:block;margin-top:5px}
+.ach span{font-size:11px;color:var(--ink3);display:block;line-height:1.35;margin-top:2px}
+.ach.on{background:var(--brand-bg);border-color:var(--brand-line)}
+.ach.on .ai{filter:none;opacity:1;animation:badgePop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes badgePop{0%{transform:scale(.4)}100%{transform:scale(1)}}
+.ach.on b{color:var(--brand-ink)}
+.ach .ck{position:absolute;top:6px;right:8px;font-size:11px;color:var(--brand);opacity:0;transition:.3s}
+.ach.on .ck{opacity:1}
+/* ============ 弹层 ============ */
+.mask{
+  position:fixed;inset:0;z-index:100;background:rgba(10,14,18,.5);backdrop-filter:blur(4px);
+  display:none;place-items:center;padding:18px;
+}
+.mask.show{display:grid;animation:fadeIn .25s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--card);border-radius:22px;box-shadow:var(--sh-3);width:100%;max-width:520px;
+  max-height:92vh;overflow:auto;padding:26px;animation:popIn .32s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn{from{opacity:0;transform:scale(.92) translateY(14px)}to{opacity:1;transform:none}}
+.modal-h{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.modal-h b{font-size:17px}
+.modal-h .x{margin-left:auto;font-size:18px;color:var(--ink3);width:32px;height:32px;border-radius:9px;display:grid;place-items:center}
+.modal-h .x:hover{background:var(--card2);color:var(--ink)}
+.set-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.set-row:last-of-type{border-bottom:none}
+.set-row .lab{flex:1;min-width:0}
+.set-row .lab small{display:block;font-size:12px;color:var(--ink3)}
+.set-row input[type=number]{
+  width:74px;padding:8px 10px;border-radius:10px;border:1px solid var(--line2);background:var(--card2);
+  text-align:center;font-size:14px;font-weight:700;outline:none;
+}
+.set-row input[type=number]:focus{border-color:var(--brand)}
+.seg{display:flex;background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:3px;gap:3px}
+.seg button{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink2)}
+.seg button.on{background:var(--card);color:var(--brand-ink);box-shadow:var(--sh-1)}
+/* 引导 */
+.intro-steps{display:grid;gap:12px;margin:6px 0 18px}
+.intro-step{display:flex;gap:13px;align-items:flex-start;padding:13px;border-radius:14px;background:var(--card2);border:1px solid var(--line)}
+.intro-step .n{
+  width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#19E08A,#0FAE68);color:#fff;
+  display:grid;place-items:center;font-weight:800;font-size:14px;flex:none;
+}
+.intro-step b{font-size:14.5px;display:block}
+.intro-step p{font-size:13px;color:var(--ink2)}
+/* 拉伸 */
+.ex-stage{text-align:center}
+.ex-emoji{font-size:64px;line-height:1.3;animation:exFloat 2s ease-in-out infinite}
+@keyframes exFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.ex-step-t{font-size:15px;font-weight:700;margin:4px 0 2px}
+.ex-step-d{font-size:13.5px;color:var(--ink2);min-height:44px}
+.ex-prog{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:14px 0 6px}
+.ex-prog i{display:block;height:100%;background:linear-gradient(90deg,#19E08A,#0FAE68);transition:width .3s linear}
+.ex-count{font-size:44px;font-weight:800;color:var(--brand-ink);font-variant-numeric:tabular-nums}
+.ex-ctl{display:flex;gap:10px;justify-content:center;margin-top:14px}
+/* 远眺 */
+.look-emoji{font-size:60px;text-align:center;animation:exFloat 2.4s ease-in-out infinite}
+/* ============ Toast ============ */
+.toasts{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:200;display:grid;gap:9px;width:max-content;max-width:92vw}
+.toast{
+  display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);
+  box-shadow:var(--sh-3);border-radius:14px;padding:11px 18px;font-size:13.5px;font-weight:600;
+  animation:toastIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+.toast.out{animation:toastOut .3s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(10px) scale(.95)}}
+.toast .ti{font-size:17px}
+.toast.ok{border-color:var(--brand-line)}
+/* ============ 页脚 ============ */
+.foot{margin-top:26px;text-align:center;font-size:12.5px;color:var(--ink3);display:grid;gap:10px}
+.foot .links{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+/* 完成庆祝条 */
+.celebrate{
+  position:fixed;top:74px;left:50%;transform:translateX(-50%) translateY(-16px);z-index:150;
+  background:linear-gradient(135deg,#19E08A,#0FAE68);color:#fff;font-weight:700;font-size:14.5px;
+  padding:11px 24px;border-radius:999px;box-shadow:0 14px 34px rgba(15,174,104,.4);
+  opacity:0;pointer-events:none;transition:.4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;
+}
+.celebrate.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-in">
+    <div class="logo">
+      <svg viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="22" fill="url(#lg)"/>
+        <path d="M12 15 L15 24 L21 21 Z" fill="#F6C28B"/><path d="M36 15 L33 24 L27 21 Z" fill="#F6C28B"/>
+        <circle cx="24" cy="27" r="11" fill="#F6C28B"/>
+        <path d="M19 26 q1.6 -2.4 3.2 0" stroke="#2A2E33" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M25.8 26 q1.6 -2.4 3.2 0" stroke="#2A2E33" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M23 30.4 l1.6 1.4 1.6 -1.4 -1.6 -1.2 Z" fill="#F0929B"/>
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#19E08A"/><stop offset="1" stop-color="#0A8F55"/></linearGradient></defs>
+      </svg>
+      <div><b>CodeCat 代码猫</b><span>程序员健康工作站</span></div>
+    </div>
+    <div class="nav-r">
+      <div class="streak" id="navStreak" title="连续打卡天数">🔥 <span id="navStreakN">0</span> 天</div>
+      <button class="icon-btn" id="themeBtn" title="切换深浅色模式">🌙</button>
+      <button class="icon-btn" id="setBtn" title="设置">⚙️</button>
+      <button class="icon-btn" id="helpBtn" title="使用引导">❓</button>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- 第一屏：猫咪舞台 + 番茄钟 -->
+  <div class="grid g-hero">
+    <div class="card stage-card">
+      <div class="stage" id="catStage">
+        <div class="sky"><span class="orb a"></span><span class="orb b"></span></div>
+        <div class="stage-tag"><i></i><span id="stageTagText">待命中</span></div>
+        <div class="cat-box">
+          <svg viewBox="0 0 260 230" id="catSvg">
+            <!-- 尾巴 -->
+            <g class="cat-tail">
+              <path d="M198 158 q38 -12 30 -52 q-4 -20 -20 -20" stroke="#E8A866" stroke-width="15" fill="none" stroke-linecap="round"/>
+              <path d="M206 140 q6 -8 14 -10 M204 124 q7 -6 14 -7" stroke="#D98F4E" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </g>
+            <!-- 身体 -->
+            <g class="breath">
+              <ellipse cx="128" cy="156" rx="60" ry="52" fill="#F6C28B"/>
+              <ellipse cx="128" cy="170" rx="36" ry="34" fill="#FFF3E2"/>
+              <path d="M78 132 q10 -8 22 -6 M74 148 q12 -8 26 -6 M180 132 q-10 -8 -22 -6 M184 148 q-12 -8 -26 -6" stroke="#E8A866" stroke-width="5" fill="none" stroke-linecap="round"/>
+              <!-- 前爪 -->
+              <ellipse cx="106" cy="200" rx="15" ry="10" fill="#FFF3E2"/>
+              <ellipse cx="152" cy="200" rx="15" ry="10" fill="#FFF3E2"/>
+            </g>
+            <!-- 笔记本电脑 -->
+            <g class="laptop-g">
+              <rect x="96" y="146" width="68" height="42" rx="7" fill="#3A4149"/>
+              <rect x="101" y="151" width="58" height="30" rx="4" class="screen" fill="#19E08A"/>
+              <path d="M107 172 l7 -12 6 8 7 -14 6 16 6 -10 6 6 6 -8 6 12" stroke="#0A5C3C" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+              <rect x="88" y="186" width="84" height="8" rx="4" fill="#2A3037"/>
+              <circle class="paw paw-l" cx="110" cy="152" r="7" fill="#F6C28B"/>
+              <circle class="paw paw-r" cx="148" cy="152" r="7" fill="#F6C28B"/>
+            </g>
+            <!-- 毛线球 -->
+            <g class="yarn-g">
+              <circle cx="212" cy="196" r="16" fill="#FF8FA3"/>
+              <path d="M200 188 q12 8 24 4 M198 200 q14 4 26 -6 M204 210 q12 -2 18 -12" stroke="#E76B82" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+              <path d="M196 192 q-16 6 -22 20" stroke="#FF8FA3" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+            </g>
+            <!-- 头 -->
+            <g class="cat-head">
+              <path d="M90 52 L88 22 L112 40 Z" fill="#F6C28B"/>
+              <path d="M170 52 L172 22 L148 40 Z" fill="#F6C28B"/>
+              <path d="M94 48 L93 31 L107 42 Z" fill="#FBCBcc"/>
+              <path d="M166 48 L167 31 L153 42 Z" fill="#FBCBcc"/>
+              <circle cx="130" cy="82" r="46" fill="#F6C28B"/>
+              <ellipse cx="106" cy="96" rx="9" ry="6" fill="#FBCBCB" opacity=".8"/>
+              <ellipse cx="154" cy="96" rx="9" ry="6" fill="#FBCBCB" opacity=".8"/>
+              <!-- 普通眼 -->
+              <g class="eyes-normal">
+                <g class="eye-g blink">
+                  <ellipse cx="114" cy="78" rx="7.5" ry="9.5" fill="#2A2E33"/>
+                  <ellipse cx="146" cy="78" rx="7.5" ry="9.5" fill="#2A2E33"/>
+                  <circle cx="116.5" cy="75" r="2.4" fill="#fff"/><circle cx="148.5" cy="75" r="2.4" fill="#fff"/>
+                </g>
+              </g>
+              <!-- 专注眼 -->
+              <g class="eyes-focus">
+                <path d="M106 78 l14 5 m0 -5 l-14 5" stroke="#2A2E33" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M154 78 l-14 5 m0 -5 l14 5" stroke="#2A2E33" stroke-width="3.4" stroke-linecap="round"/>
+              </g>
+              <!-- 开心眼 -->
+              <g class="eyes-happy">
+                <path d="M107 80 q7 -9 14 0" stroke="#2A2E33" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+                <path d="M139 80 q7 -9 14 0" stroke="#2A2E33" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+              </g>
+              <!-- 闭眼 -->
+              <g class="eyes-closed">
+                <path d="M107 78 q7 6 14 0 M139 78 q7 6 14 0" stroke="#2A2E33" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+              </g>
+              <!-- 鼻子嘴 -->
+              <path d="M130 88 l-4.5 -3.6 h9 Z" fill="#F0929B"/>
+              <path d="M130 91 q0 5 -6 5.4 M130 91 q0 5 6 5.4" stroke="#B97B50" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+              <!-- 胡须 -->
+              <g stroke="#D9A05F" stroke-width="2.2" stroke-linecap="round">
+                <path d="M84 82 h-18 M84 90 l-17 5 M84 74 l-17 -5"/>
+                <path d="M176 82 h18 M176 90 l17 5 M176 74 l17 -5"/>
+              </g>
+            </g>
+            <!-- 睡觉 Zzz -->
+            <g class="zzz-g" fill="#8B9CF0" font-family="inherit">
+              <text class="z1" x="178" y="52" font-size="17" font-weight="800">Z</text>
+              <text class="z2" x="190" y="40" font-size="13" font-weight="800">Z</text>
+              <text class="z3" x="199" y="30" font-size="10" font-weight="800">Z</text>
+            </g>
+            <!-- 爱心 -->
+            <g class="hearts-g">
+              <path class="heart" d="M100 60 a5 5 0 0 1 10 0 a5 5 0 0 1 10 0 q0 8 -10 14 q-10 -6 -10 -14" fill="#FF7B9A"/>
+              <path class="heart h2" d="M160 52 a4 4 0 0 1 8 0 a4 4 0 0 1 8 0 q0 6 -8 11 q-8 -5 -8 -11" fill="#FFB3C2"/>
+              <path class="heart h3" d="M130 44 a4.5 4.5 0 0 1 9 0 a4.5 4.5 0 0 1 9 0 q0 7 -9 12 q-9 -5 -9 -12" fill="#FF7B9A"/>
+            </g>
+          </svg>
+        </div>
+        <div class="quote" id="quoteText">正在加载今日格言…</div>
+      </div>
+      <div class="mini-grid" style="margin-top:16px;margin-bottom:0">
+        <div class="mini c1"><div class="v" id="mFocus">0<small> 分钟</small></div><div class="k">今日专注</div></div>
+        <div class="mini c2"><div class="v" id="mPomo">0<small> 个</small></div><div class="k">完成番茄</div></div>
+        <div class="mini c3"><div class="v" id="mCup">0<small> 杯</small></div><div class="k">今日喝水</div></div>
+        <div class="mini c4"><div class="v" id="mRest">0<small> 次</small></div><div class="k">放松休息</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <div class="ic">🍅</div>
+        <h3>番茄专注钟</h3>
+        <span class="sub">专注 <span id="subFocusMin">25</span> 分钟起</span>
+      </div>
+      <div class="pomo-top">
+        <button class="mode-btn on" data-mode="focus">🍅 专注<small>深度工作</small></button>
+        <button class="mode-btn" data-mode="short">☕ 短休<small>5 分钟</small></button>
+        <button class="mode-btn" data-mode="long">🛋️ 长休<small>15 分钟</small></button>
+      </div>
+      <div class="ring-box">
+        <svg viewBox="0 0 240 240">
+          <defs>
+            <linearGradient id="ringGrad" x1="0" y1="0" x2="240" y2="240">
+              <stop offset="0" stop-color="#19E08A"/><stop offset="1" stop-color="#0A8F55"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="120" cy="120" r="104"/>
+          <circle class="ring-fg" id="ringFg" cx="120" cy="120" r="104" stroke-dasharray="653.4" stroke-dashoffset="0"/>
+        </svg>
+        <div class="ring-c">
+          <div class="t" id="pomoTime">25:00</div>
+          <div class="m" id="pomoModeLabel">专注中</div>
+          <div class="rd" id="pomoRound">第 1 轮 · 共 4 轮</div>
+        </div>
+      </div>
+      <div class="pomo-ctl">
+        <button class="btn btn-primary" id="btnStart">▶ 开始专注</button>
+        <button class="btn btn-ghost" id="btnReset">↺ 重置</button>
+        <button class="btn btn-ghost" id="btnSkip">⏭ 跳过</button>
+      </div>
+      <div class="rounds" id="roundsDots"></div>
+      <div class="kbd-hint"><kbd>空格</kbd> 开始 / 暂停 · <kbd>R</kbd> 重置 · 完成后猫猫会陪你休息</div>
+    </div>
+  </div>
+
+  <!-- 第二屏：护眼 / 喝水 / 微运动 -->
+  <div class="grid g-3">
+    <div class="card">
+      <div class="card-h">
+        <div class="ic" style="background:var(--blue-bg);border-color:color-mix(in srgb,var(--blue) 30%,transparent)">👀</div>
+        <h3>护眼助手</h3>
+      </div>
+      <div class="eye-timer" id="eyeTime">20:00</div>
+      <div class="eye-sub">距离下次远眺提醒</div>
+      <div class="eye-rule"><span>每 20 分钟</span><span>看 6 米外</span><span>20 秒</span></div>
+      <div class="switch-row">
+        <span>启用护眼提醒</span>
+        <label class="switch"><input type="checkbox" id="eyeToggle" checked><i></i></label>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:12px" id="eyeNow">👀 立即远眺一次</button>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <div class="ic" style="background:var(--blue-bg);border-color:color-mix(in srgb,var(--blue) 30%,transparent)">💧</div>
+        <h3>喝水打卡</h3>
+        <span class="sub">每杯 <span id="subCupMl">250</span> ml</span>
+      </div>
+      <div class="water-body">
+        <div class="glass">
+          <svg viewBox="0 0 90 130">
+            <defs>
+              <clipPath id="glassClip">
+                <path d="M14 18 h62 v84 a12 12 0 0 1 -12 12 h-38 a12 12 0 0 1 -12 -12 Z"/>
+              </clipPath>
+            </defs>
+            <path d="M14 18 h62 v84 a12 12 0 0 1 -12 12 h-38 a12 12 0 0 1 -12 -12 Z" fill="var(--blue-bg)" stroke="var(--blue)" stroke-width="3.5" stroke-linejoin="round"/>
+            <g clip-path="url(#glassClip)">
+              <rect id="waterFill" x="10" y="114" width="70" height="0" fill="url(#waterGrad)"/>
+              <g id="waveGroup">
+                <path class="wave-a" d="M-40 116 q10 -7 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 v60 h-120 Z" fill="#3E9DFF" opacity=".85"/>
+                <path class="wave-b" d="M-40 119 q10 7 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 v60 h-120 Z" fill="#7CC4FF" opacity=".7"/>
+              </g>
+            </g>
+            <path d="M14 18 h62 v84 a12 12 0 0 1 -12 12 h-38 a12 12 0 0 1 -12 -12 Z" fill="none" stroke="var(--blue)" stroke-width="3.5" stroke-linejoin="round"/>
+            <path d="M20 10 q25 -14 50 0" stroke="var(--blue)" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".55"/>
+            <defs>
+              <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#7CC4FF"/><stop offset="1" stop-color="#2E8BE6"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="water-info">
+          <div class="water-num"><b id="cupNow">0</b><i> / <span id="cupGoal">8</span> 杯 · <span id="cupMl">0</span> ml</i></div>
+          <div class="water-bar"><i id="cupBar" style="width:0%"></i></div>
+          <div class="water-btns">
+            <button class="btn btn-primary btn-sm" id="cupAdd">＋ 喝一杯</button>
+            <button class="btn btn-ghost btn-sm" id="cupUndo">撤销</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <div class="ic" style="background:var(--accent-bg);border-color:color-mix(in srgb,var(--accent) 35%,transparent)">🤸</div>
+        <h3>微运动指导</h3>
+      </div>
+      <div class="ex-list" id="exList"></div>
+    </div>
+  </div>
+
+  <!-- 第三屏：数据统计 + 成就 -->
+  <div class="grid g-2">
+    <div class="card">
+      <div class="card-h">
+        <div class="ic" style="background:var(--purple-bg);border-color:color-mix(in srgb,var(--purple) 30%,transparent)">📊</div>
+        <h3>健康数据中心</h3>
+        <span class="sub">最近 7 天</span>
+      </div>
+      <div class="chart-box"><canvas id="chart7"></canvas></div>
+      <div class="chart-legend">
+        <span><i style="background:#12C87A"></i>专注时长（分钟）</span>
+        <span><i style="background:#3E9DFF"></i>喝水（杯）</span>
+      </div>
+      <div class="score-row">
+        <div class="score-donut">
+          <svg viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="33" fill="none" stroke="var(--line)" stroke-width="9"/>
+            <circle id="scoreArc" cx="40" cy="40" r="33" fill="none" stroke="url(#ringGrad)" stroke-width="9" stroke-linecap="round" stroke-dasharray="207.3" stroke-dashoffset="207.3" style="transition:stroke-dashoffset .6s"/>
+          </svg>
+          <div class="v" id="scoreV">0</div>
+        </div>
+        <div class="score-info">
+          <b id="scoreLabel">今日健康评分</b>
+          <p id="scoreDesc">专注 120 分钟 + 喝够水 + 按时放松 = 满分状态</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <div class="ic" style="background:var(--accent-bg);border-color:color-mix(in srgb,var(--accent) 35%,transparent)">🏅</div>
+        <h3>成就徽章</h3>
+        <span class="sub"><span id="achCount">0</span>/<span id="achTotal">0</span> 已解锁</span>
+      </div>
+      <div class="ach-grid" id="achGrid"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="links">
+      <button class="btn btn-ghost btn-sm" id="footIntro">📖 使用引导</button>
+      <button class="btn btn-ghost btn-sm" id="footDemo">🧪 填充示例数据</button>
+      <button class="btn btn-ghost btn-sm" id="footSet">⚙️ 偏好设置</button>
+    </div>
+    <p>CodeCat 代码猫 · 所有数据仅保存在本地浏览器 · 为 1024 程序员节的你而做 🐱</p>
+  </footer>
+</div>
+
+<!-- 远眺全屏遮罩 -->
+<div class="mask" id="lookMask">
+  <div class="modal" style="max-width:420px;text-align:center">
+    <div class="look-emoji">🌄</div>
+    <div class="ex-step-t" style="font-size:18px;margin-top:8px">看向 6 米外的地方</div>
+    <div class="ex-step-d">让眼睛的睫状肌彻底放松，猫猫也把眼睛闭上啦</div>
+    <div class="ex-count" id="lookCount">20</div>
+    <div class="ex-prog"><i id="lookBar" style="width:100%"></i></div>
+    <div class="ex-ctl">
+      <button class="btn btn-primary" id="lookDone">✅ 完成远眺</button>
+      <button class="btn btn-ghost" id="lookSkip">跳过</button>
+    </div>
+  </div>
+</div>
+
+<!-- 拉伸弹层 -->
+<div class="mask" id="exMask">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-h"><b id="exTitle">微运动</b><button class="x" id="exClose">✕</button></div>
+    <div class="ex-stage">
+      <div class="ex-emoji" id="exEmoji">🧘</div>
+      <div class="ex-count" id="exCount">20</div>
+      <div class="ex-prog"><i id="exBar" style="width:100%"></i></div>
+      <div class="ex-step-t" id="exStepT">准备</div>
+      <div class="ex-step-d" id="exStepD">跟着节奏来，动作缓慢温和</div>
+    </div>
+    <div class="ex-ctl">
+      <button class="btn btn-primary" id="exPause">⏸ 暂停</button>
+      <button class="btn btn-ghost" id="exFinish">结束并记录</button>
+    </div>
+  </div>
+</div>
+
+<!-- 设置弹层 -->
+<div class="mask" id="setMask">
+  <div class="modal">
+    <div class="modal-h"><b>⚙️ 偏好设置</b><button class="x" id="setClose">✕</button></div>
+    <div class="set-row"><div class="lab">专注时长<small>建议 25 分钟，一个番茄周期</small></div><input type="number" id="setFocus" min="1" max="120" step="1"></div>
+    <div class="set-row"><div class="lab">短休时长<small>每次专注后的小憩</small></div><input type="number" id="setShort" min="1" max="60" step="1"></div>
+    <div class="set-row"><div class="lab">长休时长<small>每完成若干轮后的长休息</small></div><input type="number" id="setLong" min="5" max="60" step="1"></div>
+    <div class="set-row"><div class="lab">长休间隔<small>每几个番茄进入一次长休</small></div><input type="number" id="setLongEvery" min="2" max="8" step="1"></div>
+    <div class="set-row"><div class="lab">每日喝水目标<small>单位：杯</small></div><input type="number" id="setGoal" min="1" max="20" step="1"></div>
+    <div class="set-row"><div class="lab">提示音<small>番茄完成时播放轻柔提示音</small></div><label class="switch"><input type="checkbox" id="setSound"><i></i></label></div>
+    <div class="set-row"><div class="lab">护眼提醒<small>每 20 分钟提醒远眺一次</small></div><label class="switch"><input type="checkbox" id="setEye"><i></i></label></div>
+    <div class="set-row"><div class="lab">系统通知<small>切到其他窗口时也能收到提醒</small></div><label class="switch"><input type="checkbox" id="setNotify"><i></i></label></div>
+    <div class="set-row"><div class="lab">外观主题</div>
+      <div class="seg" id="setThemeSeg">
+        <button data-th="light">☀️ 浅色</button><button data-th="dark">🌙 深色</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="setSave" style="flex:1">保存设置</button>
+      <button class="btn btn-ghost" id="setDemo">🧪 示例数据</button>
+      <button class="btn btn-ghost" id="setReset" style="color:var(--red)">🗑 重置数据</button>
+    </div>
+  </div>
+</div>
+
+<!-- 引导弹层 -->
+<div class="mask" id="introMask">
+  <div class="modal">
+    <div class="modal-h"><b>🐱 欢迎来到 CodeCat</b><button class="x" id="introClose">✕</button></div>
+    <p style="font-size:14px;color:var(--ink2);margin-bottom:14px">你的程序员健康管家。写代码的同时，让猫猫照顾好你的眼睛、颈椎和喝水节奏。</p>
+    <div class="intro-steps">
+      <div class="intro-step"><div class="n">1</div><div><b>🍅 开启一个番茄</b><p>点「开始专注」，猫猫会陪你敲 25 分钟键盘，到点自动提醒休息。</p></div></div>
+      <div class="intro-step"><div class="n">2</div><div><b>👀 记得远眺</b><p>每 20 分钟，跟着全屏提示看 6 米外 20 秒，缓解视疲劳。</p></div></div>
+      <div class="intro-step"><div class="n">3</div><div><b>💧 随手喝水</b><p>每喝完一杯点一下「喝一杯」，达成每日目标会有小惊喜。</p></div></div>
+      <div class="intro-step"><div class="n">4</div><div><b>🤸 起身活动</b><p>肩颈僵硬时做个 1 分钟微运动，数据与徽章都会记录你的坚持。</p></div></div>
+    </div>
+    <button class="btn btn-primary" id="introOk" style="width:100%">开始使用</button>
+  </div>
+</div>
+
+<div class="celebrate" id="celebrate">🎉 太棒了！</div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* =====================================================
+   CodeCat 代码猫 · 程序员健康工作站
+   单文件实现，数据仅存 localStorage，无外部依赖
+   ===================================================== */
+(function(){
+"use strict";
+
+/* ---------- 工具 ---------- */
+var $=function(s){return document.querySelector(s)};
+var LS_KEY="codecat.v1";
+function pad(n){return n<10?"0"+n:""+n}
+function dayKey(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function todayKey(){return dayKey(new Date())}
+function fmtClock(sec){sec=Math.max(0,Math.round(sec));return pad(Math.floor(sec/60))+":"+pad(sec%60)}
+function esc(s){return String(s==null?"":s)}
+
+/* ---------- 默认状态 ---------- */
+function freshToday(){return {date:todayKey(),focusSec:0,pomos:0,cups:0,breaks:0,eye:0,stretch:0}}
+function defaultState(){
+  return {
+    v:1,
+    settings:{focus:25,short:5,long:15,longEvery:4,waterGoal:8,cupMl:250,sound:true,eyeCare:true,notify:false,theme:"light"},
+    today:freshToday(),
+    history:{},
+    achievements:{},
+    seenIntro:false
+  };
+}
+function loadState(){
+  try{
+    var raw=localStorage.getItem(LS_KEY);
+    if(!raw)return defaultState();
+    var s=JSON.parse(raw);
+    var d=defaultState();
+    // 合并默认配置，兼容旧数据
+    for(var k in d.settings){if(s.settings==null)s.settings={};if(s.settings[k]===undefined)s.settings[k]=d.settings[k]}
+    if(!s.today)s.today=freshToday();
+    if(!s.history)s.history={};
+    if(!s.achievements)s.achievements={};
+    return s;
+  }catch(e){return defaultState()}
+}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(S))}catch(e){}}
+
+var S=loadState();
+
+/* 跨天归档：日期变了就把 today 收进 history */
+function ensureToday(){
+  if(!S.today||S.today.date!==todayKey()){
+    if(S.today)S.history[S.today.date]={focusSec:S.today.focusSec||0,pomos:S.today.pomos||0,cups:S.today.cups||0,breaks:S.today.breaks||0,eye:S.today.eye||0,stretch:S.today.stretch||0};
+    S.today=freshToday();
+    // 只保留最近 60 天
+    var keys=Object.keys(S.history).sort();
+    while(keys.length>60){delete S.history[keys[0]];keys.shift()}
+    save();
+  }
+}
+ensureToday();
+
+/* ---------- Toast ---------- */
+var toastBox=$("#toasts");
+function toast(msg,icon){
+  var el=document.createElement("div");
+  el.className="toast ok";
+  el.innerHTML='<span class="ti">'+(icon||"✅")+"</span><span>"+esc(msg)+"</span>";
+  toastBox.appendChild(el);
+  setTimeout(function(){el.classList.add("out");setTimeout(function(){el.remove()},320)},2800);
+}
+function celebrate(msg){
+  var el=$("#celebrate");
+  el.textContent=msg;
+  el.classList.add("show");
+  clearTimeout(el._t);
+  el._t=setTimeout(function(){el.classList.remove("show")},2600);
+}
+
+/* ---------- 提示音 ---------- */
+var AC=null;
+function chime(){
+  if(!S.settings.sound)return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==="suspended")AC.resume();
+    var t=AC.currentTime;
+    [[659.25,0],[987.77,.16]].forEach(function(p){
+      var o=AC.createOscillator(),g=AC.createGain();
+      o.type="sine";o.frequency.value=p[0];
+      var st=t+p[1];
+      g.gain.setValueAtTime(.0001,st);
+      g.gain.exponentialRampToValueAtTime(.2,st+.03);
+      g.gain.exponentialRampToValueAtTime(.0001,st+.55);
+      o.connect(g);g.connect(AC.destination);
+      o.start(st);o.stop(st+.6);
+    });
+  }catch(e){}
+}
+
+/* ---------- 数据累加 ---------- */
+function addFocus(sec){ensureToday();S.today.focusSec+=Math.round(sec);save()}
+function addCount(k,n){ensureToday();S.today[k]=(S.today[k]||0)+(n||1);save()}
+function setCups(n){ensureToday();S.today.cups=Math.max(0,n);save()}
+
+/* ---------- 连续打卡 ---------- */
+function dayActive(rec){return !!rec&&((rec.focusSec||0)>0||(rec.cups||0)>0||(rec.breaks||0)>0||(rec.eye||0)>0||(rec.stretch||0)>0)}
+function computeStreak(){
+  // 今天还没有记录时从昨天起算，避免刚过零点就显示断更
+  var n=0,d=new Date();
+  if(!dayActive(S.today))d.setDate(d.getDate()-1);
+  for(var i=0;i<400;i++){
+    var k=dayKey(d);
+    var rec=(k===todayKey())?S.today:S.history[k];
+    if(dayActive(rec)){n++;d.setDate(d.getDate()-1)}
+    else break;
+  }
+  return n;
+}
+
+/* ---------- 健康评分 ---------- */
+function healthScore(){
+  ensureToday();
+  var t=S.today,g=S.settings.waterGoal;
+  var fm=Math.min(120,(t.focusSec||0)/60);
+  var w=Math.min(g,t.cups||0);
+  var r=Math.min(6,(t.breaks||0)+(t.eye||0)+(t.stretch||0));
+  return Math.round(fm/120*50+w/Math.max(1,g)*30+r/6*20);
+}
+
+/* =====================================================
+   番茄钟
+   ===================================================== */
+var Pomo={mode:"focus",round:0,running:false,remain:S.settings.focus*60,endAt:0,ticker:null};
+var RING_LEN=2*Math.PI*104;
+function modeMinutes(m){
+  if(m==="focus")return S.settings.focus;
+  if(m==="short")return S.settings.short;
+  return S.settings.long;
+}
+function modeLabel(m){return m==="focus"?"专注中":(m==="short"?"小憩中":"长休息中")}
+function stageState(){return Pomo.running?Pomo.mode:"idle"}
+
+function renderPomo(){
+  var total=modeMinutes(Pomo.mode)*60;
+  var left=Pomo.running?Math.max(0,Math.ceil((Pomo.endAt-Date.now())/1000)):Pomo.remain;
+  $("#pomoTime").textContent=fmtClock(left);
+  $("#pomoModeLabel").textContent=Pomo.running?modeLabel(Pomo.mode):"准备开始";
+  var per=S.settings.longEvery;
+  var inRound=(Pomo.round%per)+1;
+  $("#pomoRound").textContent=(Pomo.mode==="focus"?("第 "+inRound+" 轮 · 共 "+per+" 轮"):"放松一下");
+  var off=RING_LEN*(1-left/total);
+  $("#ringFg").style.strokeDashoffset=off;
+  document.title=(Pomo.running?("⏳ "+fmtClock(left)+" "+modeLabel(Pomo.mode)+" · "):"")+"CodeCat 代码猫 · 程序员健康工作站";
+  // 模式按钮
+  var btns=document.querySelectorAll(".mode-btn");
+  for(var i=0;i<btns.length;i++)btns[i].classList.toggle("on",btns[i].getAttribute("data-mode")===Pomo.mode);
+  // 开始按钮
+  $("#btnStart").innerHTML=Pomo.running?"⏸ 暂停":(Pomo.remain<total?"▶ 继续":"▶ 开始专注");
+  // 轮次点
+  var dots="";
+  var idx=Pomo.round%per;
+  for(var j=0;j<per;j++){
+    var cls=j<idx?"done":(j===idx&&Pomo.mode==="focus"?"cur":"");
+    dots+='<i class="'+cls+'"></i>';
+  }
+  $("#roundsDots").innerHTML=dots;
+  renderStage();
+}
+function renderStage(){
+  var st=stageState();
+  var stage=$("#catStage");
+  stage.className="stage st-"+st;
+  var tag="待命中";
+  if(st==="focus")tag="陪你看代码中";
+  else if(st==="short")tag="陪玩毛线球";
+  else if(st==="long")tag="趴着休息中";
+  $("#stageTagText").textContent=tag;
+}
+function setMode(m,silent){
+  pausePomo(true);
+  Pomo.mode=m;
+  Pomo.remain=modeMinutes(m)*60;
+  renderPomo();
+  if(!silent)toast("已切换到「"+modeLabel(m)+"」","🔁");
+}
+function startPause(){
+  var h=new Date().getHours();
+  if(h<8)S._earlyFlag=true;
+  if(h>=23)S._nightFlag=true;
+  if(Pomo.running){pausePomo();return}
+  Pomo.running=true;
+  Pomo.endAt=Date.now()+Pomo.remain*1000;
+  if(Pomo.ticker)clearInterval(Pomo.ticker);
+  Pomo.ticker=setInterval(tick,250);
+  tick();
+  renderPomo();
+  toast("开始「"+modeLabel(Pomo.mode)+"」，猫猫陪你","🐱");
+}
+function pausePomo(silent){
+  if(!Pomo.running)return;
+  Pomo.remain=Math.max(0,Math.ceil((Pomo.endAt-Date.now())/1000));
+  Pomo.running=false;
+  if(Pomo.ticker){clearInterval(Pomo.ticker);Pomo.ticker=null}
+  renderPomo();
+  if(!silent)toast("已暂停，随时继续","⏸");
+}
+function resetPomo(){
+  pausePomo(true);
+  Pomo.remain=modeMinutes(Pomo.mode)*60;
+  renderPomo();
+  toast("计时已重置","↺");
+}
+function tick(){
+  var left=Math.max(0,Math.ceil((Pomo.endAt-Date.now())/1000));
+  Pomo.remain=left;
+  renderPomo();
+  if(left<=0)completePomo();
+}
+function completePomo(){
+  pausePomo(true);
+  chime();
+  var cat=$("#catStage");
+  cat.classList.add("st-party");
+  setTimeout(function(){renderStage()},1800);
+  if(Pomo.mode==="focus"){
+    addFocus(S.settings.focus*60);
+    addCount("pomos",1);
+    Pomo.round++;
+    celebrate("🎉 完成一个番茄！专注 "+S.settings.focus+" 分钟");
+    toast("番茄完成，休息 "+S.settings.short+" 分钟吧","🍅");
+    Pomo.mode=(Pomo.round%S.settings.longEvery===0)?"long":"short";
+  }else{
+    addCount("breaks",1);
+    celebrate("☕ 休息完毕，元气满满");
+    toast("休息结束，继续加油","☕");
+    Pomo.mode="focus";
+  }
+  Pomo.remain=modeMinutes(Pomo.mode)*60;
+  save();renderAll();
+  checkAch();
+}
+function skipPomo(){
+  pausePomo(true);
+  if(Pomo.mode==="focus"){
+    addFocus(Math.max(0,(S.settings.focus*60-Pomo.remain)));
+    Pomo.round++;
+    Pomo.mode=(Pomo.round%S.settings.longEvery===0)?"long":"short";
+    toast("已跳过，记录了部分专注时长","⏭");
+  }else{
+    addCount("breaks",1);
+    Pomo.mode="focus";
+    toast("已跳过休息","⏭");
+  }
+  Pomo.remain=modeMinutes(Pomo.mode)*60;
+  save();renderAll();checkAch();
+}
+
+/* =====================================================
+   护眼 20-20-20
+   ===================================================== */
+var Eye={left:20*60,timer:null,resting:false};
+function renderEye(){
+  $("#eyeTime").textContent=fmtClock(Eye.left);
+}
+function eyeTick(){
+  if(!S.settings.eyeCare||Eye.resting)return;
+  Eye.left--;
+  if(Eye.left<=0){
+    Eye.left=0;
+    openLook(true);
+  }
+  renderEye();
+}
+function resetEye(){Eye.left=20*60;renderEye()}
+function openLook(auto){
+  Eye.resting=true;
+  var left=20;
+  $("#lookCount").textContent=left;
+  $("#lookBar").style.width="100%";
+  $("#lookMask").classList.add("show");
+  $("#catStage").classList.add("st-resting");
+  clearInterval(window._lookT);
+  window._lookT=setInterval(function(){
+    left--;
+    $("#lookCount").textContent=Math.max(0,left);
+    $("#lookBar").style.width=(Math.max(0,left)/20*100)+"%";
+    if(left<=0){finishLook(true)}
+  },1000);
+  if(auto&&S.settings.notify&&"Notification" in window&&Notification.permission==="granted"){
+    try{new Notification("CodeCat 护眼提醒",{body:"看向 6 米外的地方，休息 20 秒"})}catch(e){}
+  }
+}
+function finishLook(){
+  clearInterval(window._lookT);
+  $("#lookMask").classList.remove("show");
+  Eye.resting=false;
+  resetEye();
+  addCount("eye",1);
+  save();renderAll();checkAch();
+  toast("远眺完成，眼睛舒服多了","👀");
+  renderStage();
+}
+
+/* =====================================================
+   喝水打卡
+   ===================================================== */
+function renderWater(){
+  var g=S.settings.waterGoal,c=S.today.cups||0;
+  $("#cupNow").textContent=c;
+  $("#cupGoal").textContent=g;
+  $("#cupMl").textContent=c*S.settings.cupMl;
+  $("#cupBar").style.width=Math.min(100,c/g*100)+"%";
+  // 玻璃水位：杯底在 y=114，满杯到 y=24
+  var pct=Math.min(1,c/g);
+  var top=114-90*pct;
+  var h=90*pct;
+  var fill=$("#waterFill");
+  fill.setAttribute("y",top);
+  fill.setAttribute("height",h);
+  $("#waveGroup").setAttribute("transform","translate(0,"+(top-116)+")");
+}
+function addCup(){
+  setCups((S.today.cups||0)+1);
+  renderWater();renderMini();renderChart();renderScore();checkAch();
+  var g=S.settings.waterGoal;
+  if((S.today.cups||0)===g){
+    celebrate("💧 今日喝水目标达成！");
+    toast("喝够 "+g+" 杯水，代谢拉满","💧");
+    partyCat();
+  }else{
+    toast("已记录 1 杯 · 还剩 "+(g-(S.today.cups||0))+" 杯","💧");
+  }
+}
+function undoCup(){
+  if((S.today.cups||0)<=0){toast("还没有喝水记录","🤔");return}
+  setCups((S.today.cups||0)-1);
+  renderWater();renderMini();renderChart();renderScore();checkAch();
+  toast("已撤销一杯","↩");
+}
+function partyCat(){
+  var cat=$("#catStage");
+  cat.classList.add("st-party");
+  setTimeout(function(){renderStage()},1800);
+}
+
+/* =====================================================
+   微运动
+   ===================================================== */
+var EXERCISES=[
+  {id:"neck",name:"颈部环绕放松",desc:"缓解低头看屏幕的僵硬",icon:"🧘",steps:[
+    {t:8,text:"坐直，双肩放松，慢慢低下头"},{t:8,text:"头部向右侧倾，耳朵找肩膀"},{t:8,text:"缓慢转头看向左后方"},{t:8,text:"反方向同样来一遍，动作要慢"}]},
+  {id:"wrist",name:"手腕手指拉伸",desc:"程序员必备的护腕动作",icon:"✋",steps:[
+    {t:8,text:"双臂前伸，手掌朝上扳手指"},{t:8,text:"翻转手掌朝下，轻压手背"},{t:8,text:"握拳再用力张开，重复几次"},{t:8,text:"甩甩双手，放松手指关节"}]},
+  {id:"stand",name:"站立伸展",desc:"唤醒久坐的身体",icon:"🧍",steps:[
+    {t:8,text:"起身站立，双手上举交叉"},{t:8,text:"向左侧弯腰拉伸侧腰"},{t:8,text:"换右侧弯腰，深呼吸"},{t:8,text:"转转腰踝，活动关节"}]},
+  {id:"eye",name:"眼部放松操",desc:"和远眺搭配效果更好",icon:"👀",steps:[
+    {t:8,text:"闭眼，掌心搓热敷在眼睛上"},{t:8,text:"眼球顺时针缓慢转动 5 圈"},{t:8,text:"再逆时针转动 5 圈"},{t:8,text:"睁眼看向远处绿色植物"}]}
+];
+var Ex={cur:null,step:0,left:0,timer:null,paused:false};
+function renderExList(){
+  var box=$("#exList"),html="";
+  EXERCISES.forEach(function(e){
+    html+='<button class="ex" data-id="'+e.id+'"><span class="ei">'+e.icon+'</span><span><b>'+e.name+'</b><span>'+e.desc+'</span></span><span class="go">›</span></button>';
+  });
+  box.innerHTML=html;
+  var btns=box.querySelectorAll(".ex");
+  for(var i=0;i<btns.length;i++){
+    btns[i].onclick=function(){openEx(this.getAttribute("data-id"))};
+  }
+}
+function openEx(id){
+  var e=null;
+  EXERCISES.forEach(function(x){if(x.id===id)e=x});
+  if(!e)return;
+  Ex.cur=e;Ex.step=0;Ex.left=e.steps[0].t;Ex.paused=false;
+  $("#exTitle").textContent=e.icon+" "+e.name;
+  $("#exEmoji").textContent=e.icon;
+  $("#exMask").classList.add("show");
+  renderExStep();
+  clearInterval(Ex.timer);
+  Ex.timer=setInterval(exTick,1000);
+}
+function renderExStep(){
+  var e=Ex.cur;if(!e)return;
+  var s=e.steps[Ex.step];
+  $("#exCount").textContent=Ex.left;
+  $("#exStepT").textContent="第 "+(Ex.step+1)+" / "+e.steps.length+" 步";
+  $("#exStepD").textContent=s.text;
+  var done=e.steps.slice(0,Ex.step).reduce(function(a,x){return a+x.t},0);
+  var pct=(done+(s.t-Ex.left))/e.steps.reduce(function(a,x){return a+x.t},0)*100;
+  $("#exBar").style.width=pct+"%";
+  $("#exPause").innerHTML=Ex.paused?"▶ 继续":"⏸ 暂停";
+}
+function exTick(){
+  if(Ex.paused)return;
+  Ex.left--;
+  if(Ex.left<=0){
+    if(Ex.step<Ex.cur.steps.length-1){
+      Ex.step++;Ex.left=Ex.cur.steps[Ex.step].t;
+    }else{
+      finishEx(true);return;
+    }
+  }
+  renderExStep();
+}
+function finishEx(auto){
+  if(!Ex.cur)return;
+  clearInterval(Ex.timer);
+  $("#exMask").classList.remove("show");
+  var name=Ex.cur.name;
+  addCount("stretch",1);
+  save();renderAll();checkAch();
+  if(auto!==undefined){
+    celebrate("🤸 完成「"+name+"」");
+    toast("微运动完成，身体轻松多了","🤸");
+    partyCat();
+  }
+  Ex.cur=null;
+}
+
+/* =====================================================
+   成就系统
+   ===================================================== */
+var ACHS=[
+  {id:"first",name:"初次专注",desc:"完成第 1 个番茄",icon:"🌱",test:function(){return (S.today.pomos||0)>=1}},
+  {id:"pomo4",name:"四连骑士",desc:"单日完成 4 个番茄",icon:"⚔️",test:function(){return (S.today.pomos||0)>=4}},
+  {id:"pomo8",name:"深度玩家",desc:"单日完成 8 个番茄",icon:"🧠",test:function(){return (S.today.pomos||0)>=8}},
+  {id:"pomo100",name:"百分番茄",desc:"累计完成 100 分钟专注",icon:"💯",test:function(){return totalFocus()>=6000}},
+  {id:"water",name:"水元素大师",desc:"单日喝够目标杯数",icon:"💧",test:function(){return (S.today.cups||0)>=S.settings.waterGoal}},
+  {id:"water3",name:"三日饮水",desc:"连续 3 天喝够 4 杯",icon:"🚰",test:function(){return waterDays(3)>=3}},
+  {id:"eye5",name:"护眼达人",desc:"单日远眺 5 次",icon:"👀",test:function(){return (S.today.eye||0)>=5}},
+  {id:"stretch5",name:"柔术大师",desc:"单日完成 5 次微运动",icon:"🤸",test:function(){return (S.today.stretch||0)>=5}},
+  {id:"streak3",name:"三日打鱼",desc:"连续打卡 3 天",icon:"📅",test:function(){return computeStreak()>=3}},
+  {id:"streak7",name:"一周好习惯",desc:"连续打卡 7 天",icon:"🔥",test:function(){return computeStreak()>=7}},
+  {id:"early",name:"早起的鸟儿",desc:"在 8 点前开始专注",icon:"🌅",test:function(){return S._earlyFlag===true}},
+  {id:"night",name:"夜猫子",desc:"在 23 点后开始专注",icon:"🦉",test:function(){return S._nightFlag===true}},
+  {id:"weekend",name:"周末战士",desc:"在周末完成番茄",icon:"🛡️",test:function(){var d=new Date().getDay();return (d===0||d===6)&&(S.today.pomos||0)>=1}},
+  {id:"allday",name:"全能一天",desc:"单日三项全达成",icon:"👑",test:function(){var t=S.today;return (t.focusSec||0)>=3600&&(t.cups||0)>=S.settings.waterGoal&&((t.breaks||0)+(t.eye||0)+(t.stretch||0))>=3}}
+];
+function totalFocus(){
+  var n=S.today.focusSec||0;
+  for(var k in S.history)n+=(S.history[k].focusSec||0);
+  return n;
+}
+function waterDays(n){
+  var c=0,d=new Date();
+  for(var i=0;i<n;i++){
+    var k=dayKey(d);
+    var rec=(k===todayKey())?S.today:S.history[k];
+    if(rec&&(rec.cups||0)>=4)c++;
+    d.setDate(d.getDate()-1);
+  }
+  return c;
+}
+function renderAch(){
+  var box=$("#achGrid"),html="",un=0;
+  ACHS.forEach(function(a){
+    var on=!!S.achievements[a.id];
+    if(on)un++;
+    html+='<div class="ach'+(on?" on":"")+'" title="'+esc(a.desc)+'"><span class="ck">✓</span><div class="ai">'+a.icon+'</div><b>'+a.name+'</b><span>'+esc(on?a.desc:"未解锁")+'</span></div>';
+  });
+  box.innerHTML=html;
+  $("#achCount").textContent=un;
+  $("#achTotal").textContent=ACHS.length;
+}
+function checkAch(){
+  var changed=false;
+  ACHS.forEach(function(a){
+    if(!S.achievements[a.id]&&a.test()){
+      S.achievements[a.id]=Date.now();
+      changed=true;
+      toast("解锁成就「"+a.name+"」","🏅");
+    }
+  });
+  if(changed){save();renderAch()}
+}
+
+/* =====================================================
+   统计与图表
+   ===================================================== */
+function renderMini(){
+  var t=S.today;
+  $("#mFocus").innerHTML=Math.floor((t.focusSec||0)/60)+'<small> 分钟</small>';
+  $("#mPomo").innerHTML=(t.pomos||0)+'<small> 个</small>';
+  $("#mCup").innerHTML=(t.cups||0)+'<small> 杯</small>';
+  $("#mRest").innerHTML=((t.breaks||0)+(t.eye||0)+(t.stretch||0))+'<small> 次</small>';
+  var st=computeStreak();
+  $("#navStreakN").textContent=st;
+  $("#navStreak").style.display=st>0?"flex":"none";
+}
+function renderScore(){
+  var sc=healthScore();
+  $("#scoreV").textContent=sc;
+  var C=2*Math.PI*33;
+  $("#scoreArc").style.strokeDashoffset=C*(1-sc/100);
+  var label,desc;
+  if(sc>=90){label="状态拉满 💪";desc="今天的你非常健康，保持这个节奏！"}
+  else if(sc>=70){label="表现不错 👍";desc="再喝杯水或起身活动一下就更棒了"}
+  else if(sc>=40){label="还需加油 🌱";desc="久坐伤身，起来动一动、看看远处吧"}
+  else{label="注意身体 ⚠️";desc="已经很久没休息了，现在就让眼睛放个假"}
+  $("#scoreLabel").textContent=label;
+  $("#scoreDesc").textContent=desc;
+}
+function renderChart(){
+  var cv=$("#chart7"),ctx=cv.getContext("2d");
+  var dpr=window.devicePixelRatio||1;
+  var W=cv.clientWidth,H=cv.clientHeight;
+  if(!W||!H)return;
+  cv.width=W*dpr;cv.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  var days=[],d=new Date();
+  for(var i=6;i>=0;i--){
+    var dd=new Date(d.getFullYear(),d.getMonth(),d.getDate()-i);
+    var k=dayKey(dd);
+    var rec=(k===todayKey())?S.today:S.history[k];
+    days.push({label:(dd.getMonth()+1)+"/"+dd.getDate(),focus:rec?Math.round((rec.focusSec||0)/60):0,cups:rec?(rec.cups||0):0});
+  }
+  var padL=34,padB=26,padT=12,padR=8;
+  var cw=W-padL-padR,ch=H-padT-padB;
+  var maxFocus=Math.max(60,Math.ceil(Math.max.apply(null,days.map(function(x){return x.focus}))/30)*30);
+  var maxCup=Math.max(S.settings.waterGoal,Math.max.apply(null,days.map(function(x){return x.cups})));
+  var ink=getComputedStyle(document.body).getPropertyValue("--ink3").trim()||"#999";
+  var line=getComputedStyle(document.body).getPropertyValue("--line").trim()||"#eee";
+  // 网格线
+  ctx.strokeStyle=line;ctx.lineWidth=1;ctx.font="10px sans-serif";ctx.fillStyle=ink;ctx.textAlign="right";
+  for(var g=0;g<=3;g++){
+    var y=padT+ch-ch*g/3;
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.fillText(Math.round(maxFocus*g/3),padL-6,y+3);
+  }
+  var bw=cw/days.length;
+  days.forEach(function(x,i){
+    var cx=padL+bw*i+bw/2;
+    // 专注柱（绿）
+    var fh=Math.max(2,x.focus/maxFocus*ch);
+    var grd=ctx.createLinearGradient(0,padT+ch-fh,0,padT+ch);
+    grd.addColorStop(0,"#19E08A");grd.addColorStop(1,"#0A8F55");
+    ctx.fillStyle=grd;
+    roundRect(ctx,cx-bw*0.3,padT+ch-fh,bw*0.26,fh,4);ctx.fill();
+    if(x.focus>0){ctx.fillStyle=ink;ctx.textAlign="center";ctx.fillText(x.focus,cx-bw*0.17,padT+ch-fh-4)}
+    // 喝水柱（蓝）
+    var wh=Math.max(2,x.cups/maxCup*ch);
+    var grd2=ctx.createLinearGradient(0,padT+ch-wh,0,padT+ch);
+    grd2.addColorStop(0,"#7CC4FF");grd2.addColorStop(1,"#2E8BE6");
+    ctx.fillStyle=grd2;
+    roundRect(ctx,cx+bw*0.04,padT+ch-wh,bw*0.26,wh,4);ctx.fill();
+    if(x.cups>0){ctx.fillStyle=ink;ctx.fillText(x.cups,cx+bw*0.17,padT+ch-wh-4)}
+    // x 轴
+    ctx.fillStyle=ink;ctx.textAlign="center";
+    ctx.fillText(x.label,cx,H-8);
+  });
+}
+function roundRect(ctx,x,y,w,h,r){
+  r=Math.min(r,w/2,h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+/* =====================================================
+   主题 / 设置 / 引导
+   ===================================================== */
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme",t);
+  $("#themeBtn").textContent=t==="dark"?"☀️":"🌙";
+  S.settings.theme=t;save();
+  renderChart();
+}
+function openSet(){
+  $("#setFocus").value=S.settings.focus;
+  $("#setShort").value=S.settings.short;
+  $("#setLong").value=S.settings.long;
+  $("#setLongEvery").value=S.settings.longEvery;
+  $("#setGoal").value=S.settings.waterGoal;
+  $("#setSound").checked=S.settings.sound;
+  $("#setEye").checked=S.settings.eyeCare;
+  $("#setNotify").checked=S.settings.notify;
+  var seg=$("#setThemeSeg").children;
+  for(var i=0;i<seg.length;i++)seg[i].classList.toggle("on",seg[i].getAttribute("data-th")===S.settings.theme);
+  $("#setMask").classList.add("show");
+}
+function saveSet(){
+  var f=parseInt($("#setFocus").value,10),sh=parseInt($("#setShort").value,10),
+      lg=parseInt($("#setLong").value,10),ev=parseInt($("#setLongEvery").value,10),
+      goal=parseInt($("#setGoal").value,10);
+  if(f>0)S.settings.focus=Math.min(120,f);
+  if(sh>0)S.settings.short=Math.min(60,sh);
+  if(lg>0)S.settings.long=Math.min(60,lg);
+  if(ev>0)S.settings.longEvery=Math.min(8,Math.max(2,ev));
+  if(goal>0)S.settings.waterGoal=Math.min(20,Math.max(1,goal));
+  S.settings.sound=$("#setSound").checked;
+  S.settings.eyeCare=$("#setEye").checked;
+  if($("#setNotify").checked&&!S.settings.notify&&"Notification" in window&&Notification.permission==="default"){
+    Notification.requestPermission();
+  }
+  S.settings.notify=$("#setNotify").checked;
+  save();
+  // 非运行中时同步番茄时长
+  if(!Pomo.running)Pomo.remain=modeMinutes(Pomo.mode)*60;
+  $("#subFocusMin").textContent=S.settings.focus;
+  $("#subCupMl").textContent=S.settings.cupMl;
+  renderAll();
+  $("#setMask").classList.remove("show");
+  toast("设置已保存","⚙️");
+}
+function resetAll(){
+  var btn=$("#setReset");
+  if(btn.textContent.indexOf("确认")<0){
+    btn.textContent="⚠️ 再次点击确认清空";
+    setTimeout(function(){btn.textContent="🗑 重置数据"},3000);
+    return;
+  }
+  try{localStorage.removeItem(LS_KEY)}catch(e){}
+  S=defaultState();
+  S.seenIntro=true;
+  ensureToday();
+  applyTheme(S.settings.theme);
+  Pomo.mode="focus";Pomo.round=0;Pomo.remain=S.settings.focus*60;pausePomo(true);
+  resetEye();
+  renderAll();
+  $("#setMask").classList.remove("show");
+  btn.textContent="🗑 重置数据";
+  toast("数据已重置","🗑");
+}
+function fillDemo(){
+  var now=new Date();
+  var seed=[45,70,25,95,60,110,80];
+  for(var i=6;i>=1;i--){
+    var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i);
+    var k=dayKey(d);
+    var m=seed[6-i];
+    S.history[k]={focusSec:m*60,pomos:Math.floor(m/25),cups:5+(i%4),breaks:3+(i%3),eye:2+(i%2),stretch:i%3};
+  }
+  S.today.focusSec=45*60;S.today.pomos=2;S.today.cups=3;S.today.breaks=1;S.today.eye=1;S.today.stretch=0;
+  save();
+  renderAll();checkAch();
+  celebrate("🧪 示例数据已填充");
+  toast("已生成最近 7 天演示数据","🧪");
+}
+
+/* ---------- 格言 ---------- */
+var QUOTES=[
+  "代码写得再好，也别忘了看看窗外的绿色",
+  "每 20 分钟一次远眺，是对眼睛最便宜的投资",
+  "喝口水吧，程序员 80% 的头痛只是缺水",
+  "久坐一小时，脊椎承重相当于站姿两倍",
+  "番茄工作法的秘诀：专注时专注，休息时休息",
+  "好的重构从伸展肩颈开始",
+  "深夜的 bug 不会因为熬夜而变少，但头发会",
+  "手腕是程序员的生产工具，记得拉伸",
+  "站起来的那一分钟，灵感往往自己出现",
+  "今天灌溉的每一杯水，都是明天的好状态",
+  "再急的需求，也值得一次完整的深呼吸",
+  "猫每天都睡 16 小时，你至少睡 7 小时"
+];
+var qi=Math.floor(Math.random()*QUOTES.length);
+function rotateQuote(){
+  var el=$("#quoteText");
+  el.style.opacity=0;
+  setTimeout(function(){
+    qi=(qi+1)%QUOTES.length;
+    el.innerHTML="🐱 <b>"+QUOTES[qi]+"</b>";
+    el.style.opacity=1;
+  },400);
+}
+
+/* =====================================================
+   渲染总入口 & 事件绑定
+   ===================================================== */
+function renderAll(){
+  renderPomo();renderEye();renderWater();renderMini();renderChart();renderScore();renderAch();
+}
+function bind(){
+  // 番茄钟
+  $("#btnStart").onclick=startPause;
+  $("#btnReset").onclick=resetPomo;
+  $("#btnSkip").onclick=skipPomo;
+  var mb=document.querySelectorAll(".mode-btn");
+  for(var i=0;i<mb.length;i++){
+    mb[i].onclick=(function(b){return function(){setMode(b.getAttribute("data-mode"))}})(mb[i]);
+  }
+  // 护眼
+  $("#eyeToggle").onchange=function(){
+    S.settings.eyeCare=this.checked;save();
+    toast(this.checked?"护眼提醒已开启":"护眼提醒已关闭","👀");
+    if(this.checked)resetEye();
+  };
+  $("#eyeNow").onclick=function(){openLook(false)};
+  $("#lookDone").onclick=function(){finishLook()};
+  $("#lookSkip").onclick=function(){
+    clearInterval(window._lookT);
+    $("#lookMask").classList.remove("show");
+    Eye.resting=false;resetEye();renderStage();
+  };  // 喝水
+  $("#cupAdd").onclick=addCup;
+  $("#cupUndo").onclick=undoCup;
+  // 拉伸
+  $("#exClose").onclick=function(){
+    clearInterval(Ex.timer);
+    $("#exMask").classList.remove("show");
+    if(Ex.cur){finishEx()}
+  };
+  $("#exPause").onclick=function(){Ex.paused=!Ex.paused;renderExStep()};
+  $("#exFinish").onclick=function(){if(Ex.cur)finishEx(true)};
+  // 设置
+  $("#setBtn").onclick=openSet;
+  $("#footSet").onclick=openSet;
+  $("#setClose").onclick=function(){$("#setMask").classList.remove("show")};
+  $("#setSave").onclick=saveSet;
+  $("#setDemo").onclick=function(){fillDemo();$("#setMask").classList.remove("show")};
+  $("#setReset").onclick=resetAll;
+  var seg=$("#setThemeSeg").children;
+  for(var j=0;j<seg.length;j++){
+    seg[j].onclick=(function(b){return function(){applyTheme(b.getAttribute("data-th"))}})(seg[j]);
+  }
+  // 主题 & 帮助
+  $("#themeBtn").onclick=function(){applyTheme(S.settings.theme==="dark"?"light":"dark")};
+  $("#helpBtn").onclick=function(){$("#introMask").classList.add("show")};
+  $("#footIntro").onclick=function(){$("#introMask").classList.add("show")};
+  $("#introClose").onclick=function(){$("#introMask").classList.remove("show")};
+  $("#introOk").onclick=function(){$("#introMask").classList.remove("show");S.seenIntro=true;save()};
+  $("#footDemo").onclick=fillDemo;
+  // 键盘快捷键（弹层打开时不响应）
+  document.addEventListener("keydown",function(e){
+    var tag=(e.target.tagName||"").toLowerCase();
+    if(tag==="input"||tag==="textarea"||tag==="select")return;
+    if(document.querySelector(".mask.show"))return;
+    if(e.code==="Space"){e.preventDefault();startPause()}
+    else if(e.key==="r"||e.key==="R"){resetPomo()}
+  });
+  // 窗口尺寸变化重绘图表
+  var rt;
+  window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(renderChart,150)});
+  // 每分钟归档检查
+  setInterval(ensureToday,60000);
+}
+
+/* ---------- 启动 ---------- */
+function init(){
+  applyTheme(S.settings.theme||"light");
+  $("#eyeToggle").checked=S.settings.eyeCare;
+  $("#subFocusMin").textContent=S.settings.focus;
+  $("#subCupMl").textContent=S.settings.cupMl;
+  Pomo.remain=modeMinutes("focus")*60;
+  renderExList();
+  bind();
+  renderAll();
+  // 护眼倒计时引擎
+  Eye.timer=setInterval(eyeTick,1000);
+  // 格言轮换
+  $("#quoteText").innerHTML="🐱 <b>"+QUOTES[qi]+"</b>";
+  setInterval(rotateQuote,12000);
+  // 首次进入显示引导
+  if(!S.seenIntro){
+    setTimeout(function(){$("#introMask").classList.add("show")},500);
+  }
+  // 记录早晚鸟标记
+  var h=new Date().getHours();
+  if(h<8)S._earlyFlag=true;
+  if(h>=23)S._nightFlag=true;
+}
+init();
+})();
+</script>
+</body>
+</html>
