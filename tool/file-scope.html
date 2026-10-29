@@ -1,0 +1,381 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件照妖镜 · 拖进来，看清它到底是什么</title>
+    <meta name="description"
+        content="一个完全跑在浏览器里的文件体检工具：先用文件头验明正身，再逐页拆开看内容。支持图片、PDF、多页 TIFF、Word、Excel、PPT、CSV、文本、视频，以及安卓相机导出的裸 YUV 帧。不上传、不联网、不装插件。">
+    <meta name="robots" content="index, follow">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="文件照妖镜 · 本地文件体检与预览">
+    <meta property="og:description"
+        content="后缀会骗人，字节不会。把文件拖进来，看清它真实的类型、尺寸、EXIF、页数，以及里面到底装了什么。">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css?v=20261022a">
+
+    <!--
+      解析器按需加载：pdf.js、UTIF、SheetJS、JSZip、docx-preview 只在真的
+      遇到对应文件时才注入。打开一张 JPEG 不会下载 PDF 引擎。
+    -->
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "文件照妖镜",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any (web browser)",
+      "description": "浏览器内的文件体检与预览工具。按文件头而不是后缀判断类型，给出体积、尺寸、DPI、EXIF、GPS、页数与本地计算的 SHA-256，再渲染内容：图片、多页 TIFF、PDF、DOCX、XLSX、PPTX、CSV、JSON、纯文本、视频、音频，以及安卓相机的裸 YUV 帧。",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "CNY",
+        "description": "免费使用。文件在浏览器内处理，不上传服务器。"
+      }
+    }
+    </script>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="site-header-inner">
+            <a class="brand" href="#top" aria-label="文件照妖镜 — 回到顶部">
+                <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#0ea5a4" />
+                            <stop offset="55%" stop-color="#0e7490" />
+                            <stop offset="100%" stop-color="#1e3a8a" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="1" y="1" width="38" height="38" rx="11" fill="url(#markGrad)" />
+                    <circle cx="20" cy="19.5" r="7.2" fill="none" stroke="#eafcff" stroke-width="2.2" />
+                    <path d="M20 8.4 L20 12.3 M20 26.7 L20 30.6 M8.9 19.5 L12.8 19.5 M27.2 19.5 L31.1 19.5"
+                        stroke="#eafcff" stroke-width="2.2" stroke-linecap="round" />
+                    <circle cx="20" cy="19.5" r="2.6" fill="#7ff0e2" />
+                </svg>
+                <span class="brand-name">文件照妖镜</span>
+            </a>
+            <span class="brand-tag">纯本地解析</span>
+            <nav class="header-nav" aria-label="页面导航">
+                <a class="nav-link" href="#formats">认得哪些格式</a>
+                <a class="nav-link" href="#why">为什么有用</a>
+                <a class="nav-link" href="#limits">它不做什么</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero-band" id="top">
+        <div class="hero-inner">
+            <div class="hero-copy">
+                <p class="hero-eyebrow">1024 造物挑战 · 开发网站</p>
+                <h1>拖进来，看清它<em>到底</em>是什么</h1>
+                <p class="hero-lede">
+                    后缀会骗人，字节不会。先按文件头验明正身，再逐页拆开看内容。<br>
+                    真实类型、体积、尺寸、EXIF、页数，以及本地算出来的 <span class="nowrap">SHA-256</span>。
+                </p>
+                <ul class="hero-stats">
+                    <li><b>30+</b><span>种格式可读</span></li>
+                    <li><b>0</b><span>字节上传</span></li>
+                    <li><b>按需</b><span>加载解析器</span></li>
+                </ul>
+            </div>
+
+            <aside class="hero-card" aria-hidden="true">
+                <div class="hc-head">
+                    <span class="hc-badge">JPG</span>
+                    <span class="hc-name">scan-0426.jpg</span>
+                    <span class="hc-size">6.32 KB</span>
+                </div>
+                <div class="hc-verdict">
+                    <span class="hc-dot"></span>
+                    <b>后缀在说谎</b>
+                    <span>它其实是 PDF 文档</span>
+                </div>
+                <dl class="hc-rows">
+                    <div><dt>页数</dt><dd>4 页</dd></div>
+                    <div><dt>纸张</dt><dd>612 × 792 pt</dd></div>
+                    <div><dt>SHA-256</dt><dd class="mono">165d53cf…36a117fe</dd></div>
+                </dl>
+                <p class="hc-foot">判断依据：文件头，不是文件名</p>
+            </aside>
+        </div>
+    </section>
+
+    <div class="container">
+        <section class="card drop-card" id="drop-card">
+            <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="选择文件，或把文件拖到这里">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <p class="dz-title">把文件拖到这里</p>
+                <p class="dz-sub">也可以点一下选文件，一次选多个没问题；截图后直接 <kbd>Ctrl</kbd>+<kbd>V</kbd> 也能进来</p>
+            </div>
+            <input type="file" id="file-input" multiple hidden
+                accept="image/*,.tif,.tiff,.pdf,.docx,.xlsx,.pptx,.txt,.csv,.tsv,.json,.yuv,.md,.log,.xml,.svg,.mp4,.webm,.mov,.m4v,.mp3,.wav,.ogg,.bin">
+
+            <div class="sample-row" id="sample-row">
+                <span class="label">没带文件？试试这些</span>
+                <button class="chip" type="button" data-sample="sample-fake.jpg"><span class="dot"
+                        style="background:var(--fam-pdf)"></span>伪装成 .jpg</button>
+                <button class="chip" type="button" data-sample="sample-photo.jpg"><span class="dot"
+                        style="background:var(--fam-image)"></span>JPEG</button>
+                <button class="chip" type="button" data-sample="sample-screenshot.png"><span class="dot"
+                        style="background:var(--fam-image)"></span>PNG</button>
+                <button class="chip" type="button" data-sample="sample-diagram.svg"><span class="dot"
+                        style="background:var(--fam-image)"></span>SVG</button>
+                <button class="chip" type="button" data-sample="sample-scan.tiff"><span class="dot"
+                        style="background:var(--fam-image)"></span>TIFF</button>
+                <button class="chip" type="button" data-sample="sample-report.pdf"><span class="dot"
+                        style="background:var(--fam-pdf)"></span>PDF</button>
+                <button class="chip" type="button" data-sample="sample-contract.docx"><span class="dot"
+                        style="background:var(--fam-office)"></span>DOCX</button>
+                <button class="chip" type="button" data-sample="sample-budget.xlsx"><span class="dot"
+                        style="background:var(--fam-office)"></span>XLSX</button>
+                <button class="chip" type="button" data-sample="sample-deck.pptx"><span class="dot"
+                        style="background:var(--fam-office)"></span>PPTX</button>
+                <button class="chip" type="button" data-sample="sample-table.csv"><span class="dot"
+                        style="background:var(--fam-text)"></span>CSV</button>
+                <button class="chip" type="button" data-sample="sample-note-gbk.txt"><span class="dot"
+                        style="background:var(--fam-text)"></span>GBK 文本</button>
+                <button class="chip" type="button" data-sample="sample-config.json"><span class="dot"
+                        style="background:var(--fam-text)"></span>JSON</button>
+                <button class="chip" type="button" data-sample="sample-frame.yuv"><span class="dot"
+                        style="background:var(--fam-image)"></span>裸 YUV</button>
+                <button class="chip" type="button" data-sample="sample-clip.mp4"><span class="dot"
+                        style="background:var(--fam-media)"></span>MP4</button>
+                <button class="chip" type="button" data-sample="sample-blob.bin"><span class="dot"
+                        style="background:var(--fam-binary)"></span>BIN</button>
+            </div>
+        </section>
+
+        <div class="workspace" id="workspace" hidden>
+            <aside class="pane files-pane card" aria-label="已打开的文件">
+                <div class="pane-head">
+                    <h2>文件 <span class="count" id="file-count">0</span></h2>
+                    <button class="btn btn-quiet btn-small" id="clear-all" type="button">全部清空</button>
+                </div>
+                <ul class="file-list" id="file-list"></ul>
+            </aside>
+
+            <section class="pane preview-pane card" aria-label="预览">
+                <div class="preview-toolbar">
+                    <div class="tb-file">
+                        <span class="badge" id="tb-badge" data-family="binary">bin</span>
+                        <span class="name" id="tb-name" title="">未选择文件</span>
+                    </div>
+                    <div class="tb-group" id="tb-pager">
+                        <button class="icon-btn" id="page-prev" type="button" aria-label="上一页" title="上一页">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6" />
+                            </svg>
+                        </button>
+                        <span class="tb-readout" id="page-indicator">1 / 1</span>
+                        <button class="icon-btn" id="page-next" type="button" aria-label="下一页" title="下一页">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="tb-group" id="tb-zoom">
+                        <button class="icon-btn" id="zoom-out" type="button" aria-label="缩小" title="缩小（-）">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="7" />
+                                <line x1="8" y1="11" x2="14" y2="11" />
+                                <line x1="21" y1="21" x2="16.5" y2="16.5" />
+                            </svg>
+                        </button>
+                        <span class="tb-readout" id="zoom-indicator">100%</span>
+                        <button class="icon-btn" id="zoom-in" type="button" aria-label="放大" title="放大（+）">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="7" />
+                                <line x1="8" y1="11" x2="14" y2="11" />
+                                <line x1="11" y1="8" x2="11" y2="14" />
+                                <line x1="21" y1="21" x2="16.5" y2="16.5" />
+                            </svg>
+                        </button>
+                        <button class="icon-btn" id="zoom-fit" type="button" aria-label="适应宽度" title="适应宽度">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+                                <path d="M16 3h3a2 2 0 0 1 2 2v3" />
+                                <path d="M8 21H5a2 2 0 0 1-2-2v-3" />
+                                <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+                            </svg>
+                        </button>
+                        <button class="icon-btn" id="rotate" type="button" aria-label="旋转 90 度" title="旋转 90°">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 4 23 10 17 10" />
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-stage" id="stage">
+                    <div class="stage-note" id="stage-note">
+                        <strong>还没选文件。</strong> 把文件拖到页面任意位置，或点上面的样例。
+                        截图之后按 <kbd>Ctrl</kbd>+<kbd>V</kbd> 可以直接打开剪贴板里的图。
+                    </div>
+                </div>
+                <div class="preview-foot" id="preview-foot"></div>
+            </section>
+
+            <aside class="pane info-pane card" aria-label="文件详情">
+                <div class="pane-head">
+                    <h2>体检报告</h2>
+                    <span class="count" id="info-kind">—</span>
+                    <button class="btn btn-quiet btn-small" id="export-report" type="button" title="把当前文件的体检结果导出为 Markdown">导出</button>
+                </div>
+                <div class="info-body" id="info-body">
+                    <p class="info-empty">打开一个文件，这里会列出它的全部身份信息。</p>
+                </div>
+            </aside>
+        </div>
+
+        <div class="card" id="formats">
+            <div class="card-header">
+                <h2>它认得哪些东西</h2>
+                <p class="card-sub">一共八类。每一类都不是"能打开就行"，而是要把文件自己说的话读出来。</p>
+            </div>
+            <div class="card-body">
+                <div class="format-grid">
+                    <div class="format-card">
+                        <h3>图片</h3>
+                        <p>尺寸、百万像素、色深、DPI，以及完整的 EXIF：机身、镜头、曝光、方向、GPS 坐标。</p>
+                        <span class="ext">jpg jpeg png gif webp avif bmp ico svg</span>
+                    </div>
+                    <div class="format-card">
+                        <h3>多页 TIFF</h3>
+                        <p>每个 IFD 就是一页，扫描件一次进十二张也能当一个文档翻。支持 LZW、Deflate、PackBits。</p>
+                        <span class="ext">tif tiff</span>
+                    </div>
+                    <div class="format-card">
+                        <h3>PDF</h3>
+                        <p>逐页渲染：纸张尺寸（pt 与 A4/Letter）、PDF 版本、生成工具、创建时间、总页数。</p>
+                        <span class="ext">pdf</span>
+                    </div>
+                    <div class="format-card">
+                        <h3>Office 三件套</h3>
+                        <p>Word 的分节、表格的每个工作表、演示文稿的每张幻灯片，都对应一个真实的"页"。</p>
+                        <span class="ext">docx xlsx pptx</span>
+                    </div>
+                    <div class="format-card">
+                        <h3>文本与表格</h3>
+                        <p>编码是测出来的，不是猜的（UTF-8 / UTF-16 / GBK / Windows-1252）；CSV 按它真正用的分隔符变成表格。</p>
+                        <span class="ext">txt csv tsv json md log xml</span>
+                    </div>
+                    <div class="format-card">
+                        <h3>裸 YUV 帧</h3>
+                        <p>安卓相机 <code>onPreviewFrame</code> 或 <code>ImageReader</code> 直接吐出来的数据：没有文件头、没有尺寸。选对排布，画面和帧数自己就出来了。</p>
+                        <span class="ext">yuv nv21 nv12 i420 yv12</span>
+                    </div>
+                    <div class="format-card">
+                        <h3>视频与音频</h3>
+                        <p>时长、分辨率、宽高比从容器里读，画面交给浏览器自己的解码器。</p>
+                        <span class="ext">mp4 webm mov m4v mp3 wav ogg</span>
+                    </div>
+                    <div class="format-card">
+                        <h3>其它一切</h3>
+                        <p>二进制不画假预览：认出容器就报容器，认不出就说认不出，绝不糊一张占位图冒充内容。</p>
+                        <span class="ext">exe zip sqlite elf …</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="why">
+            <div class="card-header">
+                <h2>为什么"元数据"才是救命的那一半</h2>
+                <p class="card-sub">管线出问题的时候，文件往往比画面更早说出原因。</p>
+            </div>
+            <div class="card-body">
+                <p>
+                    一张 JPEG 写着 orientation 6，说明它拍的时候是横着拿的；忽略 EXIF 的解码器会把一个躺倒的画面
+                    送进 OCR，识别率自然崩。一个 TIFF 的页数是 1，可进纸器明明吞了十二张——那是在上游就被截断了。
+                    一个 PDF 没有 Producer、创建日期停在 2001 年，它是被"压平"过的扫描件，不是导出的文档。
+                </p>
+                <p>
+                    裸 YUV 是最能说明问题的例子。安卓相机 dump 出来的文件没有头：没有宽、没有高、没有像素格式，
+                    也不知道里面是一帧还是四十帧。这里会先拿文件长度去对常见采集尺寸，猜一个；然后让你改：
+                    选 NV21 / NV12 / I420 / YV12 / YUY2 / UYVY，填宽高和 stride，帧数和颜色立刻归位。
+                    4:2:0 排布选错不会报错，只会让画面变成绿色和紫色——那正好就是你要找的那个 bug。
+                </p>
+                <ul class="body-list">
+                    <li>类型先看文件头，后缀只作参考：一个 <code>.jpg</code> 其实是 PNG，这里就写 PNG，并且当场提示"后缀与内容不符"。</li>
+                    <li>SHA-256 用 Web Crypto 在本地算，两份文件对不对得上，不用把它们传到任何地方。</li>
+                    <li>页码按文件真实结构走，解析器按需加载：打开一张图，不会顺手下载一个 PDF 引擎。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card" id="limits">
+            <div class="card-header">
+                <h2>它不做什么</h2>
+                <p class="card-sub">把边界写在前面，比事后解释便宜。</p>
+            </div>
+            <div class="card-body">
+                <p>
+                    Office 渲染是"重建"，不是排版引擎：字体被替换、复杂版式会重排、SmartArt 和图表会留下空框。
+                    Word 的页来自文档自己的分节和分页符，所以依赖"缩小以适应页面"的文档在这里可能分得不一样；
+                    Excel 每 40 行切一页，是为了让翻页键在一万行的表里还有意义，不是工作簿自己的打印版式。
+                </p>
+                <p>
+                    视频能不能播，完全取决于浏览器的解码器：<code>.mov</code> 里装 H.265，时长读得出来，画面未必放得动。
+                    TIFF 解码覆盖常见压缩，冷门变体不保证。裸 YUV 按定义就没有元数据，第一帧在你填宽高之前都是猜的。
+                    这里也不是取证工具：它只报告字节说了什么，SHA-256 算的是你拖进来的那一份。
+                </p>
+                <p class="hint">
+                    大文件：PDF 超过 150 MB、文本超过 8 MB、Office 超过 60 MB 会被截断或拒绝，并在预览区注明原因——
+                    浏览器标签页不是十六进制编辑器。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-drop" id="page-drop" aria-hidden="true">
+        <div class="page-drop-box">松手就打开</div>
+    </div>
+
+    <footer class="demo-footer">
+        <div class="demo-footer-inner">
+            <p class="disclaimer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                文件只在你自己的设备上被读取，没有服务器可以上传。整页加载完之后，把网线拔掉它也照常工作。
+            </p>
+            <div class="footer-links">
+                <span>
+                    解析器：
+                    <a href="https://mozilla.github.io/pdf.js/">pdf.js</a>、
+                    <a href="https://github.com/photopea/UTIF.js">UTIF.js</a>、
+                    <a href="https://sheetjs.com/">SheetJS</a>、
+                    <a href="https://github.com/VolodymyrBaydalka/docxjs">docx-preview</a>、
+                    <a href="https://stuk.github.io/jszip/">JSZip</a>
+                </span>
+                <span>快捷键：<kbd>+</kbd> / <kbd>-</kbd> 缩放，<kbd>←</kbd> / <kbd>→</kbd> 翻页</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js?v=20261022a"></script>
+</body>
+
+</html>

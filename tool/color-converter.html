@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>颜色互转工具</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    background:#f5f6f8; color:#1f2329; min-height:100vh;
+    display:flex; justify-content:center; align-items:flex-start; padding:32px 16px;
+  }
+  .wrap { width:100%; max-width:520px; }
+  h1 { font-size:20px; font-weight:600; margin-bottom:4px; }
+  .sub { font-size:12px; color:#8a919f; margin-bottom:16px; }
+
+  /* 色块预览 */
+  .preview {
+    height:180px; border-radius:12px; margin-bottom:16px;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .15s;
+    border:1px solid rgba(0,0,0,.08);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+    user-select:all;
+  }
+  .preview span {
+    font-size:20px; font-weight:600; letter-spacing:.5px;
+    padding:6px 14px; border-radius:8px; background:rgba(255,255,255,.18);
+    backdrop-filter: blur(2px);
+  }
+
+  .card {
+    background:#fff; border-radius:12px; padding:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .row:last-child { margin-bottom:0; }
+  .label { width:44px; font-size:13px; color:#5a6072; flex-shrink:0; }
+
+  input[type=text], input[type=number] {
+    width:100%; padding:8px 10px; font-size:14px;
+    border:1px solid #dcdfe6; border-radius:8px; outline:none;
+    background:#fff; color:#1f2329; font-family: Consolas, "Courier New", monospace;
+  }
+  input:focus { border-color:#4c7dff; box-shadow:0 0 0 2px rgba(76,125,255,.15); }
+
+  .rgb-group { display:flex; gap:8px; flex:1; }
+  .rgb-item { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .rgb-item label { font-size:12px; color:#8a919f; }
+  .rgb-item input { padding:8px 6px; text-align:center; }
+
+  /* 结果行 */
+  .result { display:flex; align-items:center; gap:8px; }
+  .result .val {
+    flex:1; font-family:Consolas, monospace; font-size:14px;
+    background:#f7f8fa; border:1px solid #eceef2; border-radius:8px;
+    padding:8px 10px; min-height:36px; word-break:break-all; cursor:pointer;
+    user-select:all; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .result .val:hover { border-color:#4c7dff; }
+  button {
+    padding:8px 14px; font-size:13px; border:none; border-radius:8px;
+    background:#4c7dff; color:#fff; cursor:pointer; flex-shrink:0;
+    transition:background .15s;
+  }
+  button:hover { background:#3a66e0; }
+  button:active { transform:scale(.97); }
+  button.copied { background:#2eb872; }
+
+  .hsl-val { font-family:Consolas, monospace; font-size:14px; color:#5a6072; }
+
+  .tip { margin-top:14px; font-size:12px; color:#8a919f; line-height:1.7; }
+  .tip b { color:#5a6072; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .chip {
+    width:26px; height:26px; border-radius:6px; cursor:pointer;
+    border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.12);
+    transition:transform .12s;
+  }
+  .chip:hover { transform:scale(1.2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>颜色互转</h1>
+  <div class="sub">HEX / RGB 双向实时转换，点数值即可复制</div>
+
+  <div class="preview" id="preview"><span id="previewText">#4C7DFF</span></div>
+
+  <div class="card">
+    <div class="row">
+      <span class="label">HEX</span>
+      <input type="text" id="hexInput" value="#4C7DFF" placeholder="#RRGGBB 或 #RGB 或 rgb(76,125,255)" spellcheck="false" autocomplete="off">
+    </div>
+
+    <div class="row">
+      <span class="label">RGB</span>
+      <div class="rgb-group">
+        <div class="rgb-item"><label>R</label><input type="number" id="rInput" min="0" max="255" value="76"></div>
+        <div class="rgb-item"><label>G</label><input type="number" id="gInput" min="0" max="255" value="125"></div>
+        <div class="rgb-item"><label>B</label><input type="number" id="bInput" min="0" max="255" value="255"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <span class="label">HSL</span>
+      <span class="hsl-val" id="hslVal">hsl(224, 100%, 65%)</span>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px;">
+    <div class="result">
+      <span class="val" id="hexVal" title="点击复制">#4C7DFF</span>
+      <button id="copyHex">复制 HEX</button>
+    </div>
+    <div class="result" style="margin-top:8px;">
+      <span class="val" id="rgbVal" title="点击复制">rgb(76, 125, 255)</span>
+      <button id="copyRgb">复制 RGB</button>
+    </div>
+  </div>
+
+  <div class="tip">
+    <b>支持格式：</b>#RRGGBB、#RGB（自动展开）、rgb(255,0,0) 整体粘贴到 HEX 框也能识别。
+    任一输入框改动，其他值实时同步。
+  </div>
+
+  <div class="chips" id="chips"></div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var preview = $('preview'), previewText = $('previewText');
+  var hexInput = $('hexInput'), rInput = $('rInput'), gInput = $('gInput'), bInput = $('bInput');
+  var hslVal = $('hslVal'), hexVal = $('hexVal'), rgbVal = $('rgbVal');
+  var curR = 76, curG = 125, curB = 255;
+  var lock = false;
+
+  // ---- 转换核心 ----
+  function clamp(n) { n = parseInt(n, 10); if (isNaN(n)) n = 0; return Math.min(255, Math.max(0, n)); }
+  function toHex2(n) { return n.toString(16).toUpperCase().padStart(2, '0'); }
+  function hexToRgb(hex) {
+    var m = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(hex);
+    if (!m) return null;
+    var h = m[1];
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+  }
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    var max = Math.max(r,g,b), min = Math.min(r,g,b), l = (max+min)/2, h = 0, s = 0;
+    if (max !== min) {
+      var d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = ((g - b) / d + (g < b ? 6 : 0));
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60;
+    }
+    return { h: Math.round(h), s: Math.round(s*100), l: Math.round(l*100) };
+  }
+  // 亮度决定预览区文字颜色
+  function luminance(r,g,b){ return 0.299*r + 0.587*g + 0.114*b; }
+
+  // ---- 渲染 ----
+  function render(from) {
+    if (lock) return;
+    lock = true;
+    var hex = '#' + toHex2(curR) + toHex2(curG) + toHex2(curB);
+    var hsl = rgbToHsl(curR, curG, curB);
+    var rgbStr = 'rgb(' + curR + ', ' + curG + ', ' + curB + ')';
+
+    preview.style.background = hex;
+    previewText.textContent = hex;
+    previewText.style.color = luminance(curR,curG,curB) > 186 ? '#1f2329' : '#ffffff';
+
+    if (from !== 'hex') hexInput.value = hex;
+    if (from !== 'rgb') { rInput.value = curR; gInput.value = curG; bInput.value = curB; }
+
+    hslVal.textContent = 'hsl(' + hsl.h + ', ' + hsl.s + '%, ' + hsl.l + '%)';
+    hexVal.textContent = hex;
+    rgbVal.textContent = rgbStr;
+    lock = false;
+  }
+
+  function parseInput(str) {
+    str = str.trim();
+    // 支持 rgb(255,0,0) / rgb(255 0 0) 整体粘贴
+    var m = /rgba?\(\s*(\d+)\s*[, ]\s*(\d+)\s*[, ]\s*(\d+)/i.exec(str);
+    if (m) return { r: clamp(m[1]), g: clamp(m[2]), b: clamp(m[3]) };
+    var rgb = hexToRgb(str);
+    return rgb ? { r: rgb.r, g: rgb.g, b: rgb.b } : null;
+  }
+
+  // ---- 事件 ----
+  hexInput.addEventListener('input', function () {
+    var raw = hexInput.value.trim();
+    if (!raw) return;
+    // 输入过程中允许不完整值，仅当为合法完整颜色才同步
+    var parsed = parseInput(raw);
+    if (parsed) { curR = parsed.r; curG = parsed.g; curB = parsed.b; render('hex'); }
+  });
+  hexInput.addEventListener('blur', function () {
+    // 失焦时修正格式（3位展开、补#、无效回退）
+    var parsed = parseInput(hexInput.value);
+    if (parsed) { curR = parsed.r; curG = parsed.g; curB = parsed.b; render('hex'); }
+    else render('hex');
+  });
+
+  [rInput, gInput, bInput].forEach(function (el, i) {
+    el.addEventListener('input', function () {
+      var v = clamp(el.value);
+      if (el.value !== '' && String(v) !== el.value) el.value = v;
+      if (i === 0) curR = v; else if (i === 1) curG = v; else curB = v;
+      render('rgb');
+    });
+  });
+
+  // ---- 复制 ----
+  function copy(text, btn) {
+    var done = function () {
+      var old = btn.textContent;
+      btn.textContent = '已复制';
+      btn.classList.add('copied');
+      setTimeout(function () { btn.textContent = old; btn.classList.remove('copied'); }, 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); done(); });
+    } else { fallbackCopy(text); done(); }
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+  $('copyHex').addEventListener('click', function () { copy(hexVal.textContent, this); });
+  $('copyRgb').addEventListener('click', function () { copy(rgbVal.textContent, this); });
+  hexVal.addEventListener('click', function () { copy(hexVal.textContent, $('copyHex')); });
+  rgbVal.addEventListener('click', function () { copy(rgbVal.textContent, $('copyRgb')); });
+
+  // ---- 常用色板 ----
+  var palette = [
+    '#FF4D4F','#FF7A45','#FAAD14','#52C41A','#13C2C2','#1677FF',
+    '#2F54EB','#722ED1','#EB2F96','#8C8C8C','#000000','#FFFFFF'
+  ];
+  var chips = $('chips');
+  palette.forEach(function (c) {
+    var d = document.createElement('div');
+    d.className = 'chip';
+    d.style.background = c;
+    d.title = c;
+    d.addEventListener('click', function () {
+      var rgb = hexToRgb(c);
+      curR = rgb.r; curG = rgb.g; curB = rgb.b;
+      render('chip');
+    });
+    chips.appendChild(d);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

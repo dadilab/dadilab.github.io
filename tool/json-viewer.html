@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSON 站点数据排版工具</title>
+<style id="mainStyles">
+  :root {
+    --bg: #f5f7fa;
+    --card-bg: #ffffff;
+    --primary: #4a6fa5;
+    --primary-light: #6b8fc7;
+    --primary-dark: #3a5a8a;
+    --accent: #e8734a;
+    --text: #2c3e50;
+    --text-light: #7f8c9b;
+    --border: #e1e5eb;
+    --success: #27ae60;
+    --warning: #f39c12;
+    --danger: #e74c3c;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(74,111,165,0.3);
+  }
+  .header h1 { font-size: 20px; font-weight: 600; }
+  .header .stats { font-size: 13px; opacity: 0.85; display: flex; gap: 8px; }
+  .header .stats span {
+    background: rgba(255,255,255,0.15);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  /* Drop Zone */
+  .drop-zone {
+    max-width: 100%;
+    margin: 20px 24px;
+    padding: 36px 32px;
+    background: var(--card-bg);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  .drop-zone.dragover {
+    border-color: var(--primary);
+    background: rgba(74,111,165,0.06);
+    transform: scale(1.01);
+  }
+  .drop-zone.loaded {
+    padding: 14px 24px;
+    border-style: solid;
+    border-color: var(--success);
+    background: rgba(39,174,96,0.04);
+  }
+  .drop-zone-icon { font-size: 44px; margin-bottom: 10px; }
+  .drop-zone h2 { font-size: 17px; color: var(--text); margin-bottom: 6px; }
+  .drop-zone p { color: var(--text-light); font-size: 14px; }
+  .drop-zone .btn-row { margin-top: 14px; display: flex; gap: 12px; justify-content: center; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 20px; border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+  .btn-outline:hover { background: rgba(74,111,165,0.08); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover { background: #c0392b; }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: #219150; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 6px; }
+
+  /* Progress */
+  .progress-container {
+    max-width: 100%; margin: 14px 24px; display: none;
+  }
+  .progress-container.active { display: block; }
+  .progress-bar-wrap {
+    background: var(--border); border-radius: 8px; height: 8px; overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    border-radius: 8px; transition: width 0.3s ease; width: 0%;
+  }
+  .progress-text { margin-top: 6px; font-size: 13px; color: var(--text-light); text-align: center; }
+
+  /* Controls */
+  .controls {
+    max-width: 100%; margin: 16px 24px; padding: 14px 24px;
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow); display: none;
+    gap: 14px; align-items: center; flex-wrap: wrap;
+  }
+  .controls.active { display: flex; }
+  .search-box { flex: 1; min-width: 200px; position: relative; }
+  .search-box input {
+    width: 100%; padding: 9px 16px 9px 34px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 14px; outline: none; transition: border-color 0.2s;
+  }
+  .search-box input:focus { border-color: var(--primary); }
+  .search-box .search-icon {
+    position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+    color: var(--text-light); font-size: 14px;
+  }
+  .sort-group { display: flex; align-items: center; gap: 8px; }
+  .sort-group label { font-size: 13px; color: var(--text-light); font-weight: 500; }
+  .sort-select {
+    padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 13px; outline: none; background: white; cursor: pointer;
+  }
+  .sort-select:focus { border-color: var(--primary); }
+  .order-toggle {
+    padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 13px; background: white; cursor: pointer;
+    transition: all 0.2s; min-width: 76px; text-align: center;
+  }
+  .order-toggle:hover { border-color: var(--primary); background: rgba(74,111,165,0.06); }
+  .order-toggle.desc { border-color: var(--accent); color: var(--accent); }
+  .export-group { display: flex; gap: 8px; }
+
+  /* Table Layout */
+  .table-wrap {
+    margin: 16px 24px;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: auto;
+    max-height: calc(100vh - 280px);
+  }
+
+  .site-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 960px;
+  }
+
+  .site-table thead {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .site-table thead th {
+    padding: 12px 12px;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: left;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+    user-select: none;
+  }
+
+  .site-table tbody tr {
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border);
+  }
+  .site-table tbody tr:hover {
+    background: rgba(74,111,165,0.05);
+  }
+  .site-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .site-table td {
+    padding: 9px 12px;
+    vertical-align: middle;
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+  }
+  .site-table td.allow-wrap {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  /* Column specific */
+  .col-id { width: 56px; text-align: center; max-width: 56px; }
+  .col-title { min-width: 120px; max-width: 180px; }
+  .col-desc { min-width: 120px; max-width: 200px; }
+  .col-url { min-width: 140px; max-width: 220px; }
+  .col-rss { min-width: 140px; max-width: 220px; }
+  .col-status { width: 72px; text-align: center; max-width: 72px; }
+  .col-posts { width: 60px; text-align: center; max-width: 60px; }
+  .col-icon { min-width: 120px; max-width: 200px; }
+  .col-file { width: 76px; max-width: 76px; }
+
+  .col-id .id-num {
+    background: var(--bg); color: var(--text-light);
+    padding: 2px 8px; border-radius: 12px;
+    font-size: 12px; font-weight: 600;
+  }
+  .col-title .title-text { font-weight: 600; color: var(--text); }
+  .col-desc .desc-text {
+    color: var(--text-light);
+    overflow: hidden; text-overflow: ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    white-space: normal;
+  }
+
+  .link-cell a {
+    color: var(--primary); text-decoration: none;
+    font-size: 12px; word-break: break-all;
+  }
+  .link-cell a:hover { text-decoration: underline; }
+
+  .status-badge {
+    padding: 2px 8px; border-radius: 12px;
+    font-size: 11px; font-weight: 600; display: inline-block;
+  }
+  .status-ok { background: rgba(39,174,96,0.12); color: var(--success); }
+  .status-timeout { background: rgba(243,156,18,0.12); color: var(--warning); }
+  .status-error { background: rgba(231,76,60,0.12); color: var(--danger); }
+  .status-default { background: rgba(127,140,155,0.12); color: var(--text-light); }
+
+  .posts-count { font-weight: 700; color: var(--accent); }
+
+  .col-file .file-label {
+    font-size: 11px; color: var(--text-light);
+    background: var(--bg); padding: 2px 6px; border-radius: 8px;
+  }
+  .col-icon .icon-text {
+    font-size: 11px; color: var(--text-light);
+  }
+
+  /* Empty / No results */
+  .empty-state {
+    text-align: center; padding: 50px 32px; color: var(--text-light);
+  }
+  .empty-state .empty-icon { font-size: 56px; margin-bottom: 14px; }
+  .empty-state h3 { font-size: 17px; margin-bottom: 6px; color: var(--text); }
+  .empty-state p { font-size: 14px; }
+
+  .no-results {
+    text-align: center; padding: 36px 32px; color: var(--text-light); font-size: 14px;
+  }
+
+  /* Animations */
+  @keyframes rowFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .site-table tbody tr { animation: rowFade 0.2s ease both; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header { padding: 16px; }
+    .header h1 { font-size: 17px; }
+    .controls { margin: 12px; padding: 12px 16px; }
+    .drop-zone { margin: 12px; padding: 24px 16px; }
+    .table-wrap { margin: 12px; }
+    .site-table { font-size: 12px; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
+
+  /* Export toast */
+  .export-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--success); color: white; padding: 12px 24px;
+    border-radius: 8px; font-size: 14px; font-weight: 500;
+    box-shadow: 0 4px 16px rgba(39,174,96,0.3);
+    z-index: 200; opacity: 0; transition: opacity 0.3s;
+  }
+  .export-toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>🗂 JSON 站点数据排版工具</h1>
+  <div class="stats">
+    <span id="stat-files">文件: 0</span>
+    <span id="stat-sites">站点: 0</span>
+    <span id="stat-shown">展示: 0</span>
+  </div>
+</div>
+
+<!-- Drop Zone -->
+<div class="drop-zone" id="dropZone">
+  <div class="drop-zone-icon">📁</div>
+  <h2>拖拽 JSON 文件到此处</h2>
+  <p>支持同时加载多个文件，自动进行 Unicode 解码与排序排版</p>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">📂 选择文件</button>
+  </div>
+  <input type="file" id="fileInput" multiple accept=".json" style="display:none">
+</div>
+
+<!-- Progress -->
+<div class="progress-container" id="progressContainer">
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="progress-text" id="progressText">正在加载...</div>
+</div>
+
+<!-- Controls -->
+<div class="controls" id="controls">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜索标题、描述、URL、RSS...">
+  </div>
+  <div class="sort-group">
+    <label>排序:</label>
+    <select class="sort-select" id="sortField">
+      <option value="id">ID (数值)</option>
+      <option value="title">标题 (字母)</option>
+      <option value="posts_count">文章数 (数值)</option>
+      <option value="url">URL (字母)</option>
+      <option value="status_code">状态码 (字母)</option>
+      <option value="filename">文件名 (字母)</option>
+    </select>
+    <button class="order-toggle" id="orderToggle" onclick="toggleOrder()">↑ 升序</button>
+  </div>
+  <div class="export-group">
+    <button class="btn btn-success btn-sm" id="exportBtn" onclick="exportHTML()">💾 导出 HTML</button>
+  </div>
+  <button class="btn btn-danger btn-sm" onclick="clearAll()">✕ 清空</button>
+</div>
+
+<!-- Table Container -->
+<div class="table-wrap" id="tableWrap">
+  <div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>等待数据加载</h3>
+    <p>拖拽或选择 JSON 文件即可开始</p>
+  </div>
+</div>
+
+<!-- Export Toast -->
+<div class="export-toast" id="exportToast"></div>
+
+<script>
+// ==================== State ====================
+let allSites = [];
+let sortOrder = 'asc';
+
+// ==================== Unicode 解码 ====================
+function decodeUnicode(str) {
+  if (typeof str !== 'string') return str;
+  try {
+    return str.replace(/\\u([0-9a-fA-F]{4})/g, (match, code) =>
+      String.fromCharCode(parseInt(code, 16))
+    );
+  } catch (e) { return str; }
+}
+
+function deepDecode(obj) {
+  if (typeof obj === 'string') return decodeUnicode(obj);
+  if (Array.isArray(obj)) return obj.map(deepDecode);
+  if (obj && typeof obj === 'object') {
+    const result = {};
+    for (const key of Object.keys(obj)) result[key] = deepDecode(obj[key]);
+    return result;
+  }
+  return obj;
+}
+
+// ==================== File Loading ====================
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const progressContainer = document.getElementById('progressContainer');
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
+
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault(); dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.json'));
+  if (files.length) loadFiles(files);
+});
+fileInput.addEventListener('change', () => {
+  const files = Array.from(fileInput.files);
+  if (files.length) loadFiles(files);
+  fileInput.value = '';
+});
+
+async function loadFiles(files) {
+  progressContainer.classList.add('active');
+  progressBar.style.width = '0%';
+  progressText.textContent = `正在加载 0 / ${files.length} 个文件...`;
+
+  let loadedCount = 0, newSites = [];
+
+  for (const file of files) {
+    try {
+      const text = await readFileAsText(file);
+      const raw = JSON.parse(text);
+      const decoded = deepDecode(raw);
+      const sites = decoded.sites || (Array.isArray(decoded) ? decoded : [decoded]);
+      const filename = file.name;
+      sites.forEach(site => newSites.push({ ...site, _filename: filename }));
+    } catch (err) { console.warn(`文件 ${file.name} 加载失败:`, err); }
+
+    loadedCount++;
+    const pct = Math.round((loadedCount / files.length) * 100);
+    progressBar.style.width = pct + '%';
+    progressText.textContent = `正在加载 ${loadedCount} / ${files.length} 个文件...`;
+  }
+
+  allSites = allSites.concat(newSites);
+  progressText.textContent = `加载完成！共 ${allSites.length} 条站点数据`;
+  setTimeout(() => progressContainer.classList.remove('active'), 1500);
+
+  // Update drop zone
+  dropZone.classList.add('loaded');
+  dropZone.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <span style="color:var(--success);font-weight:600;">✓ 已加载 ${allSites.length} 条数据</span>
+        <span style="color:var(--text-light);font-size:13px;margin-left:8px;">拖拽或选择更多文件可追加加载</span>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('fileInput').click()">+ 继续加载</button>
+    </div>
+    <input type="file" id="fileInput" multiple accept=".json" style="display:none">
+  `;
+  const ni = dropZone.querySelector('#fileInput');
+  ni.addEventListener('change', () => {
+    const f = Array.from(ni.files);
+    if (f.length) loadFiles(f); ni.value = '';
+  });
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
+  document.getElementById('controls').classList.add('active');
+  updateStats();
+  renderTable();
+}
+
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsText(file, 'utf-8');
+  });
+}
+
+// ==================== Sorting & Filtering ====================
+function getSortValue(site, field) {
+  switch (field) {
+    case 'filename': return site._filename || '';
+    case 'id': return site.id || 0;
+    case 'title': return (site.title || '').toLowerCase();
+    case 'posts_count': return site.posts_count || 0;
+    case 'url': return (site.url || '').toLowerCase();
+    case 'status_code': return (site.status_code || '').toLowerCase();
+    default: return site[field] || '';
+  }
+}
+function isNumericField(field) { return ['id', 'posts_count'].includes(field); }
+
+function sortSites(sites) {
+  const field = document.getElementById('sortField').value;
+  const numeric = isNumericField(field);
+  return [...sites].sort((a, b) => {
+    const va = getSortValue(a, field), vb = getSortValue(b, field);
+    const cmp = numeric ? va - vb : String(va).localeCompare(String(vb), 'zh-CN');
+    return sortOrder === 'asc' ? cmp : -cmp;
+  });
+}
+
+function filterSites(sites) {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  if (!q) return sites;
+  return sites.filter(site => {
+    const s = [site.title, site.description, site.url, site.rss_url, site.status_code, site.icon_url, site._filename]
+      .filter(Boolean).join(' ').toLowerCase();
+    return s.includes(q);
+  });
+}
+
+// ==================== Render ====================
+function renderTable() {
+  const wrap = document.getElementById('tableWrap');
+  const filtered = filterSites(allSites);
+  const sorted = sortSites(filtered);
+
+  document.getElementById('stat-shown').textContent = `展示: ${sorted.length}`;
+
+  if (sorted.length === 0 && allSites.length > 0) {
+    wrap.innerHTML = '<div class="no-results">🔍 没有匹配的站点，请尝试其他关键词</div>';
+    return;
+  }
+  if (sorted.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>等待数据加载</h3><p>拖拽或选择 JSON 文件即可开始</p></div>`;
+    return;
+  }
+
+  let rows = '';
+  sorted.forEach((site, i) => {
+    const sc = site.status_code === 'OK' ? 'status-ok'
+      : site.status_code === 'TIMEOUT' ? 'status-timeout'
+      : site.status_code ? 'status-error' : 'status-default';
+
+    rows += `<tr>
+      <td class="col-id"><span class="id-num">${site.id || '-'}</span></td>
+      <td class="col-title"><span class="title-text">${escapeHtml(site.title || '-')}</span></td>
+      <td class="col-desc allow-wrap"><span class="desc-text">${escapeHtml(site.description || '-')}</span></td>
+      <td class="col-url link-cell"><a href="${escapeHtml(site.url || '#')}" target="_blank" rel="noopener noreferrer">${escapeHtml(site.url || '-')}</a></td>
+      <td class="col-rss link-cell">${site.rss_url ? `<a href="${escapeHtml(site.rss_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(site.rss_url)}</a>` : '-'}</td>
+      <td class="col-status"><span class="status-badge ${sc}">${escapeHtml(site.status_code || '-')}</span></td>
+      <td class="col-posts"><span class="posts-count">${site.posts_count || 0}</span></td>
+      <td class="col-icon"><span class="icon-text">${escapeHtml(site.icon_url || '-')}</span></td>
+      <td class="col-file"><span class="file-label">${escapeHtml(site._filename || '')}</span></td>
+    </tr>`;
+  });
+
+  wrap.innerHTML = `
+    <table class="site-table">
+      <thead>
+        <tr>
+          <th class="col-id">ID</th>
+          <th class="col-title">标题</th>
+          <th class="col-desc">描述</th>
+          <th class="col-url">URL</th>
+          <th class="col-rss">RSS</th>
+          <th class="col-status">状态</th>
+          <th class="col-posts">文章</th>
+          <th class="col-icon">图标URL</th>
+          <th class="col-file">来源</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+}
+
+// ==================== Export HTML ====================
+function exportHTML() {
+  if (allSites.length === 0) {
+    showToast('❌ 没有数据可导出，请先加载 JSON 文件');
+    return;
+  }
+
+  // 获取当前页面的所有样式
+  const styleEl = document.getElementById('mainStyles');
+  const cssText = styleEl.textContent;
+
+  // 获取当前排序/筛选后的数据
+  const filtered = filterSites(allSites);
+  const sorted = sortSites(filtered);
+
+  // 获取当前控制栏状态信息
+  const currentSortField = document.getElementById('sortField').value;
+  const currentSearchQuery = document.getElementById('searchInput').value.trim();
+
+  // 构建统计信息
+  const fileCount = new Set(allSites.map(s => s._filename)).size;
+  const totalSites = allSites.length;
+  const shownSites = sorted.length;
+
+  // 构建导出HTML的表格内容（静态，不需要JS）
+  let rows = '';
+  sorted.forEach(site => {
+    const sc = site.status_code === 'OK' ? 'status-ok'
+      : site.status_code === 'TIMEOUT' ? 'status-timeout'
+      : site.status_code ? 'status-error' : 'status-default';
+
+    rows += `<tr>
+      <td class="col-id"><span class="id-num">${escapeHtml(String(site.id || '-'))}</span></td>
+      <td class="col-title"><span class="title-text">${escapeHtml(site.title || '-')}</span></td>
+      <td class="col-desc allow-wrap"><span class="desc-text">${escapeHtml(site.description || '-')}</span></td>
+      <td class="col-url link-cell"><a href="${escapeHtml(site.url || '#')}" target="_blank" rel="noopener noreferrer">${escapeHtml(site.url || '-')}</a></td>
+      <td class="col-rss link-cell">${site.rss_url ? `<a href="${escapeHtml(site.rss_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(site.rss_url)}</a>` : '-'}</td>
+      <td class="col-status"><span class="status-badge ${sc}">${escapeHtml(site.status_code || '-')}</span></td>
+      <td class="col-posts"><span class="posts-count">${site.posts_count || 0}</span></td>
+      <td class="col-icon"><span class="icon-text">${escapeHtml(site.icon_url || '-')}</span></td>
+      <td class="col-file"><span class="file-label">${escapeHtml(site._filename || '')}</span></td>
+    </tr>`;
+  });
+
+  // 生成导出信息栏
+  const exportInfo = currentSearchQuery
+    ? `筛选: "${escapeHtml(currentSearchQuery)}" | 排序: ${currentSortField} ${sortOrder === 'asc' ? '升序' : '降序'}`
+    : `排序: ${currentSortField} ${sortOrder === 'asc' ? '升序' : '降序'}`;
+
+  // 构建完整的导出HTML文档
+  const exportDoc = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base target="_blank">
+<title>JSON 站点数据导出 - ${new Date().toLocaleString('zh-CN')}</title>
+<style>
+${cssText}
+  /* Export-specific overrides: no sticky header, no max-height scroll, full page */
+  .export-info {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 14px 24px;
+    margin: 20px 24px; font-size: 13px; color: var(--text-light);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+  }
+  .export-info .info-left { display: flex; gap: 16px; align-items: center; }
+  .export-info .info-tag {
+    background: var(--bg); padding: 3px 10px; border-radius: 12px; font-size: 12px;
+  }
+  .export-info .export-time { font-size: 12px; color: var(--text-light); }
+  .table-wrap { max-height: none; overflow: visible; }
+  .site-table tbody tr { animation: none; }
+  .drop-zone, .progress-container, .controls, .export-toast { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🗂 JSON 站点数据</h1>
+  <div class="stats">
+    <span>文件: ${fileCount}</span>
+    <span>站点: ${totalSites}</span>
+    <span>展示: ${shownSites}</span>
+  </div>
+</div>
+
+<div class="export-info">
+  <div class="info-left">
+    <span class="info-tag">${exportInfo}</span>
+    <span>导出包含当前筛选/排序后的全部 ${shownSites} 条数据</span>
+  </div>
+  <div class="export-time">导出时间: ${new Date().toLocaleString('zh-CN')}</div>
+</div>
+
+<div class="table-wrap">
+  <table class="site-table">
+    <thead>
+      <tr>
+        <th class="col-id">ID</th>
+        <th class="col-title">标题</th>
+        <th class="col-desc">描述</th>
+        <th class="col-url">URL</th>
+        <th class="col-rss">RSS</th>
+        <th class="col-status">状态</th>
+        <th class="col-posts">文章</th>
+        <th class="col-icon">图标URL</th>
+        <th class="col-file">来源</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+</div>
+
+</body>
+</html>`;
+
+  // 创建 Blob 并下载
+  const blob = new Blob([exportDoc], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sites-export-${new Date().toISOString().slice(0,10)}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast(`✅ 已导出 ${shownSites} 条数据为 HTML 文件`);
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('exportToast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ==================== Controls ====================
+function toggleOrder() {
+  const btn = document.getElementById('orderToggle');
+  if (sortOrder === 'asc') {
+    sortOrder = 'desc'; btn.textContent = '↓ 降序'; btn.classList.add('desc');
+  } else {
+    sortOrder = 'asc'; btn.textContent = '↑ 升序'; btn.classList.remove('desc');
+  }
+  renderTable();
+}
+
+document.getElementById('sortField').addEventListener('change', renderTable);
+
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(renderTable, 200);
+});
+
+function clearAll() {
+  allSites = []; sortOrder = 'asc';
+  dropZone.classList.remove('loaded');
+  dropZone.innerHTML = `
+    <div class="drop-zone-icon">📁</div>
+    <h2>拖拽 JSON 文件到此处</h2>
+    <p>支持同时加载多个文件，自动进行 Unicode 解码与排序排版</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">📂 选择文件</button>
+    </div>
+    <input type="file" id="fileInput" multiple accept=".json" style="display:none">
+  `;
+  const ni = dropZone.querySelector('#fileInput');
+  ni.addEventListener('change', () => {
+    const f = Array.from(ni.files);
+    if (f.length) loadFiles(f); ni.value = '';
+  });
+  document.getElementById('controls').classList.remove('active');
+  document.getElementById('searchInput').value = '';
+  updateStats();
+  document.getElementById('tableWrap').innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><h3>等待数据加载</h3><p>拖拽或选择 JSON 文件即可开始</p></div>`;
+}
+
+function updateStats() {
+  document.getElementById('stat-files').textContent = `文件: ${new Set(allSites.map(s => s._filename)).size}`;
+  document.getElementById('stat-sites').textContent = `站点: ${allSites.length}`;
+  document.getElementById('stat-shown').textContent = `展示: ${allSites.length}`;
+}
+</script>
+</body>
+</html>

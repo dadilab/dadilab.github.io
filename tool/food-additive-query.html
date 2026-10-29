@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>食品添加剂查询库 · 分类 / 危害等级 / ABCD 评分</title>
+<style>
+:root{
+  --bg:#f5f7fa; --panel:#ffffff; --line:#e3e8ef; --line2:#eef2f7;
+  --tx:#1a2233; --tx2:#5a6a80; --tx3:#8b98ab;
+  --brand:#0f766e; --brand2:#0d9488; --brand-soft:#ecfdf5;
+  --A:#16a34a; --A-bg:#f0fdf4; --A-bd:#bbf7d0;
+  --B:#2563eb; --B-bg:#eff6ff; --B-bd:#bfdbfe;
+  --C:#ea580c; --C-bg:#fff7ed; --C-bd:#fed7aa;
+  --D:#dc2626; --D-bg:#fef2f2; --D-bd:#fecaca;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.06);
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--tx);
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font-family:inherit;cursor:pointer}
+::selection{background:#ccfbf1}
+
+/* ---------- header ---------- */
+header{
+  position:sticky; top:0; z-index:50;
+  background:rgba(255,255,255,.92); backdrop-filter:saturate(180%) blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.hwrap{max-width:1440px;margin:0 auto;padding:12px 20px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:210px}
+.logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#34d399);
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px;letter-spacing:-.5px}
+.brand h1{font-size:16px;margin:0;font-weight:700;letter-spacing:.2px;white-space:nowrap}
+.brand p{margin:0;font-size:11px;color:var(--tx3);white-space:nowrap}
+.search{position:relative;flex:1;min-width:240px;max-width:520px}
+.search input{
+  width:100%;padding:10px 34px 10px 36px;border:1px solid var(--line);border-radius:10px;
+  background:#fff;font-size:14px;color:var(--tx);outline:none;transition:.15s;
+}
+.search input:focus{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--tx3)}
+.search .clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;
+  color:var(--tx3);font-size:16px;line-height:1;padding:4px 6px;border-radius:6px;display:none}
+.search .clr:hover{background:var(--line2);color:var(--tx)}
+.hstat{display:flex;gap:16px;font-size:12px;color:var(--tx2);margin-left:auto}
+.hstat b{display:block;font-size:17px;color:var(--tx);font-weight:700;line-height:1.2}
+.hstat span{font-size:11px;color:var(--tx3)}
+
+/* ---------- layout ---------- */
+main{max-width:1440px;margin:0 auto;padding:18px 20px 60px;display:grid;
+  grid-template-columns:250px minmax(0,1fr);gap:20px;align-items:start}
+
+/* ---------- sidebar ---------- */
+aside{position:sticky;top:74px;max-height:calc(100vh - 92px);overflow-y:auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 12px;box-shadow:var(--shadow)}
+aside::-webkit-scrollbar{width:8px}
+aside::-webkit-scrollbar-thumb{background:#d7dee8;border-radius:8px}
+.side-h{font-size:11px;font-weight:700;color:var(--tx3);letter-spacing:.08em;text-transform:uppercase;
+  padding:4px 8px 8px;display:flex;justify-content:space-between;align-items:center}
+.side-h button{font-size:11px;border:0;background:none;color:var(--brand);font-weight:600;padding:2px 4px}
+.catlist{display:flex;flex-direction:column;gap:2px}
+.cat{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;text-align:left;
+  padding:8px 9px;border-radius:8px;color:var(--tx);font-size:13px;transition:.12s}
+.cat:hover{background:var(--line2)}
+.cat.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.cat .dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto;background:#cbd5e1}
+.cat.on .dot{background:var(--brand2)}
+.cat .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat .ct{font-size:11px;color:var(--tx3);font-variant-numeric:tabular-nums;background:var(--line2);
+  padding:1px 6px;border-radius:20px;min-width:22px;text-align:center}
+.cat.on .ct{background:#d1fae5;color:var(--brand)}
+.divider{height:1px;background:var(--line2);margin:12px 4px}
+.gradelist{display:flex;flex-direction:column;gap:2px}
+.grade{display:flex;align-items:center;gap:9px;width:100%;border:0;background:none;padding:8px 9px;
+  border-radius:8px;font-size:13px;color:var(--tx);text-align:left;transition:.12s}
+.grade:hover{background:var(--line2)}
+.grade.off{opacity:.38}
+.grade .bd{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-weight:800;
+  font-size:11px;color:#fff;flex:0 0 auto}
+.grade .nm{flex:1}
+.grade .ct{font-size:11px;color:var(--tx3);font-variant-numeric:tabular-nums}
+
+/* ---------- content ---------- */
+.content{min-width:0}
+.toolbar{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:12px 14px;box-shadow:var(--shadow);margin-bottom:14px;
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.toolbar .title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.toolbar .title .badge{font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-soft);
+  padding:2px 8px;border-radius:20px}
+.toolbar .spacer{flex:1}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}
+.seg button{border:0;background:none;padding:6px 12px;font-size:12.5px;color:var(--tx2);transition:.12s}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--brand);color:#fff;font-weight:600}
+select.sort{padding:6px 10px;border:1px solid var(--line);border-radius:9px;font-size:12.5px;
+  color:var(--tx);background:#fff;outline:none}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--tx3)}
+.chip{font-size:12px;padding:3px 9px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--tx2)}
+.chip.on{background:var(--brand-soft);border-color:#99f6e4;color:var(--brand);font-weight:600}
+
+/* ---------- cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);
+  border-radius:var(--r);padding:13px 14px;box-shadow:var(--shadow);transition:.15s;cursor:pointer}
+.card:hover{border-color:#cbd5e1;transform:translateY(-1px);box-shadow:0 4px 20px rgba(16,24,40,.09)}
+.card[data-g="A"]{border-left-color:var(--A)}
+.card[data-g="B"]{border-left-color:var(--B)}
+.card[data-g="C"]{border-left-color:var(--C)}
+.card[data-g="D"]{border-left-color:var(--D)}
+.chead{display:flex;gap:11px;align-items:flex-start}
+.gbox{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-weight:800;
+  font-size:16px;color:#fff;flex:0 0 auto;letter-spacing:-.5px}
+.cn{flex:1;min-width:0}
+.cn .nm{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cn .nm .fn{font-size:10.5px;font-weight:600;color:var(--tx2);background:var(--line2);
+  padding:1px 6px;border-radius:5px;white-space:nowrap}
+.cn .en{font-size:11.5px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.cn .ids{font-size:11px;color:var(--tx3);font-variant-numeric:tabular-nums;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+.cn .ids code{background:var(--line2);padding:0 5px;border-radius:4px;font-size:10.5px;color:var(--tx2)}
+.hz{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;flex:0 0 auto}
+.hz[data-g="A"]{color:var(--A);background:var(--A-bg);border:1px solid var(--A-bd)}
+.hz[data-g="B"]{color:var(--B);background:var(--B-bg);border:1px solid var(--B-bd)}
+.hz[data-g="C"]{color:var(--C);background:var(--C-bg);border:1px solid var(--C-bd)}
+.hz[data-g="D"]{color:var(--D);background:var(--D-bg);border:1px solid var(--D-bd)}
+.cdesc{margin-top:9px;font-size:12.5px;color:var(--tx2)}
+.cextra{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);
+  font-size:12.5px;color:var(--tx2)}
+.card.open .cextra{display:block}
+.cextra .row{display:flex;gap:8px;margin-bottom:6px}
+.cextra .row:last-child{margin-bottom:0}
+.cextra .lb{flex:0 0 62px;font-weight:700;color:var(--tx3);font-size:11.5px;padding-top:1px}
+.cextra .vl{flex:1;min-width:0}
+.vl.warn{color:#b0442a}
+
+/* ---------- table ---------- */
+.tablewrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);overflow:hidden;display:none}
+.tablewrap.on{display:block}
+.scrollx{overflow:auto;max-height:calc(100vh - 220px)}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px;min-width:1050px}
+thead th{position:sticky;top:0;z-index:5;background:#f8fafc;text-align:left;font-weight:700;
+  color:var(--tx2);font-size:11.5px;letter-spacing:.03em;padding:10px 12px;
+  border-bottom:1px solid var(--line);white-space:nowrap}
+thead th.srt{cursor:pointer;user-select:none}
+thead th.srt:hover{color:var(--brand)}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--line2);vertical-align:middle}
+tbody tr:hover{background:#f8fbfb}
+tbody tr[data-g="A"]{box-shadow:inset 3px 0 0 var(--A)}
+tbody tr[data-g="B"]{box-shadow:inset 3px 0 0 var(--B)}
+tbody tr[data-g="C"]{box-shadow:inset 3px 0 0 var(--C)}
+tbody tr[data-g="D"]{box-shadow:inset 3px 0 0 var(--D)}
+td.nm{font-weight:600;color:var(--tx);max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.en,td.ds{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx2)}
+td.ds{max-width:320px}
+td.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:var(--tx2);white-space:nowrap}
+.gpill{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;color:#fff;
+  font-weight:800;font-size:11px}
+.tagp{font-size:11px;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.empty{padding:60px 20px;text-align:center;color:var(--tx3)}
+.empty b{display:block;font-size:15px;color:var(--tx2);margin-bottom:4px}
+
+/* ---------- notes ---------- */
+details.notes{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);margin-top:16px;overflow:hidden}
+details.notes summary{padding:12px 16px;cursor:pointer;font-weight:700;font-size:13.5px;list-style:none;
+  display:flex;align-items:center;gap:8px}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--tx3);
+  border-bottom:2px solid var(--tx3);transform:rotate(-45deg);margin-right:2px;transition:.2s}
+details.notes[open] summary::before{transform:rotate(45deg)}
+.nb{padding:0 16px 16px;font-size:12.5px;color:var(--tx2)}
+.nb h4{margin:14px 0 6px;font-size:12.5px;color:var(--tx)}
+.nb ul{margin:6px 0;padding-left:18px}
+.nb li{margin:3px 0}
+.nb code{background:var(--line2);padding:1px 5px;border-radius:4px;font-size:11.5px}
+.rub{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:8px}
+.rub div{border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:#fcfdfe}
+.rub b{display:block;margin-bottom:2px}
+.warnbox{margin-top:12px;padding:10px 12px;border-radius:9px;background:#fffbeb;border:1px solid #fde68a;
+  color:#92400e;font-size:12px}
+
+/* ---------- misc ---------- */
+.totop{position:fixed;right:22px;bottom:22px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);
+  background:#fff;box-shadow:var(--shadow);display:none;place-items:center;color:var(--tx2);z-index:40}
+.totop.on{display:grid}
+@media (max-width:960px){
+  main{grid-template-columns:1fr;padding:14px 14px 60px}
+  aside{position:static;max-height:none}
+  .catlist{flex-direction:row;flex-wrap:wrap}
+  .cat{width:auto}
+  .cat .ct{display:none}
+  .gradelist{flex-direction:row;flex-wrap:wrap}
+  .hstat{width:100%;margin-left:0;justify-content:space-between}
+  .hwrap{padding:10px 14px}
+  .cards{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hwrap">
+    <div class="brand">
+      <div class="logo">食安</div>
+      <div>
+        <h1>食品添加剂查询库</h1>
+        <p>GB 2760 功能分类 · 危害等级 · ABCD 评分</p>
+      </div>
+    </div>
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="text" placeholder="搜索添加剂名称 / 英文名 / CNS号 / INS号 / 用途…">
+      <button class="clr" id="clr" title="清空">×</button>
+    </div>
+    <div class="hstat">
+      <div><b id="s1">0</b><span>收录品种</span></div>
+      <div><b id="s2">0</b><span>功能类别</span></div>
+      <div><b id="s3">0</b><span>当前结果</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <aside>
+    <div class="side-h"><span>功能类别（GB 2760 附录E）</span><button id="allcat">全部</button></div>
+    <div class="catlist" id="cats"></div>
+    <div class="divider"></div>
+    <div class="side-h"><span>ABCD 评分筛选</span><button id="allg">全选</button></div>
+    <div class="gradelist" id="grades"></div>
+  </aside>
+
+  <div class="content">
+    <div class="toolbar">
+      <div class="title"><span id="ttl">全部添加剂</span><span class="badge" id="cnt">0</span></div>
+      <div class="spacer"></div>
+      <div class="chips" id="activechips"></div>
+      <select class="sort" id="sort">
+        <option value="grade">排序：风险高 → 低</option>
+        <option value="gradeAsc">排序：风险低 → 高</option>
+        <option value="cat">排序：按功能类别</option>
+        <option value="name">排序：按名称（拼音/笔画）</option>
+        <option value="cns">排序：按 CNS 号</option>
+      </select>
+      <div class="seg">
+        <button id="vCard" class="on">卡片</button>
+        <button id="vTable">表格</button>
+      </div>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="tablewrap" id="tablewrap">
+      <div class="scrollx">
+        <table>
+          <thead>
+            <tr>
+              <th class="srt" data-s="name">添加剂名称</th>
+              <th class="srt" data-s="en">英文名</th>
+              <th class="srt" data-s="cat">功能类别</th>
+              <th class="srt" data-s="cns">CNS号</th>
+              <th class="srt" data-s="ins">INS号</th>
+              <th class="srt" data-s="grade">评分</th>
+              <th class="srt" data-s="hz">危害等级</th>
+              <th>说明 / 风险提示</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <details class="notes" open>
+      <summary>评级方法、数据来源与免责声明</summary>
+      <div class="nb">
+        <h4>一、ABCD 评分体系</h4>
+        <p>本工具的评分是面向普通消费者的<strong>科普性风险分级</strong>，综合以下四个维度各占 25 分、合计 100 分后折算为 A/B/C/D 四档：</p>
+        <div class="rub">
+          <div><b>① 来源与天然性</b>天然提取物、人体营养素或其代谢产物得分最高；纯化学合成物得分较低。</div>
+          <div><b>② 毒理与 ADI</b>依据 JECFA / 国家卫健委的安全性评价结论，ADI 值宽裕、无争议者得分最高。</div>
+          <div><b>③ 国内外管理差异</b>被欧盟、美国、日本等限制或禁止使用，或近年被重新评估下调者扣分。</div>
+          <div><b>④ 实际暴露风险</b>考虑在常见食品中的使用频次与限量、是否易被儿童/敏感人群大量摄入、是否存在累积或伴生风险物质。</div>
+        </div>
+        <p style="margin-top:10px">
+          <b>A（85–100 分，危害等级：低）</b>安全性充分、无使用争议，可放心按标识食用。<br>
+          <b>B（70–84 分，危害等级：较低）</b>常规使用安全，有明确 ADI，按标准限量使用无风险。<br>
+          <b>C（55–69 分，危害等级：中等）</b>存在一定争议或过量风险（如部分合成色素、高倍甜味剂、磷酸盐、硫酸盐），建议控制总量。<br>
+          <b>D（低于 55 分，危害等级：较高）</b>高关注品种（如护色剂亚硝酸盐、含铝膨松剂、部分偶氮色素、二氧化钛、已在国标中大幅收紧的品种），建议主动减少摄入。
+        </p>
+
+        <h4>二、数据来源</h4>
+        <ul>
+          <li>功能类别划分、CNS 编码、INS 编码、使用范围与最大使用量：<a href="https://www.nhc.gov.cn/sps/c100088/202403/bda120e678df4a49a8beb90852559d7c.shtml" target="_blank" rel="noopener">《食品安全国家标准 食品添加剂使用标准》GB 2760-2024 及历史版本 GB 2760 附录 A / 附录 E</a></li>
+          <li>标准体系与监管框架：<a href="https://www.nhc.gov.cn/sps/c100087/202403/cfd1d0e9cec34359ba89686427d87403.shtml" target="_blank" rel="noopener">《食品安全国家标准目录》</a></li>
+          <li>食品添加剂定义、监管分工与「非食用物质不是食品添加剂」等知识点：<a href="https://www.nhc.gov.cn/wjw/spaqyyy/201104/58f6b3af89194fae9cffb2038182ca74.shtml" target="_blank" rel="noopener">《食品添加剂监管及相关知识》</a></li>
+          <li>我国标准与国际标准差异的比对参考：<a href="https://www.nhc.gov.cn/zwgk/cybz/201106/a2cedb1c45894acdba5790ca164883aa/files/b2413b87e525441ebb2882e61137242c.pdf" target="_blank" rel="noopener">《我国食品添加剂使用标准与国际标准的差异分析》</a></li>
+          <li>毒理学数据（ADI、IARC 分类、EFSA 重新评估结论）参考 JECFA、EFSA、IARC 公开资料。</li>
+        </ul>
+
+        <h4>三、重要提示</h4>
+        <div class="warnbox">
+          <b>「食品添加剂」≠「非法添加物」。</b>三聚氰胺、苏丹红、孔雀石绿、吊白块等属于违法添加的<strong>非食用物质</strong>，从来不是食品添加剂，不在本标准允许使用名单内，也不收录于本工具。<br><br>
+          列入 GB 2760 的添加剂均经过安全性评价，<strong>在标准规定的使用范围和最大使用量内使用是安全的</strong>。本工具的分级高低只表示「值得关注的程度」，不代表「有毒/不能吃」；真正的风险来自超范围、超限量滥用。<br><br>
+          本页面为学习与查询工具，评分与风险说明为科普性质，<strong>不作为医学、营养或监管依据</strong>。特殊人群（婴幼儿、孕妇、慢性病患者）请遵医嘱。
+        </div>
+      </div>
+    </details>
+  </div>
+</main>
+
+<button class="totop" id="totop" title="回到顶部">↑</button>
+
+<script>
+/* ============================================================
+   数据：[名称, 英文名, CNS号, INS号, 类别key, 评分, 危害等级, 说明, 典型用途, 风险提示]
+   类别 key 与功能类别对照见 CATS；CNS/INS 号取自 GB 2760 附录 A
+   ============================================================ */
+var DATA=[
+/* ---- 酸度调节剂 ---- */
+["柠檬酸","Citric acid","01.101","330","acid","A","低","天然存在于柑橘类水果，是人体三羧酸循环的中间产物，是食品工业用量最大的酸味剂。","饮料、糖果、果酱、罐头、乳制品","JECFA 未限定 ADI，安全性极高。"],
+["柠檬酸钠","Trisodium citrate","01.303","331iii","acid","A","低","柠檬酸的钠盐，常用作缓冲剂和金属螯合剂，也用于乳制品防止蛋白质凝结。","饮料、乳饮料、果冻、冰淇淋","属人体正常代谢物，无已知风险。"],
+["柠檬酸钾","Tripotassium citrate","01.304","332ii","acid","A","低","柠檬酸的钾盐，用于调节酸度并补充钾离子。","饮料、果冻、乳制品","肾功能不全者需注意钾摄入总量。"],
+["柠檬酸一钠","Sodium dihydrogen citrate","01.306","331i","acid","A","低","酸性缓冲盐，用于稳定饮料的 pH 值。","饮料、果汁、果冻","限钠饮食人群需计入钠摄入。"],
+["乳酸","Lactic acid","01.102","270","acid","A","低","天然乳酸发酵产物，也是人体肌肉代谢的中间产物。","酸奶、饮料、糖果、面包","JECFA 无限制要求。"],
+["L-苹果酸","L-Malic acid","01.104","296","acid","A","低","天然存在于苹果等水果中，属三羧酸循环中间体，酸味柔和持久。","饮料、糖果、果酱、调味品","L 型为天然构型，安全性高。"],
+["dl-酒石酸","DL-Tartaric acid","01.103","334","acid","B","较低","天然存在于葡萄和葡萄酒中，dl 型为化学合成，酸味强。","饮料、糖果、葡萄酒、膨松剂","大量摄入可能引起轻微肠胃不适，按需使用即可。"],
+["L(+)-酒石酸","L(+)-Tartaric acid","01.111","334","acid","A","低","天然构型酒石酸，主要从葡萄废渣中提取。","饮料、葡萄酒、糖果","天然来源，安全性高。"],
+["乙酸（醋酸）","Acetic acid","01.107","260","acid","A","低","食醋的主要呈味成分，是最传统的酸度调节剂。","调味品、腌渍食品、罐头","人体正常代谢物，无已知风险。"],
+["冰乙酸（低压羰基化法）","Glacial acetic acid","01.112","—","acid","A","低","高纯度乙酸，用于食品级酸度调节与加工助剂。","调味品、腌渍、加工助剂","成品中已中和或稀释，无残留风险。"],
+["盐酸","Hydrochloric acid","01.108","507","acid","B","较低","强酸，仅作为酸度调节剂和加工助剂（如淀粉糖化），成品基本被中和。","淀粉糖、明胶、水解蛋白生产","成品残留极低；属强腐蚀性物品，储运安全要求高。"],
+["磷酸","Phosphoric acid","01.106","338","acid","C","中等","可乐型碳酸饮料的标志性酸味剂，也用于油脂精炼。","可乐型碳酸饮料、乳制品、加工助剂","过量磷摄入会干扰钙磷平衡，与骨密度下降、肾脏负担相关；建议少喝含磷酸的碳酸饮料。"],
+["碳酸钠","Sodium carbonate","01.302","500i","acid","A","低","俗称纯碱，用于调节酸度和改善面条筋性。","面条、饺子皮、乳制品","人体可正常代谢，无已知风险。"],
+["碳酸钾","Potassium carbonate","01.301","501i","acid","A","低","碱性盐，用于调节酸度和膨松。","饮料、面制品、可可制品","毒性极低。"],
+["碳酸氢钾","Potassium hydrogen carbonate","01.307","501ii","acid","A","低","弱碱性盐，用于酸度调节和膨松。","饮料、面制品","肾功能不全者注意钾摄入。"],
+["氢氧化钠","Sodium hydroxide","01.201","524","acid","B","较低","强碱，仅用于酸度调节与加工助剂（如水果去皮、油脂精炼）。","果蔬去皮、淀粉加工、巧克力碱化","强碱性，但成品经中和后无残留；操作端安全要求高。"],
+["氢氧化钙","Calcium hydroxide","01.202","526","acid","A","低","俗称熟石灰，用于酸度调节和钙强化。","糖浆、乳制品、果冻","钙为必需营养素，安全性高。"],
+["氢氧化钾","Potassium hydroxide","01.203","525","acid","B","较低","强碱，用于调节酸度与加工助剂。","可可加工、淀粉改性、饮品","成品经中和后基本无残留。"],
+["富马酸","Fumaric acid","01.110","297","acid","B","较低","化学合成有机酸，酸味强且吸湿性低，也用作酸度缓冲。","饮料、果冻、烘焙、酸度调节","ADI 无限制要求，但大量摄入有轻微刺激。"],
+["富马酸一钠","Monosodium fumarate","01.311","365","acid","B","较低","富马酸的钠盐，水溶性更好，用于调味和酸度调节。","饮料、调味品","限钠人群需计入钠摄入。"],
+["己二酸","Adipic acid","01.109","355","acid","B","较低","合成有机酸，用于赋予酸味并作膨松酸剂。","果冻、饮料、膨松剂","ADI 0–5 mg/kg bw，常规使用安全。"],
+["偏酒石酸","Metatartaric acid","01.105","353","acid","B","较低","酒石酸的聚合物，用于防止葡萄酒中酒石结晶析出。","葡萄酒、果酒","按生产需要适量使用，无已知风险。"],
+["硫酸钙（石膏）","Calcium sulfate","18.001","516","acid","A","低","天然矿物，兼作酸度调节剂与凝固剂，是传统豆腐的凝固剂。","豆制品、面粉、啤酒酿造","钙盐，安全性高。"],
+["乳酸钙","Calcium lactate","01.310","327","acid","A","低","乳酸与钙的盐，兼作钙强化剂、稳定剂与膨松剂。","乳制品、面制品、果冻","钙为必需营养素，安全性高。"],
+/* ---- 抗结剂 ---- */
+["微晶纤维素","Microcrystalline cellulose","02.005","460i","anticaking","A","低","由天然纤维素水解制得的不可溶微晶，兼作抗结剂、增稠剂和稳定剂。","固体饮料、奶精、酱料、胶囊","不被人体吸收，随粪便排出，安全性高。"],
+["二氧化硅（无定形）","Silicon dioxide, amorphous","02.004","551","anticaking","B","较低","防止粉状食品结块、保持自由流动，也用作载体。","固体饮料、香辛料粉、奶粉","无定形二氧化硅不被吸收；结晶型石英才有矽肺风险，食品级不适用。"],
+["硅酸钙","Calcium silicate","02.009","552","anticaking","B","较低","多孔粉末，兼作抗结剂与载体，吸油吸湿能力强。","香辛料、固体饮料、烘焙粉","常规使用安全，无已知风险。"],
+["硅铝酸钠","Sodium aluminosilicate","02.002","554","anticaking","C","中等","含铝抗结剂，用于食盐、奶精等粉体防结块。","食盐、奶精、固体饮料","含铝；铝的每周耐受摄入量（PTWI）为 2 mg/kg bw，欧盟已不允许使用，建议控制含铝添加剂总量。"],
+["滑石粉","Talc","02.007","553iii","anticaking","C","中等","天然硅酸镁矿物，用于糖果抛光与粉体防结块。","糖果、口香糖、大米抛光","必须符合石棉限度要求；食品级已严格控杂。"],
+["硬脂酸镁","Magnesium stearate","02.006","470","anticaking","B","较低","脂肪酸镁盐，兼作抗结剂、乳化剂。","固体饮料、压片糖果、调味粉","脂肪酸类物质，代谢路径清晰，安全性良好。"],
+["磷酸三钙","Tricalcium phosphate","02.003","341iii","anticaking","B","较低","兼作抗结剂、钙强化剂和稳定剂。","奶粉、食盐、固体饮料","需计入总磷摄入；钙为必需营养素。"],
+["亚铁氰化钾","Potassium ferrocyanide","02.001","536","anticaking","C","中等","食盐专用抗结剂，防止食盐结块，用量极低。","食盐","限量 10 mg/kg，氰基以稳定的络合物形式存在，正常使用不释放氰化物；但「氰」字易引起误解。"],
+/* ---- 消泡剂 ---- */
+["聚二甲基硅氧烷（硅油）","Polydimethylsiloxane","03.007","900a","defoamer","B","较低","有机硅类消泡剂，表面张力极低，广泛用于食品加工消泡。","油脂加工、饮料、发酵、果汁","ADI 0–1.5 mg/kg bw，几乎不被人体吸收。"],
+["乳化硅油","Emulsifying silicone oil","03.001","—","defoamer","B","较低","硅油乳化液，用于发酵和制糖过程的消泡。","发酵、制糖、味精生产","按需使用，成品中残留极低。"],
+["聚氧乙烯聚氧丙烯胺醚","Polyoxyethylene polyoxypropylene amine ether","03.002","—","defoamer","B","较低","聚醚类消泡剂，用于发酵工业。","发酵、制糖","按需使用，成品残留极低。"],
+["聚氧乙烯聚氧丙烯季戊四醇醚","Polyoxyethylene polyoxypropylene pentaerythritol ether","03.003","—","defoamer","B","较低","聚醚类消泡剂，功能与应用同上一类。","发酵、制糖","按需使用，成品残留极低。"],
+/* ---- 抗氧化剂 ---- */
+["抗坏血酸（维生素C）","Ascorbic acid","04.014","300","antioxidant","A","低","天然存在的维生素，既是营养素也是高效的抗氧化剂与护色助剂。","饮料、肉制品、果蔬罐头、面粉","维生素类营养素，安全性极高。"],
+["抗坏血酸钠","Sodium ascorbate","—","301","antioxidant","A","低","维生素 C 的钠盐，水溶性更好，抗氧化性能一致。","肉制品、饮料、果蔬制品","钠盐形式，限钠人群需计入钠摄入。"],
+["抗坏血酸钙","Calcium ascorbate","04.009","302","antioxidant","A","低","维生素 C 的钙盐，兼有抗氧化与钙强化作用。","肉制品、饮料、油脂","营养素来源，安全性极高。"],
+["抗坏血酸棕榈酸酯","Ascorbyl palmitate","04.011","304","antioxidant","A","低","脂溶性维生素 C 衍生物，用于油脂体系的抗氧化。","食用油、奶粉、油炸食品","在体内水解为维生素 C 与棕榈酸，安全性高。"],
+["D-异抗坏血酸及其钠盐","Erythorbic acid & sodium erythorbate","04.004,04.018","315,316","antioxidant","B","较低","维生素 C 的立体异构体，抗氧化性能相当但无维生素活性，常用于肉制品护色。","肉制品、果蔬罐头、啤酒","ADI 无限制要求，安全性良好。"],
+["生育酚（维生素E）","Tocopherols","04.016","307","antioxidant","A","低","天然维生素 E，油溶性抗氧化剂，防止油脂酸败。","食用油、坚果、婴幼儿食品","营养素来源，安全性极高。"],
+["茶多酚","Tea polyphenols","04.005","—","antioxidant","A","低","从茶叶中提取的天然多酚类抗氧化物，兼具抗菌作用。","油脂、肉制品、糕点、油炸食品","天然来源，安全性良好。"],
+["迷迭香提取物","Rosemary extract","04.017","—","antioxidant","A","低","天然植物提取物，含鼠尾草酸等，是油脂的优良天然抗氧化剂。","食用油、肉制品、油炸食品","天然来源，安全性良好。"],
+["竹叶抗氧化物","Antioxidant of bamboo leaves","04.019","—","antioxidant","A","低","我国自主开发的天然抗氧化剂，从竹叶中提取。","油脂、肉制品、焙烤食品","天然来源，安全性良好。"],
+["甘草抗氧物","Antioxidant of licorice root","04.008","—","antioxidant","A","低","从甘草中提取的天然抗氧化剂。","油脂、油炸食品","天然来源；注意与其他甘草制品叠加摄入。"],
+["磷脂","Phospholipids (Lecithin)","04.010","322","antioxidant","A","低","大豆卵磷脂等天然磷脂，兼作抗氧化剂与乳化剂。","巧克力、烘焙、奶粉、油脂","天然成分，也是人体细胞膜组分。"],
+["植酸（植酸钠）","Phytic acid / Sodium phytate","04.006","—","antioxidant","B","较低","天然存在于谷物与豆类中的强螯合剂，可抑制金属离子催化的氧化。","油脂、肉制品、果蔬制品","强螯合性，理论上有降低矿物质吸收的可能；食品添加量下影响很小。"],
+["没食子酸丙酯（PG）","Propyl gallate","04.003","310","antioxidant","C","中等","合成抗氧化剂，常与 BHA、BHT 复配使用。","油脂、油炸食品、腌腊肉制品","ADI 0–1.4 mg/kg bw；高剂量动物实验见肾脏影响，建议与天然抗氧化剂相比控制摄入。"],
+["丁基羟基茴香醚（BHA）","Butylated hydroxyanisole","04.001","320","antioxidant","D","较高","合成酚类抗氧化剂，用于油脂和含油食品。","油脂、油炸食品、腌腊肉","IARC 列为 2B 类「可能对人致癌」；日本曾禁止使用；EFSA 2011 年重新评估并收紧关注，建议减少含 BHA 食品摄入。"],
+["二丁基羟基甲苯（BHT）","Butylated hydroxytoluene","04.002","321","antioxidant","D","较高","与 BHA 类似的合成酚类抗氧化剂。","油脂、油炸食品、口香糖基料","ADI 0–0.3 mg/kg bw；高剂量动物实验见肝脏增大与甲状腺改变，欧美对其关注度较高。"],
+["特丁基对苯二酚（TBHQ）","tert-Butylhydroquinone","04.007","319","antioxidant","C","中等","耐高温的合成抗氧化剂，适合油炸食品。","油炸方便面、油脂、饼干","ADI 0–0.7 mg/kg bw；高温下稳定性好，但属于合成抗氧化剂中的争议品种。"],
+["硫代二丙酸二月桂酯","Dilauryl thiodipropionate","04.012","389","antioxidant","C","中等","含硫辅助抗氧化剂，多与主抗氧化剂复配，用量很低。","油脂、油炸食品","ADI 0–3 mg/kg bw；含硫化合物，建议复配低量使用。"],
+["乙二胺四乙酸二钠钙","Calcium disodium EDTA","04.020","385","antioxidant","B","较低","金属离子螯合剂，通过络合铜铁离子防止氧化变色。","蛋黄酱、罐头、饮料","ADI 0–2.5 mg/kg bw；过量会螯合矿物质，按标准限量使用安全。"],
+["羟基硬脂精（氧化硬脂精）","Oxidized stearin","00.017","387","antioxidant","B","较低","油脂的氧化产物，用于抑制食用油在高温下的起泡与氧化。","煎炸油","ADI 0–25 mg/kg bw，限量使用安全。"],
+/* ---- 漂白剂 ---- */
+["二氧化硫","Sulfur dioxide","05.001","220","bleach","C","中等","兼具漂白、防腐和抗氧化作用，在葡萄酒、果干中广泛使用。","葡萄酒、果干、蜜饯、腐竹","哮喘人群敏感，可诱发支气管痉挛；残留量标准严格（如葡萄酒≤0.25 g/L），敏感人群应少量食用。"],
+["焦亚硫酸钠","Sodium metabisulfite","05.003","223","bleach","C","中等","最常用的亚硫酸盐类漂白防腐剂，遇水释放二氧化硫。","果干、蜜饯、腐竹、淀粉","同二氧化硫，哮喘与亚硫酸盐敏感人群需注意。"],
+["焦亚硫酸钾","Potassium metabisulfite","05.002","224","bleach","C","中等","葡萄酒酿造中最常用的亚硫酸盐。","葡萄酒、果酒","葡萄酒中的主要二氧化硫来源，敏感人群饮酒后易头痛。"],
+["亚硫酸钠","Sodium sulfite","05.004","221","bleach","C","中等","漂白与防腐，抑制酶促褐变。","蜜饯、脱水蔬菜、罐头","亚硫酸盐类共性风险：哮喘人群过敏反应。"],
+["亚硫酸氢钠","Sodium bisulfite","05.005","222","bleach","C","中等","释放二氧化硫，用于漂白与防腐。","果蔬加工、罐头、酒精饮料","同亚硫酸盐类风险。"],
+["低亚硫酸钠（保险粉）","Sodium hydrosulfite","05.006","—","bleach","C","中等","强还原性漂白剂，用于糖类和蜜饯漂白。","食糖、蜜饯、饼干","亚硫酸盐类共性风险；还原性强，使用量严格受限。"],
+["硫磺","Sulfur","05.007","—","bleach","C","中等","仅限熏蒸使用，用于水果干、银耳、腐竹等的漂白与防虫。","水果干、银耳、腐竹","燃烧产生二氧化硫；残留量以二氧化硫计，超量熏蒸是常见违规点。"],
+/* ---- 膨松剂 ---- */
+["碳酸氢钠（小苏打）","Sodium hydrogen carbonate","06.001","500ii","leavening","A","低","最经典的化学膨松剂，受热或遇酸产生二氧化碳使面坯膨松。","糕点、饼干、面包、馒头","人体正常代谢物，安全性极高。"],
+["碳酸氢铵","Ammonium hydrogen carbonate","06.002","503ii","leavening","B","较低","快速膨松剂，适合薄脆类饼干，加热后气体完全挥发。","饼干、薄脆糕点","分解产物为氨与二氧化碳，加热后基本无残留。"],
+["碳酸钙","Calcium carbonate","13.006","170i","leavening","A","低","天然矿物，兼作膨松剂、面粉处理剂和钙强化剂。","面制品、乳制品、钙补充","钙为必需营养素，安全性极高。"],
+["磷酸氢钙","Calcium hydrogen phosphate","06.006","341ii","leavening","B","较低","兼作膨松剂、钙强化剂与稳定剂。","面制品、固体饮料、面粉","需计入总磷摄入。"],
+["酒石酸氢钾","Potassium hydrogen tartrate","06.007","336","leavening","B","较低","与碳酸氢钠配合的酸性膨松组分之一，也是葡萄酒稳定剂。","烘焙粉、饼干、葡萄酒","天然来源，安全性良好。"],
+["硫酸铝钾（钾明矾）","Aluminium potassium sulfate","06.004","522","leavening","D","较高","传统含铝膨松剂，赋予油条、粉丝特有的弹韧口感。","油条、粉丝、粉条、膨化食品","含铝：铝的 PTWI 为 2 mg/kg bw，儿童长期超标风险高，与神经系统发育受关注。国家已严控，建议少吃含明矾的油条粉丝。"],
+["硫酸铝铵（铵明矾）","Aluminium ammonium sulfate","06.005","523","leavening","D","较高","与钾明矾同类，含铝膨松剂。","油条、膨化食品、粉丝","同钾明矾：铝摄入过量风险，需严格控制摄入频次。"],
+["酸性磷酸铝钠","Sodium aluminium phosphate","06.009","541i","leavening","D","较高","含铝酸性膨松剂，用于烘焙粉与煎饼粉。","烘焙粉、煎饼粉、蛋糕预拌粉","含铝；欧盟、澳新等不允许用于食品，建议避开。"],
+/* ---- 胶基糖果基础剂 ---- */
+["聚醋酸乙烯酯","Polyvinyl acetate","—","—","gumbase","B","较低","胶基糖果（口香糖）胶基的主要组分。","口香糖","不吞咽，咀嚼后吐弃，暴露量极低。"],
+["丁苯橡胶","Styrene-butadiene rubber","—","—","gumbase","B","较低","口香糖胶基的弹性组分，与食品级要求相符。","口香糖","按食品级规格使用，暴露量极低。"],
+["聚异丁烯","Polyisobutylene","—","—","gumbase","B","较低","口香糖胶基的增塑与咀嚼性组分。","口香糖","不吞咽，暴露量极低。"],
+/* ---- 着色剂 ---- */
+["苋菜红及其铝色淀","Amaranth","08.001","123","color","D","较高","偶氮类合成色素，我国目前仅限用于少数食品（如配制酒、果冻、膨化食品）。","配制酒、果冻、膨化食品、蜜饯","美国自 1976 年起禁用；属需要标注警示的重点合成色素，与儿童多动行为存在关联研究，建议少吃深红色糖果饮料。"],
+["胭脂红及其铝色淀","Ponceau 4R","08.002","124","color","D","较高","偶氮类合成色素，「南安普顿六色素」之一。","饮料、糖果、果冻、蜜饯","欧盟要求含该色素食品加注「可能影响儿童活动与注意力」警示语，建议儿童减少摄入。"],
+["赤藓红及其铝色淀","Erythrosine","08.003","127","color","C","中等","含碘的合成红色素，用于糖果与罐头樱桃。","罐头樱桃、糖果、糕点装饰","ADI 0–0.1 mg/kg bw（较低）；因含碘，甲状腺功能异常者应留意。"],
+["新红及其铝色淀","New Red","08.004","—","color","D","较高","我国自主开发的偶氮类合成色素，仅限部分食品使用。","饮料、糖果、果冻","安全性数据积累少于国际主流色素，欧盟、美国等未批准使用，建议少吃。"],
+["柠檬黄及其铝色淀","Tartrazine","08.005","102","color","D","较高","最常用的合成黄色素，「南安普顿六色素」之一。","饮料、糖果、果冻、膨化食品、腌渍蔬菜","欧盟要求标注「可能影响儿童活动与注意力」；部分人存在不耐受反应，建议儿童控制摄入。"],
+["日落黄及其铝色淀","Sunset Yellow","08.006","110","color","D","较高","合成橙黄色素，「南安普顿六色素」之一。","饮料、糖果、果冻、膨化食品","同南安普顿六色素，欧盟强制加注儿童行为警示语。"],
+["亮蓝及其铝色淀","Brilliant Blue","08.007","133","color","C","中等","合成蓝色素，ADI 相对宽裕（0–6 mg/kg bw）。","饮料、糖果、冰淇淋","不在「南安普顿六色素」之列，但同属合成色素；建议与其他色素一并控制总量。"],
+["靛蓝及其铝色淀","Indigotine","08.008","132","color","C","中等","合成蓝色素，常与黄色素复配调绿色。","饮料、糖果、冰淇淋","合成色素大类，ADI 0–5 mg/kg bw，常规限量使用安全。"],
+["诱惑红及其铝色淀","Allura Red","08.012","129","color","D","较高","合成红色素，「南安普顿六色素」之一。","饮料、糖果、果冻、调味酱","欧盟要求加注儿童行为警示语；美国近年有研究提出与结肠炎相关的假说，建议儿童少吃。"],
+["酸性红（偶氮玉红）","Azorubine / Carmoisine","08.013","122","color","D","较高","偶氮类合成红色素，「南安普顿六色素」之一。","饮料、糖果、果冻","欧盟要求标注儿童行为警示语。"],
+["喹啉黄","Quinoline Yellow","08.016","104","color","D","较高","合成黄色素，「南安普顿六色素」之一。","饮料、糖果、烟熏鱼","2024 年我国新发布其质量规格标准；欧盟要求加注警示语，建议少吃。"],
+["二氧化钛","Titanium dioxide","08.011","171","color","D","较高","白色着色剂，用于糖果包衣、口香糖、白色糖霜。","糖果包衣、口香糖、糖霜、奶精","EFSA 2021 年结论「无法排除遗传毒性」，欧盟自 2022 年起禁止其作为食品添加剂；属高关注品种，建议避开。"],
+["焦糖色（普通法/苛性硫酸盐法/氨法/亚硫酸铵法）","Caramel colour","08.108,08.109,08.110","150a–150d","color","C","中等","用量最大的着色剂之一，按生产工艺分四类；氨法与亚硫酸铵法可能伴生 4-甲基咪唑。","酱油、可乐、烘焙食品、调味料","4-甲基咪唑被 IARC 列为 2B 类；美国加州要求相关产品标注，建议选择普通法焦糖产品。"],
+["植物炭黑","Vegetable carbon","08.138","153","color","C","中等","由植物原料炭化制得的黑色素，用于糖果与糕点。","糖果、糕点、饼干、大米制品","不被人体吸收；作为不溶性炭黑，各国对其规格与用途有不同限制。"],
+["氧化铁黑与氧化铁红","Iron oxides, black & red","08.014,08.015","172i,172ii","color","C","中等","不溶性铁氧化物着色剂，用于糖果包衣与宠物食品。","糖果包衣、胶囊、口香糖","不溶且不易吸收；欧盟对其在食品中的使用有严格限制。"],
+["β-胡萝卜素","Beta-carotene","08.010","160a","color","A","低","天然橙黄色素，也是维生素 A 的前体。","饮料、乳制品、人造黄油、糕点","维生素 A 前体；大剂量补充剂形式曾有争议，食品着色用量远低于此。"],
+["天然胡萝卜素","Natural carotene","08.147","—","color","A","低","从天然原料（如胡萝卜、藻类）提取的类胡萝卜素混合物。","饮料、乳制品、烘焙食品","天然来源，安全性良好。"],
+["姜黄","Turmeric","08.102","100ii","color","A","低","姜黄的天然香料与色素，主要成分为姜黄素。","咖喱、腌渍蔬菜、饮料","天然香辛料来源，安全性高。"],
+["姜黄素","Curcumin","08.132","100i","color","A","低","姜黄中的天然黄色素单体。","糖果、饮料、调味品","天然来源；高剂量补充剂有肝脏相关个案报道，食品着色量极低。"],
+["辣椒红","Paprika red","08.106","—","color","A","低","从辣椒中提取的天然类胡萝卜素色素，兼具部分辣味香气。","肉制品、调味品、饮料","天然来源，安全性高。"],
+["甜菜红","Beet red","08.101","162","color","A","低","从红甜菜中提取的天然红色素，主要成分为甜菜苷。","饮料、冰淇淋、糖果、乳制品","天然来源；少量人群食用甜菜后尿液变红属正常现象。"],
+["高粱红","Sorghum red","08.115","—","color","A","低","从高粱壳中提取的天然红色素。","肉制品、饮料、糖果","天然来源，安全性良好。"],
+["红曲米、红曲红","Red rice / Monascus red","08.119,08.120","—","color","C","中等","红曲霉发酵制得的天然红色素，广泛用于肉制品和腐乳。","肉制品、腐乳、黄酒、糖果","发酵过程可能伴生桔霉素（citrinin），欧盟对红曲产品桔霉素限量极严；我国标准亦有相应控制要求。"],
+["紫胶红（虫胶红）","Lac dye red","08.104","—","color","B","较低","从紫胶中提取的天然红色素。","果酱、糖果、饮料、烘焙馅料","天然来源，安全性良好。"],
+["栀子黄","Gardenia yellow","08.112","—","color","A","低","从栀子果实中提取的天然黄色素，主要成分为藏花素。","面制品、糖果、饮料、糕点","天然来源，安全性良好。"],
+["栀子蓝","Gardenia blue","08.123","—","color","B","较低","由栀子黄经酶或微生物转化制得的天然蓝色素。","糖果、饮料、糕点、调味品","天然来源；加工过程涉及酶转化，各国批准进度不同。"],
+["胭脂虫红","Carmine / Cochineal","08.145","120","color","B","较低","从胭脂虫中提取的天然红色素，色泽鲜艳稳定。","饮料、糖果、酸奶、香肠","天然来源；极少数人可发生过敏反应（曾有过敏休克个案），已知过敏者应避开。"],
+["胭脂树橙（红木素）","Annatto / Bixin","08.144","160b","color","C","中等","从胭脂树种子提取的天然橙黄色素，含红木素与降红木素。","黄油、奶酪、膨化食品、零食","EFSA 2016 年重新评估，将降红木素的 ADI 下调，建议控制含胭脂树橙零食的摄入。"],
+["叶黄素","Lutein","08.146","161b","color","A","低","天然类胡萝卜素，也是人眼黄斑色素成分。","饮料、糖果、乳制品","营养素类似物，安全性高。"],
+["番茄红","Lycopene","08.150","160d","color","A","低","番茄等果蔬中的天然红色素，属类胡萝卜素。","饮料、乳制品、糖果","天然来源，安全性高。"],
+["藻蓝（藻青蛋白）","Spirulina blue / Phycocyanin","08.137","—","color","B","较低","从螺旋藻中提取的天然蓝色蛋白色素。","糖果、饮料、冰淇淋","天然来源，安全性良好；需注意原料藻类质量。"],
+["可可壳色","Cocoa husk colour","08.118","—","color","B","较低","从可可壳中提取的天然棕色素。","糖果、糕点、饮料","天然来源，安全性良好。"],
+["菊花黄浸膏","Chrysanthemum yellow extract","08.113","—","color","B","较低","从菊花中提取的天然黄色素。","糖果、饮料、糕点","天然来源，安全性良好。"],
+["黑豆红","Black bean red","08.114","—","color","B","较低","从黑豆皮中提取的天然红色素（花青素类）。","糖果、饮料、糕点","天然来源，安全性良好。"],
+["核黄素（维生素B2）","Riboflavin","08.148","101i","color","A","低","维生素 B2，天然黄色素，兼作营养强化剂。","干制蔬菜、谷物制品、饮料","必需维生素，安全性极高。"],
+["叶绿素铜钠盐、叶绿素铜钾盐","Chlorophyll copper complex","08.009","141ii","color","C","中等","由叶绿素与铜络合制得的天然来源绿色素。","糖果、果冻、饮料、糕点","含铜；铜是必需微量元素但安全范围较窄，各国对其铜含量与用途有限制。"],
+/* ---- 护色剂 ---- */
+["亚硝酸钠","Sodium nitrite","09.002","250","colorfix","D","较高","肉制品中最关键的护色与防腐剂，抑制肉毒杆菌，同时固定肉色。","腌腊肉、香肠、火腿、酱卤肉","可在体内与胺类反应生成亚硝胺（IARC 1/2A 类致癌物）；标准严格限定残留（肉制品亚硝酸盐残留≤30 mg/kg），建议少吃深加工肉制品，并搭配富含维生素C的蔬果。"],
+["亚硝酸钾","Potassium nitrite","09.004","249","colorfix","D","较高","与亚硝酸钠作用相同，属护色剂兼防腐剂。","腌腊肉制品、西式火腿","同亚硝酸钠：亚硝胺生成风险，需严格控制残留量。"],
+["硝酸钠","Sodium nitrate","09.001","251","colorfix","D","较高","在肉制品中缓慢转化为亚硝酸盐，起长效护色与抑菌作用。","腌腊肉、风干肠、火腿","在体内可还原为亚硝酸盐，进而有亚硝胺生成风险；欧盟对硝酸盐残留有严格限值。"],
+["硝酸钾","Potassium nitrate","09.003","252","colorfix","D","较高","传统腌肉用硝，作用同硝酸钠。","腌腊肉制品、传统腊味","同硝酸钠风险；传统工艺中用量控制是监管重点。"],
+["葡萄糖酸亚铁","Ferrous gluconate","09.005","579","colorfix","B","较低","铁盐，用于黑橄榄等的护色，也是补铁剂。","黑橄榄、营养强化食品","铁为必需营养素；过量铁摄入有氧化应激风险，按限量使用安全。"],
+/* ---- 乳化剂 ---- */
+["单，双甘油脂肪酸酯","Mono- and diglycerides of fatty acids","10.006","471","emulsifier","A","低","用量最大的乳化剂，是天然油脂的组成成分之一。","面包、蛋糕、冰淇淋、饮料","在体内完全代谢为脂肪酸和甘油，安全性极高。"],
+["蔗糖脂肪酸酯","Sucrose esters of fatty acids","10.001","473","emulsifier","B","较低","蔗糖与脂肪酸的酯，亲水亲油平衡值可调，用途广泛。","饮料、冰淇淋、糕点、水果保鲜","水解为蔗糖和脂肪酸，安全性良好。"],
+["聚甘油脂肪酸酯","Polyglycerol esters of fatty acids","10.022","475","emulsifier","B","较低","多羟基乳化剂，耐高温、耐酸。","蛋糕、饮料、巧克力、人造奶油","ADI 0–25 mg/kg bw，常规使用安全。"],
+["聚甘油蓖麻醇酯","Polyglycerol polyricinoleate","10.029","476","emulsifier","B","较低","巧克力降黏剂，改善巧克力流动性。","巧克力、代可可脂巧克力","ADI 0–7.5 mg/kg bw，限量使用安全。"],
+["山梨醇酐单硬脂酸酯（司盘60）","Sorbitan monostearate","10.003","491","emulsifier","B","较低","非离子型乳化剂，用于烘焙和冰淇淋。","蛋糕、冰淇淋、饮料","ADI 0–25 mg/kg bw（以山梨醇酐酯类合计）。"],
+["山梨醇酐三硬脂酸酯（司盘65）","Sorbitan tristearate","10.004","492","emulsifier","B","较低","亲油型乳化剂，用于巧克力与油脂体系。","巧克力、油脂、烘焙","ADI 0–25 mg/kg bw。"],
+["山梨醇酐单油酸酯（司盘80）","Sorbitan monooleate","10.005","494","emulsifier","B","较低","亲油乳化剂，用于饮料浑浊剂与冰淇淋。","饮料、冰淇淋、蛋糕","ADI 0–25 mg/kg bw。"],
+["山梨醇酐三油酸酯（司盘85）","Sorbitan trioleate","10.008","495","emulsifier","B","较低","亲油型乳化剂，用于油脂与可可制品。","巧克力、油脂、口香糖","ADI 0–25 mg/kg bw。"],
+["聚氧乙烯山梨醇酐单月桂酸酯（吐温20）","Polysorbate 20","10.025","432","emulsifier","B","较低","亲水型非离子乳化剂，与司盘类复配使用。","饮料、蛋糕、冰淇淋","ADI 0–25 mg/kg bw（以吐温类合计，以聚山梨酸酯计）。"],
+["聚氧乙烯山梨醇酐单硬脂酸酯（吐温60）","Polysorbate 60","10.015","435","emulsifier","B","较低","亲水乳化剂，广泛用于烘焙和乳饮料。","糕点、乳饮料、冰淇淋","ADI 0–25 mg/kg bw；对少数人可能引起轻微胃肠不适。"],
+["聚氧乙烯山梨醇酐单油酸酯（吐温80）","Polysorbate 80","10.016","433","emulsifier","B","较低","最常用的吐温类乳化剂，也用于冰淇淋防融化。","冰淇淋、饮料、糕点、酱料","ADI 0–25 mg/kg bw；近年有研究关注其对肠道菌群的影响，属常规安全性良好品种。"],
+["硬脂酰乳酸钠","Sodium stearoyl lactylate","10.011","481i","emulsifier","B","较低","面团强化乳化剂，改善面包体积与柔软度。","面包、馒头、蛋糕","ADI 0–20 mg/kg bw，常规使用安全。"],
+["硬脂酰乳酸钙","Calcium stearoyl lactylate","10.009","482i","emulsifier","B","较低","与硬脂酰乳酸钠同类，用于烘焙与饮料。","面包、糕点、饮料","ADI 0–20 mg/kg bw。"],
+["双乙酰酒石酸单双甘油酯（DATEM）","Diacetyl tartaric acid esters of mono- and diglycerides","10.010","472e","emulsifier","B","较低","面包改良剂的核心乳化剂，增强面筋网络。","面包、馒头、糕点","ADI 无限制要求，是评价极高的烘焙乳化剂。"],
+["丙二醇脂肪酸酯","Propylene glycol esters of fatty acids","10.020","477","emulsifier","B","较低","油溶性乳化剂，用于蛋糕和油脂制品。","蛋糕、油脂、冰淇淋","ADI 0–25 mg/kg bw；作为丙二醇酯类，需注意与丙二醇总量合并计算。"],
+["柠檬酸脂肪酸甘油酯","Citric acid esters of mono- and diglycerides","10.032","472c","emulsifier","A","低","兼有乳化与抗氧化增效作用，用于婴幼儿食品与油脂。","婴幼儿食品、油脂、饮料","代谢为柠檬酸与脂肪酸，安全性高。"],
+["乳酸脂肪酸甘油酯","Lactic acid esters of mono- and diglycerides","10.031","472b","emulsifier","B","较低","乳化剂，用于烘焙、饮料和蛋糕起泡。","蛋糕、饮料、油脂","代谢为乳酸与脂肪酸，安全性良好。"],
+["乙酰化单、双甘油脂肪酸酯","Acetylated mono- and diglycerides","10.027","472a","emulsifier","B","较低","兼作乳化剂与结晶抑制剂，用于油脂和涂层。","油脂、糖果涂层、烘焙","ADI 无限制要求。"],
+["聚氧乙烯木糖醇酐单硬脂酸酯","Polyoxyethylene xylitan monostearate","10.017","—","emulsifier","B","较低","亲水乳化剂，在我国属允许使用的乳化剂。","饮料、糕点","按标准限量使用安全，国际批准范围较窄。"],
+["木糖醇酐单硬脂酸酯","Xylitan monostearate","10.007","—","emulsifier","B","较低","非离子乳化剂，用于氢化植物油等。","氢化植物油、糕点","按标准限量使用安全。"],
+["辛，癸酸甘油酯","Glyceryl caprylate-caprate","10.018","—","emulsifier","B","较低","中链甘油三酯类乳化剂，代谢快。","饮料、调味品、油脂","中链脂肪酸代谢途径清晰，安全性良好。"],
+["铵磷脂","Ammonium phosphatides","10.033","442","emulsifier","B","较低","巧克力专用乳化剂，可减少可可脂用量。","巧克力、可可制品","ADI 0–30 mg/kg bw，限量使用安全。"],
+["酪蛋白酸钠（酪朊酸钠）","Sodium caseinate","10.002","—","emulsifier","A","低","牛奶蛋白的钠盐，兼作乳化剂、增稠剂和蛋白强化剂。","冰淇淋、奶精、肉制品、烘焙","牛奶蛋白，蛋白质过敏者需避开，一般人安全性高。"],
+["改性大豆磷脂","Modified soybean phospholipid","10.019","—","emulsifier","A","低","经改性处理的磷脂，亲水性增强。","巧克力、烘焙、饮料","天然来源，安全性良好。"],
+["酶解大豆磷脂","Enzymatically decomposed soybean phospholipid","10.040","—","emulsifier","A","低","经酶解改性的磷脂乳化剂。","巧克力、烘焙、乳制品","天然来源，酶解工艺温和，安全性良好。"],
+["琥珀酸单甘油酯","Succinylated monoglycerides","10.038","472g","emulsifier","B","较低","面团强化型乳化剂，改善面包组织。","面包、馒头、烘焙食品","ADI 无限制要求，安全性良好。"],
+["硬脂酸钙","Calcium stearate","10.039","470","emulsifier","B","较低","脂肪酸钙盐，兼作乳化剂与抗结剂。","固体饮料、压片糖果、面包","脂肪酸盐类，安全性良好。"],
+["硬脂酸钾","Potassium stearate","10.028","470","emulsifier","B","较低","脂肪酸钾盐，用于乳化与抗结。","烘焙、固体饮料","脂肪酸盐类，安全性良好。"],
+/* ---- 酶制剂 ---- */
+["食品工业用酶制剂","Food enzyme preparations","11.xxx","—","enzyme","A","低","由微生物发酵或动植物提取得到的生物催化剂（如α-淀粉酶、糖化酶、蛋白酶、脂肪酶、纤维素酶），具有高度专一性。","烘焙、淀粉糖、乳制品、果汁澄清","加工过程中大多经高温灭活，成品中基本无活性残留；GB 2760 要求符合《食品工业用酶制剂》标准。"],
+["谷氨酰胺转氨酶","Transglutaminase","—","—","enzyme","B","较低","催化蛋白质交联的酶，可改善肉制品与豆制品的质构。","肉制品重组、豆腐、鱼糜制品","酶本身安全；所谓「肉胶」的安全隐患在于原料肉品质，而非该酶。"],
+["木瓜蛋白酶","Papain","—","—","enzyme","A","低","从番木瓜中提取的植物蛋白酶，用于肉类嫩化。","肉制品嫩化、饼干、啤酒澄清","天然植物来源，安全性高；极少数人过敏。"],
+["脂肪酶","Lipase","—","—","enzyme","A","低","水解或酯交换油脂的酶，用于风味改良与油脂改性。","乳制品增香、油脂改性、烘焙","天然来源，加工中失活，安全性良好。"],
+/* ---- 增味剂 ---- */
+["谷氨酸钠（味精）","Monosodium glutamate","12.001","621","flavor_enh","B","较低","最经典的增味剂，提供鲜味；天然存在于番茄、海带、奶酪中。","调味品、方便面、汤料、菜肴","JECFA 与各国评估均认为无需限定 ADI；「中餐馆综合征」未被严格双盲试验证实。但含钠约 12%，需计入总钠摄入。"],
+["5'-呈味核苷酸二钠","Disodium 5'-ribonucleotide","12.004","635","flavor_enh","B","较低","肌苷酸与鸟苷酸的混合物，与味精有强烈协同增效作用。","调味品、方便面、鸡精、汤料","核苷酸类，是核酸的正常组分；痛风患者应留意嘌呤类总量。"],
+["5'-肌苷酸二钠","Disodium 5'-inosinate","12.003","631","flavor_enh","B","较低","鲜味核苷酸，与味精复配可显著增强鲜味。","调味品、汤料、肉制品","代谢产生嘌呤，痛风与高尿酸人群应控制复合调味料的摄入。"],
+["5'-鸟苷酸二钠","Disodium 5'-guanylate","12.002","627","flavor_enh","B","较低","鲜味最强的核苷酸类增味剂。","调味品、汤料、方便面","同核苷酸类，痛风人群需注意嘌呤总量。"],
+["琥珀酸二钠","Disodium succinate","12.005","—","flavor_enh","B","较低","提供贝类特有的鲜味，用于水产调味品。","调味品、水产制品、料酒","属食品中天然存在的有机酸盐，安全性良好。"],
+["L-丙氨酸","L-Alanine","12.006","—","flavor_enh","A","低","天然氨基酸，赋予甜鲜味并改善风味。","调味品、饮料","人体蛋白质组成氨基酸，安全性极高。"],
+["氨基乙酸（甘氨酸）","Glycine","12.007","640","flavor_enh","A","低","最简单的氨基酸，兼具增味与缓冲作用。","调味品、预制肉制品、饮料","人体非必需氨基酸，安全性极高。"],
+["辣椒油树脂","Oleoresin capsicum","00.012","160c","flavor_enh","B","较低","从辣椒中提取的浓缩风味物质，兼有增味与着色功能。","调味品、休闲食品、酱料","辣椒提取物，刺激性明显；胃肠敏感者适量。"],
+/* ---- 面粉处理剂 ---- */
+["L-半胱氨酸盐酸盐","L-Cysteine hydrochloride","13.003","920","flour","B","较低","氨基酸盐，用于缩短面团醒发时间、改善焙烤品质。","面包、发酵面制品、冷冻面米制品","属氨基酸类，安全性良好；用量很低。"],
+["碳酸镁","Magnesium carbonate","13.005","504i","flour","B","较低","兼作面粉处理剂、膨松剂与稳定剂。","小麦粉、面制品","镁为必需矿物质；过量有轻泻作用。"],
+["偶氮甲酰胺（ADA）","Azodicarbonamide","13.004","927a","flour","D","较高","快速氧化型面粉处理剂，可显著增加面团筋力。","小麦粉（限量 0.045 g/kg）","欧盟、澳新等禁止用于食品；EFSA 2016 年认为无法排除遗传毒性担忧，且高温下可生成氨基脲（SEM），属高关注品种。"],
+["过氧化苯甲酰","Benzoyl peroxide","13.001","928","flour","D","较高","曾用于面粉漂白增筋，现已禁止。","原用于小麦粉漂白","我国自 2011 年 5 月 1 日起禁止在面粉中添加，属历史遗留的高关注品种。"],
+["过氧化钙","Calcium peroxide","13.002","930","flour","C","中等","氧化型面粉处理剂，同时可缓慢释放氧。","小麦粉改良","强氧化性，限量使用；各国批准情况不一。"],
+/* ---- 被膜剂 ---- */
+["紫胶（虫胶）","Shellac","14.001","904","glazing","B","较低","紫胶虫分泌的天然树脂，用于果蔬与糖果上光被膜。","柑橘、苹果上光、巧克力、口香糖","天然来源；极少数人过敏，安全性良好。"],
+["蜂蜡","Beeswax","14.013","901","glazing","A","低","天然蜡质，用于糖果与水果的表面被膜。","糖果、水果保鲜、口香糖","天然来源，安全性极高。"],
+["巴西棕榈蜡","Carnauba wax","14.008","903","glazing","A","低","从巴西棕榈叶提取的天然蜡，上光效果优良。","水果保鲜、糖果、口香糖、药片包衣","天然来源，安全性极高。"],
+["硬脂酸","Stearic acid","14.009","570","glazing","A","低","天然脂肪酸，兼作被膜剂、抗结剂与胶基组分。","糖果、口香糖、固体饮料","人体常见脂肪酸，安全性极高。"],
+["普鲁兰多糖","Pullulan","14.011","1204","glazing","A","低","由出芽短梗霉发酵产生的天然多糖，可食性薄膜。","糖果被膜、保鲜膜、胶囊","天然发酵多糖，可被消化吸收，安全性高。"],
+["聚乙二醇","Polyethylene glycol","14.012","1521","glazing","B","较低","水溶性聚合物，用作被膜剂与载体。","糖果、片剂包衣、调味品","分子量较大者吸收极少；ADI 0–10 mg/kg bw。"],
+["白油（液体石蜡）","Mineral oil, white","14.003","905a","glazing","C","中等","精炼矿物油，用于糖果与鲜蛋的被膜与防潮。","糖果、鲜蛋保鲜、口香糖","属矿物油类；欧盟对食品中矿物油饱和烃（MOSH）与芳香烃（MOAH）关注度高，建议控制摄入。"],
+["吗啉脂肪酸盐果蜡","Morpholine fatty acid salt fruit wax","14.004","—","glazing","C","中等","水果打蜡用的乳化果蜡，防止水分蒸发。","柑橘、苹果等水果表面","蜡层可洗去；需符合食品级要求，规范使用安全，但不宜连皮大量生食打蜡水果。"],
+["聚乙烯醇","Polyvinyl alcohol","14.010","—","glazing","C","中等","水溶性合成聚合物，用作被膜剂与包装膜。","糖果被膜、胶囊、包装","合成高分子，食品中批准使用范围较窄，各国标准不一致。"],
+["松香季戊四醇酯","Pentaerythritol ester of rosin","14.005","—","glazing","B","较低","胶基糖果基础剂与油脂被膜助剂。","口香糖、油脂制品","按标准限量使用安全。"],
+["辛基苯氧聚乙烯氧基","Octylphenol polyoxyethylene","14.006","—","glazing","C","中等","非离子表面活性剂，用于果蔬保鲜被膜。","果蔬保鲜","属烷基酚聚氧乙烯醚类，环境与健康关注度较高，使用范围受严格限制。"],
+/* ---- 水分保持剂 ---- */
+["磷酸三钠","Trisodium phosphate","15.001","339iii","humectant","C","中等","磷酸盐类水分保持剂，提高肉制品的保水性与嫩度。","肉制品、乳制品、面制品","磷酸盐类共性：过量磷摄入干扰钙磷平衡，与骨密度下降、肾脏负担相关；欧盟要求肉制品标注「含磷酸盐」。"],
+["磷酸二氢钠","Sodium dihydrogen phosphate","15.002","339i","humectant","C","中等","酸性磷酸盐，兼作缓冲剂与水分保持剂。","乳制品、饮料、肉制品","同磷酸盐类：需控制总磷摄入。"],
+["磷酸氢二钠","Disodium hydrogen phosphate","15.003","339ii","humectant","C","中等","磷酸盐水分保持剂与缓冲剂。","乳制品、饮料、肉制品","同磷酸盐类风险。"],
+["焦磷酸二氢二钠","Disodium dihydrogen pyrophosphate","15.004","450i","humectant","C","中等","焦磷酸盐，用于肉制品保水与膨松。","肉制品、水产品、烘焙","同磷酸盐类：总磷摄入需控制。"],
+["焦磷酸钠","Tetrasodium pyrophosphate","15.005","450iii","humectant","C","中等","强保水性磷酸盐，用于虾仁、肉制品的增重与保水。","虾仁、肉制品、水产品","水产「泡药增重」多与磷酸盐过量有关，是监管重点；建议警惕异常弹嫩的水产制品。"],
+["三聚磷酸钠","Sodium tripolyphosphate","15.008","451i","humectant","C","中等","聚合磷酸盐，保水性能强，用于肉制品和水产品。","肉制品、水产品、乳制品","同磷酸盐类：磷摄入过量风险，且为「增重」争议的核心品种。"],
+["六偏磷酸钠","Sodium hexametaphosphate","—","452i","humectant","C","中等","聚合磷酸盐，螯合金属离子并保水。","肉制品、饮料、水产品","同磷酸盐类风险。"],
+["乳酸钠","Sodium lactate","15.012","325","humectant","B","较低","天然发酵产物，兼作水分保持剂、酸度调节与抑菌剂。","肉制品、饮料、烘焙","人体正常代谢物，安全性良好；需计入钠摄入。"],
+["乳酸钾","Potassium lactate","15.011","326","humectant","B","较低","乳酸钠的钾盐，用于降低产品钠含量。","肉制品、饮料","肾功能不全者注意钾摄入。"],
+["甘油（丙三醇）","Glycerol","15.014","422","humectant","A","低","天然存在的三元醇，强吸湿性，用于保湿与增塑。","糕点、糖果、口香糖、饮料","人体脂肪代谢中间产物，安全性极高。"],
+/* ---- 营养强化剂 ---- */
+["维生素A（视黄醇）","Vitamin A","—","—","fortify","A","低","脂溶性维生素，强化于乳制品、食用油中，防治维生素 A 缺乏。","乳制品、食用油、婴幼儿食品","必需维生素；脂溶性维生素过量有蓄积风险，按 GB 14880 限量强化。"],
+["维生素D","Vitamin D","—","—","fortify","A","低","促进钙磷吸收，是我国普遍强化不足的维生素。","乳制品、婴幼儿食品、谷物制品","必需维生素；过量可致高钙血症，按标准限量强化。"],
+["维生素E","Vitamin E","—","—","fortify","A","低","脂溶性抗氧化维生素，强化于食用油与乳制品。","食用油、乳制品、婴幼儿食品","必需维生素，按限量强化安全。"],
+["维生素K1（植物甲萘醌）","Vitamin K1","—","—","fortify","A","低","凝血相关维生素，2024 年新发布质量规格标准。","婴幼儿食品、调制乳粉","必需维生素，按限量强化安全。"],
+["B 族维生素（B1/B2/B6/B12、烟酸、叶酸、泛酸）","B vitamins","—","—","fortify","A","低","水溶性维生素组合，广泛用于谷物制品与饮料强化。","谷物制品、饮料、乳制品","水溶性，过量随尿排出；按 GB 14880 使用安全。"],
+["钙（碳酸钙、乳酸钙、葡萄糖酸钙等）","Calcium salts","—","—","fortify","A","低","以多种钙盐形式强化，是膳食中最易缺乏的矿物质之一。","乳制品、豆制品、谷物制品","必需矿物质；过量补充可能增加肾结石风险，按标准强化安全。"],
+["铁（硫酸亚铁、葡萄糖酸亚铁、焦磷酸铁等）","Iron salts","—","—","fortify","B","较低","以多种铁盐形式强化，多用于谷物与婴幼儿食品。","谷物制品、婴幼儿食品、酱油","必需微量元素；过量铁有氧化应激风险，安全范围较窄，严格按标准限量。"],
+["锌（硫酸锌、葡萄糖酸锌等）","Zinc salts","—","—","fortify","B","较低","以锌盐形式强化，参与多种酶的构成。","乳制品、谷物制品、饮料","必需微量元素；过量影响铜吸收并有胃肠反应，按限量使用。"],
+["碘（碘化钾、碘酸钾）","Iodine compounds","—","—","fortify","B","较低","食盐加碘是我国消除碘缺乏病的主要措施。","食盐、乳制品","必需微量元素；甲状腺疾病患者应遵医嘱调整碘摄入。"],
+["硒（亚硒酸钠、硒酸钠等）","Selenium compounds","—","—","fortify","C","中等","必需微量元素，强化于食盐与乳制品中。","食盐、乳制品、谷物制品","安全范围窄（有益与有毒剂量接近），过量可致硒中毒，必须严格按标准限量强化。"],
+["DHA（二十二碳六烯酸油脂）","DHA oil","—","—","fortify","A","低","婴幼儿脑与视网膜发育相关的重要多不饱和脂肪酸。","婴幼儿食品、乳制品、食用油","营养素；2024 年新发布发酵法质量规格标准，按限量强化安全。"],
+["ARA（花生四烯酸油脂）","ARA oil","—","—","fortify","A","低","婴幼儿食品中与 DHA 配比使用的重要脂肪酸。","婴幼儿配方食品、乳制品","营养素，按限量强化安全。"],
+["牛磺酸","Taurine","—","—","fortify","A","低","条件性必需氨基酸，婴幼儿食品与功能饮料中常见。","婴幼儿食品、能量饮料、乳制品","氨基酸类；能量饮料中的咖啡因才是主要关注点。"],
+["左旋肉碱","L-Carnitine","—","—","fortify","B","较低","与脂肪酸代谢相关的类维生素物质。","婴幼儿食品、运动食品、饮料","人体可合成；常规强化剂量安全，高剂量补充剂的效益仍有争议。"],
+["胆碱、肌醇","Choline & Inositol","—","—","fortify","A","低","类维生素物质，用于婴幼儿食品与功能饮料强化。","婴幼儿食品、乳制品、饮料","营养素类，按限量强化安全。"],
+/* ---- 防腐剂 ---- */
+["山梨酸及其钾盐","Sorbic acid & potassium sorbate","17.003,17.004","200,202","preservative","B","较低","最常用的食品防腐剂之一，对霉菌酵母抑制效果好，安全性高。","果酱、蜜饯、饮料、面包、酱腌菜","ADI 0–25 mg/kg bw，是安全性评价最好的防腐剂之一；按标准限量使用无风险。"],
+["苯甲酸及其钠盐","Benzoic acid & sodium benzoate","17.001,17.002","210,211","preservative","C","中等","老牌防腐剂，我国大量用于酱油、醋、饮料。","酱油、醋、饮料、果酱、蜜饯","ADI 0–5 mg/kg bw；过量可致肠胃不适；与维生素 C 同时存在且长时间高温储存时可能生成微量苯，日本已限制使用。"],
+["脱氢乙酸及其钠盐","Dehydroacetic acid & sodium dehydroacetate","17.009","265,266","preservative","D","较高","曾被广泛用于面包糕点防霉，2024 版国标大幅收紧使用范围。","原用于面包、糕点、淀粉制品、果蔬汁（现已被删除）","GB 2760-2024 删除了其在淀粉制品、面包、糕点、焙烤食品馅料、果蔬汁（浆）等 7 类食品中的使用规定，2025 年 2 月 8 日起施行。属监管收紧的高关注品种。"],
+["丙酸及其钠盐、钙盐","Propionic acid & its salts","17.029,17.006,17.005","280,281,282","preservative","B","较低","面包糕点防霉的主流防腐剂，也是人体代谢中间产物。","面包、糕点、豆类制品、原粮","ADI 无限制要求；人体肠道菌群本身也产生丙酸，安全性良好。"],
+["双乙酸钠","Sodium diacetate","17.013","262ii","preservative","B","较低","防霉防腐，兼具酸度调节作用，用于粮食与调味品。","原粮、糕点、豆制品、调味品","ADI 无限制要求；代谢为乙酸和钠，安全性良好。"],
+["对羟基苯甲酸酯类及其钠盐（尼泊金酯）","Parabens","17.032,17.007","219,214,215","preservative","C","中等","广谱防腐剂，对霉菌酵母效果好，我国限用于部分食品。","酱油、醋、饮料、果酱、糖果","对羟基苯甲酸酯类具有弱雌激素活性，欧盟已限制丙酯等品种并下调限值；总量需合并计算。"],
+["乳酸链球菌素（Nisin）","Nisin","17.019","234","preservative","A","低","天然细菌素，由乳酸乳球菌发酵产生，可被人体消化酶降解。","乳制品、罐头、肉制品、饮料","天然来源的抗菌肽，安全性极高，是评价最好的防腐剂之一。"],
+["纳他霉素","Natamycin","17.030","235","preservative","B","较低","抗真菌抗生素类防腐剂，多采用表面喷洒方式。","糕点表面、奶酪、肉制品表面","几乎不被肠道吸收，表面使用安全性良好。"],
+["二氧化碳","Carbon dioxide","17.014","290","preservative","A","低","充气防腐与碳酸化，也是饮料气体的来源。","碳酸饮料、气调包装、啤酒","人体代谢终产物，安全性极高。"],
+["稳定态二氧化氯","Stabilized chlorine dioxide","17.028","926","preservative","C","中等","强氧化性消毒防腐剂，用于水产品与果蔬处理。","水产品、果蔬、饮用水消毒","强氧化性，需控制残留；成品中残留量有严格限值。"],
+["桂醛（肉桂醛）","Cinnamaldehyde","17.012","—","preservative","B","较低","肉桂中的天然香料成分，具有良好抑菌性，兼具香料功能。","调味品、蜜饯、饮料","天然香料来源，安全性良好；作为防腐剂使用时限量较严。"],
+["单辛酸甘油酯","Capryl monoglyceride","17.031","—","preservative","B","较低","中链脂肪酸单甘酯，对霉菌酵母有抑制作用。","生湿面制品、糕点","代谢为辛酸和甘油，安全性良好。"],
+["乙氧基喹","Ethoxyquin","17.010","—","preservative","C","中等","抗氧化兼防腐剂，用于苹果等水果的保鲜处理。","苹果保鲜","近年国际上对其安全性有重新评估与关注，欧盟已不再批准作为食品添加剂。"],
+["仲丁胺","sec-Butylamine","17.011","—","preservative","C","中等","果蔬采后防腐剂，用于柑橘、荔枝等。","柑橘、荔枝、青椒、蒜苔","残留量有严格限值；属果蔬表面处理剂，食用前应清洗。"],
+["联苯醚（二苯醚）","Diphenyl ether","17.022","—","preservative","C","中等","柑橘类水果采后防霉剂。","柑橘类水果","仅限表面处理，残留量有限值；食用前建议清洗或去皮。"],
+["2-苯基苯酚钠盐","Sodium 2-phenylphenol","17.023","—","preservative","C","中等","柑橘类采后防霉处理剂。","柑橘类水果表面","残留限量≤12 mg/kg；表面处理剂，建议清洗去皮。"],
+["4-苯基苯酚","4-Phenylphenol","17.024","—","preservative","C","中等","柑橘类水果防腐处理剂。","柑橘类水果表面","同苯基苯酚类，仅限表面处理并严格限量。"],
+["液体二氧化碳（煤气化法）","Liquid carbon dioxide","17.034","—","preservative","A","低","食品级二氧化碳的新增生产工艺来源。","碳酸饮料、气调包装","与通用二氧化碳一致，安全性高。"],
+["溶菌酶","Lysozyme","17.035","1105","preservative","B","较低","天然酶类抗菌剂，水解细菌细胞壁。","乳制品、肉制品、葡萄酒","天然来源，安全性良好；蛋清来源，鸡蛋过敏者需注意。"],
+/* ---- 稳定剂和凝固剂 ---- */
+["硫酸钙（石膏）","Calcium sulfate","18.001","516","stabilizer","A","低","天然矿物，传统豆腐的凝固剂，也可强化钙。","豆制品、面粉、啤酒","钙盐，安全性极高。"],
+["氯化钙","Calcium chloride","18.002","509","stabilizer","B","较低","凝固与稳定剂，用于罐头保脆、奶酪凝固。","罐头、奶酪、豆制品","钙盐；高浓度有刺激性，成品中无害。"],
+["氯化镁（卤水）","Magnesium chloride","18.003","511","stabilizer","B","较低","传统豆腐凝固剂（卤水），也用于水产保鲜。","豆制品、水产品、营养强化","镁为必需矿物质；过量有轻泻作用。"],
+["葡萄糖酸-δ-内酯（GDL）","Glucono delta-lactone","18.007","575","stabilizer","A","低","缓慢水解产生葡萄糖酸的凝固剂，是内酯豆腐的核心原料。","内酯豆腐、香肠、饮料、膨松","水解产物为葡萄糖酸，属人体代谢物，安全性极高。"],
+["柠檬酸亚锡二钠","Disodium stannous citrate","18.006","—","stabilizer","C","中等","罐头用护色稳定剂，通过还原锡离子防止变色。","果蔬罐头","含锡；锡的摄入量有严格限量（罐头中锡≤250 mg/kg），应关注罐头食品的金属残留。"],
+["乙二胺四乙酸二钠（EDTA 二钠）","Disodium EDTA","18.005","386","stabilizer","C","中等","强金属螯合剂，防止金属离子引起的变色与氧化。","蛋黄酱、罐头、饮料、蔬菜","ADI 0–2.5 mg/kg bw；过量会螯合钙铁锌等矿物质，按标准限量使用安全。"],
+["薪草提取物","Mesona chinensis extract","18.009","—","stabilizer","B","较低","凉粉草提取物，用于仙草制品与凉粉的凝固稳定。","仙草制品、凉粉、果冻","天然植物来源，安全性良好。"],
+["海藻酸钠","Sodium alginate","20.004","401","stabilizer","A","低","从褐藻中提取的天然多糖，兼作稳定剂与增稠剂。","冰淇淋、果冻、乳制品、仿生食品","天然多糖，不被吸收；限量内还可作膳食纤维，安全性高。"],
+["卡拉胶","Carrageenan","20.007","407","stabilizer","B","较低","从红藻中提取的天然多糖，广泛用于乳制品与肉制品。","乳饮料、果冻、肉制品、冰淇淋","食品级未降解卡拉胶被 EFSA 2018 年评估为安全；争议主要来自「降解卡拉胶」（poligeenan），后者不允许用于食品。"],
+["黄原胶","Xanthan gum","20.009","415","stabilizer","A","低","由甘蓝黑腐病野油菜黄单胞菌发酵产生的天然多糖，是性能最优秀的增稠剂之一。","饮料、酱料、烘焙、冰淇淋","天然发酵多糖，ADI 无限制要求，安全性极高。"],
+["瓜尔胶","Guar gum","20.025","412","stabilizer","A","低","从瓜尔豆中提取的天然半乳甘露聚糖，增稠效率高。","冰淇淋、饮料、面制品、乳制品","天然来源，安全性高；极大量摄入可能有轻泻作用。"],
+["刺槐豆胶（槐豆胶）","Locust bean gum","20.023","410","stabilizer","A","低","从刺槐豆中提取的天然多糖，与卡拉胶有协同增效。","冰淇淋、乳制品、果冻","天然来源，安全性高。"],
+["果胶","Pectin","20.006","440","stabilizer","A","低","从柑橘皮和苹果渣中提取的天然可溶性膳食纤维。","果酱、果冻、酸奶、糖果","天然来源，膳食纤维，安全性极高。"],
+["结冷胶","Gellan gum","20.027","418","stabilizer","A","低","微生物发酵产生的天然多糖，透明度与悬浮性优异。","饮料悬浮、果冻、乳制品","天然发酵多糖，ADI 无限制要求，安全性高。"],
+["可得然胶","Curdlan","20.042","424","stabilizer","A","低","微生物发酵产生的热凝胶多糖，加热后形成不可逆凝胶。","仿生食品、肉制品、面制品","天然发酵多糖，安全性良好。"],
+["明胶","Gelatin","20.002","—","stabilizer","A","低","动物胶原蛋白水解产物，是传统且安全的胶凝剂。","糖果、果冻、胶囊、乳制品","蛋白质类；素食者需注意来源，一般人安全性极高。"],
+/* ---- 甜味剂 ---- */
+["糖精钠","Sodium saccharin","19.001","954","sweetener","D","较高","最早的人工甜味剂，甜度约为蔗糖的 300–500 倍。","饮料、蜜饯、糕点、酱菜","ADI 0–2.5 mg/kg bw；高剂量动物实验与膀胱肿瘤相关（机制不适用于人类）；美国曾要求标注警示语，婴幼儿食品不得使用。"],
+["环己基氨基磺酸钠（甜蜜素）","Sodium cyclamate","19.002","952","sweetener","D","较高","第二代人工甜味剂，甜度约为蔗糖的 30–50 倍。","饮料、蜜饯、糕点、果冻","ADI 0–11 mg/kg bw；美国自 1970 年起禁用；代谢产物环己胺的安全性在部分国家存在争议，建议少吃含甜蜜素的蜜饯与饮料。"],
+["乙酰磺胺酸钾（安赛蜜）","Acesulfame potassium","19.011","950","sweetener","C","中等","第三代人工甜味剂，甜度约为蔗糖的 200 倍，常与阿斯巴甜复配。","饮料、乳制品、糖果、口香糖","ADI 0–15 mg/kg bw；安全性数据较充分，但近年研究提示可能影响肠道菌群，建议控制无糖饮料总量。"],
+["三氯蔗糖（蔗糖素）","Sucralose","19.016","955","sweetener","C","中等","以蔗糖为原料制备的高倍甜味剂，甜度约为蔗糖的 600 倍，甜味接近蔗糖。","饮料、烘焙、乳制品、口香糖","ADI 0–15 mg/kg bw；高温烘烤可能生成氯丙醇类物质；近年有对肠道菌群与 DNA 影响的争议研究，结论尚未被监管采纳。"],
+["天门冬酰苯丙氨酸甲酯（阿斯巴甜）","Aspartame","19.004","951","sweetener","C","中等","最知名的二肽类甜味剂，甜度约为蔗糖的 200 倍。","饮料、乳制品、糖果、口香糖","ADI 0–40 mg/kg bw；2023 年 IARC 将其列为 2B 类「可能对人致癌」，JECFA 同时维持 ADI 不变；苯丙酮尿症患者禁用，含该成分食品须标注「含苯丙氨酸」。"],
+["纽甜","Neotame","19.019","961","sweetener","C","中等","阿斯巴甜衍生物，甜度约为蔗糖的 7000–13000 倍，用量极低。","饮料、乳制品、糖果","ADI 0–2 mg/kg bw；用量极微，但同属人工高倍甜味剂阵营。"],
+["L-丙氨酰胺（阿力甜）","Alitame","19.013","956","sweetener","C","中等","含硫二肽类高倍甜味剂，甜度约为蔗糖的 2000 倍。","饮料、糖果、果冻","ADI 0–1 mg/kg bw，用量极低；各国批准情况不一。"],
+["甜菊糖苷","Steviol glycosides","19.008","960","sweetener","A","低","从甜叶菊叶片中提取的天然高倍甜味剂，零热量。","饮料、乳制品、糖果、调味品","天然植物来源，JECFA 与各国评估均认为安全，是公认安全性最好的高倍甜味剂；口感略带后苦。"],
+["罗汉果甜苷","Luo-han-kuo extract","19.015","—","sweetener","A","低","从罗汉果中提取的天然甜味成分（Mogroside），零热量。","饮料、乳制品、糖果","天然来源，安全性良好，是我国特色的天然甜味剂。"],
+["甘草、甘草酸铵、甘草酸一钾及三钾","Licorice / Glycyrrhizinates","19.009,19.012,19.010","958","sweetener","C","中等","从甘草中提取的天然甜味成分，甜度约为蔗糖的 50–100 倍。","调味品、蜜饯、饮料、糖果","过量甘草酸可引起假性醛固酮增多症（高血压、低血钾、水肿）；高血压与肾病患者、孕妇应控制摄入。"],
+["赤藓糖醇","Erythritol","19.018","968","sweetener","B","较低","天然存在于水果与发酵食品中的糖醇，热量极低（约 0.2 kcal/g），不引起龋齿。","饮料、糖果、烘焙、乳制品","过量（一次 >50 g）可能引起腹胀腹泻；2023 年有研究提出与心血管风险的关联假说，尚待更多证据。"],
+["木糖醇","Xylitol","19.007","967","sweetener","B","较低","天然糖醇，甜度接近蔗糖，防龋齿，广泛用于口香糖。","口香糖、糖果、乳制品","过量有轻泻作用；对狗有剧毒（与人类无关）。"],
+["山梨糖醇和山梨糖醇液","Sorbitol & sorbitol syrup","19.006","420","sweetener","B","较低","天然糖醇，热量约为蔗糖的 60%，兼作保湿剂。","糖果、口香糖、糕点、乳制品","过量（>20 g）可引起腹胀腹泻，肠易激人群需注意。"],
+["麦芽糖醇和麦芽糖醇液","Maltitol & maltitol syrup","19.005","965","sweetener","B","较低","糖醇中口感最接近蔗糖的品种，常用于无糖巧克力。","无糖巧克力、糖果、烘焙","过量可致腹泻；升糖指数低于蔗糖但仍需计入碳水。"],
+["乳糖醇","Lactitol","19.014","966","sweetener","B","较低","由乳糖氢化得到的糖醇，用于无糖糖果与烘焙。","无糖糖果、烘焙、冰淇淋","过量可致腹泻；乳糖不耐受者对其耐受性通常优于乳糖。"],
+["甘露糖醇","Mannitol","19.017","421","sweetener","B","较低","天然糖醇，低吸湿性，适合糖果与口香糖包衣。","糖果包衣、口香糖、糕点","过量可致腹泻；兼有利尿作用。"],
+["异麦芽酮糖","Isomaltulose","19.003","—","sweetener","B","较低","天然存在的低升糖指数糖，甜度约为蔗糖的一半。","糖果、饮料、巧克力","对牙齿友好，升糖较缓；糖尿病人群仍需计入碳水总量。"],
+/* ---- 增稠剂 ---- */
+["琼脂","Agar","20.001","406","thickener","A","低","从红藻中提取的天然多糖，是我国传统使用的凝固剂。","果冻、糖果、罐头、乳制品","天然来源，不被吸收，安全性极高。"],
+["羧甲基纤维素钠（CMC）","Sodium carboxymethyl cellulose","20.003","466","thickener","B","较低","纤维素衍生物，增稠与稳定性能优良，成本低。","冰淇淋、饮料、乳制品、面制品","ADI 无限制要求；近年有研究关注大量摄入对肠道菌群的影响，常规使用安全。"],
+["海藻酸钾","Potassium alginate","20.005","402","thickener","A","低","从褐藻中提取的天然多糖钾盐。","冰淇淋、果冻、乳制品","天然来源，安全性高。"],
+["阿拉伯胶","Arabic gum","20.008","414","thickener","A","低","从金合欢树中采集的天然树胶，是历史最悠久的食品胶之一。","糖果、饮料、香精载体、乳制品","天然来源，几乎不被消化吸收，安全性极高。"],
+["海藻酸丙二醇酯（PGA）","Propylene glycol alginate","20.010","405","thickener","B","较低","海藻酸的丙二醇酯，耐酸性好，适合酸性饮料。","酸奶、饮料、啤酒泡沫稳定","ADI 0–25 mg/kg bw，限量使用安全。"],
+["罗望子多糖胶","Tamarind gum","20.011","—","thickener","B","较低","从罗望子种子中提取的天然多糖。","饮料、果冻、面制品","天然来源，安全性良好。"],
+["羧甲基淀粉钠","Sodium carboxymethyl starch","20.012","—","thickener","B","较低","改性淀粉，增稠与保水性能好。","饮料、调味品、面制品","变性淀粉类，安全性良好。"],
+["淀粉磷酸酯钠","Sodium starch phosphate","20.013","—","thickener","B","较低","磷酸酯化改性淀粉，耐热耐酸。","饮料、调味品、罐头","变性淀粉类；含磷，需计入总磷摄入。"],
+["羟丙基淀粉","Hydroxypropyl starch","20.014","1440","thickener","B","较低","羟丙基化改性淀粉，冻融稳定性好。","冷冻食品、酱料、调味品","变性淀粉类，ADI 无限制要求。"],
+["乙酰化二淀粉磷酸酯","Acetylated distarch phosphate","20.015","1414","thickener","B","较低","交联酯化双重变性淀粉，耐高温与剪切。","罐头、酱料、乳制品","变性淀粉类，安全性良好。"],
+["羟丙基二淀粉磷酸酯","Hydroxypropyl distarch phosphate","20.016","1442","thickener","B","较低","交联羟丙基淀粉，耐酸耐热耐剪切。","酸奶、罐头、调味酱","变性淀粉类，ADI 无限制要求。"],
+["磷酸化二淀粉磷酸酯","Phosphated distarch phosphate","20.017","1413","thickener","B","较低","磷酸交联改性淀粉。","罐头、果冻、调味品","变性淀粉类；含磷，需计入总磷摄入。"],
+["甲壳素（几丁质）","Chitin","20.018","—","thickener","A","低","从虾蟹壳中提取的天然多糖，也是膳食纤维。","保健食品、面制品、饮料","天然来源；甲壳类过敏者需注意来源。"],
+["脱乙酰甲壳素（壳聚糖）","Chitosan","20.026","—","thickener","A","低","甲壳素脱乙酰产物，天然阳离子多糖。","果蔬保鲜、饮料澄清、保健食品","天然来源，安全性良好；甲壳类过敏者需注意。"],
+["黄蜀葵胶","Abelmoschus manihot gum","20.019","—","thickener","B","较低","从黄蜀葵中提取的天然植物胶。","冰淇淋、饮料、果冻","天然来源，安全性良好。"],
+["亚麻籽胶（富兰克胶）","Flaxseed gum","20.020","—","thickener","B","较低","从亚麻籽中提取的天然多糖。","冰淇淋、饮料、面制品","天然来源，安全性良好。"],
+["田菁胶","Sesbania gum","20.021","—","thickener","B","较低","从田菁种子中提取的天然半乳甘露聚糖。","面制品、冰淇淋、饮料","天然来源，安全性良好。"],
+["聚葡萄糖","Polydextrose","20.022","1200","thickener","B","较低","合成的可溶性膳食纤维，兼作增稠、膨松与水分保持剂。","无糖食品、烘焙、饮料","可溶性膳食纤维；过量可致腹胀腹泻。"],
+["β-环状糊精","Beta-cyclodextrin","20.024","459","thickener","B","较低","由淀粉酶解环化制得，可包合风味物质与异味。","饮料、香精载体、调味品","天然来源衍生物，代谢为葡萄糖，安全性良好。"],
+["皂荚糖胶","Gleditsia sinensis gum","20.029","—","thickener","B","较低","从皂荚中提取的天然多糖。","果冻、饮料、面制品","天然来源，安全性良好。"],
+["氧化淀粉","Oxidized starch","20.030","1404","thickener","B","较低","氧化改性淀粉，黏度低、透明度高。","糖果、调味品、饮料","变性淀粉类，ADI 无限制要求。"],
+["乙酰化双淀粉己二酸酯","Acetylated distarch adipate","20.031","1422","thickener","B","较低","交联酯化淀粉，稳定性好。","罐头、酱料、冷冻食品","变性淀粉类，安全性良好。"],
+["酸处理淀粉","Acid treated starch","20.032","1401","thickener","B","较低","稀酸处理得到的低黏度改性淀粉。","糖果、饮料、调味品","变性淀粉类，ADI 无限制要求。"],
+["氧化羟丙基淀粉","Oxidized hydroxypropyl starch","20.033","—","thickener","B","较低","复合改性淀粉，兼具氧化与羟丙基化特性。","调味品、饮料","变性淀粉类，安全性良好。"],
+["磷酸酯双淀粉","Distarch phosphate","20.034","1412","thickener","B","较低","磷酸交联淀粉，耐热耐剪切。","罐头、乳制品、酱料","变性淀粉类；含磷，需计入总磷摄入。"],
+["葫芦巴胶","Fenugreek gum","20.035","—","thickener","B","较低","从葫芦巴种子中提取的天然半乳甘露聚糖。","冰淇淋、饮料、面制品","天然来源，安全性良好。"],
+["聚丙烯酸钠","Sodium polyacrylate","20.036","—","thickener","B","较低","合成高分子增稠剂，增稠效率高、用量极低。","面制品、饮料、冰淇淋","ADI 无限制要求；用量极低，各国批准范围不一。"],
+["沙蒿胶","Artemisia gum","20.037","—","thickener","B","较低","从沙蒿籽中提取的天然多糖，吸水膨胀性强。","面制品、冰淇淋","天然来源，安全性良好。"],
+["辛烯基琥珀酸铝淀粉","Aluminium starch octenylsuccinate","20.038","—","thickener","C","中等","兼具乳化与增稠性能的改性淀粉，含铝。","饮料、乳制品、香精包埋","含铝，需与含铝添加剂合并计入铝摄入总量。"],
+["醋酸酯淀粉","Starch acetate","20.039","1420","thickener","B","较低","乙酰化改性淀粉，糊液稳定性好。","罐头、酱料、冷冻食品","变性淀粉类，ADI 无限制要求。"],
+["海萝胶","Gloiopeltis furcata gum","20.040","—","thickener","B","较低","从海萝等红藻中提取的天然多糖。","面制品、果冻","天然来源，安全性良好。"],
+["刺云实胶","Tara gum","20.041","417","thickener","B","较低","从刺云实种子中提取的天然半乳甘露聚糖。","冰淇淋、乳制品、果冻","天然来源，ADI 无限制要求。"],
+["甲基纤维素","Methyl cellulose","20.043","461","thickener","B","较低","纤维素醚，具有热凝胶特性（加热凝固）。","油炸食品、面糊、仿生食品","ADI 无限制要求；不被人体吸收。"],
+["可溶性大豆多糖","Soluble soybean polysaccharide","20.044","—","thickener","A","低","从豆渣中提取的天然可溶性多糖，兼作稳定剂与被膜剂。","饮料、乳制品、调味品","天然来源，安全性良好。"],
+["决明胶","Cassia gum","20.045","427","thickener","B","较低","从决明子中提取的天然多糖。","果冻、乳制品、肉制品","天然来源，安全性良好。"],
+/* ---- 食品用香料 ---- */
+["食品用天然香料","Natural flavouring substances","—","—","flavor","A","低","从动植物原料中通过物理、酶法或微生物法制得的呈香物质，我国批准约 400 余种天然香料。","各类允许加香的食品","天然来源；仍需注意个别品种的过敏或光敏风险。"],
+["食品用合成香料","Synthetic flavouring substances","—","—","flavor","B","较低","化学合成的呈香物质，我国批准约 1400 余种，均经安全性评价。","各类允许加香的食品","单一品种使用量极低，GB 2760 要求配成香精后使用并符合规格标准。"],
+["香兰素（香草醛）","Vanillin","—","—","flavor","B","较低","使用最广的合成香料，具香草香气，天然存在于香荚兰豆中。","糕点、冰淇淋、饮料、巧克力","0–6 个月婴幼儿配方食品中不得添加任何香料；较大婴儿配方食品限量使用；常规食品中用量极低。"],
+["乙基香兰素","Ethyl vanillin","—","—","flavor","B","较低","香兰素的衍生物，香气强度约为香兰素的 3 倍。","糕点、饮料、糖果","同香兰素，婴幼儿食品有严格限制。"],
+["乙基麦芽酚","Ethyl maltol","—","—","flavor","B","较低","增香剂，能显著增强甜香与奶香，常与香精复配。","饮料、乳制品、肉制品、烘焙","用量极低；大量摄入动物实验见影响，食品用量远低于此。"],
+["肉桂醛（桂醛）","Cinnamaldehyde","—","—","flavor","B","较低","肉桂的主要香气成分，兼有抑菌作用并可作防腐剂。","调味品、蜜饯、饮料、口香糖","天然香料成分；少数人接触后过敏。"],
+/* ---- 食品工业用加工助剂 ---- */
+["硅藻土","Diatomaceous earth","—","—","aid","A","低","天然硅质助滤剂，用于糖液、酒类、油脂的过滤。","制糖、酿酒、油脂精炼","加工助剂，成品中经严格去除，不发挥功能。"],
+["活性炭","Activated carbon","—","—","aid","A","低","吸附脱色脱臭用加工助剂。","制糖、油脂精炼、饮用水净化","加工助剂，成品中基本无残留。"],
+["高锰酸钾","Potassium permanganate","00.001","—","other","C","中等","强氧化性加工助剂，用于淀粉、糖类的氧化处理。","淀粉糖、水处理","强氧化剂，仅作加工助剂，成品中不得残留，操作端安全要求高。"],
+["植物油抽提溶剂（己烷类）","Hexane extraction solvent","—","—","aid","C","中等","食用油脂浸出工艺的有机溶剂。","食用油浸出制备","成品油中溶剂残留有严格限值（≤10 mg/kg）；浸出与压榨油均符合国标即安全。"],
+["硫酸镁","Magnesium sulfate","00.021","518","other","B","较低","天然矿物盐，兼作其他类添加剂与镁强化剂。","乳制品、饮料、营养强化","镁为必需矿物质；大量摄入有轻泻作用。"],
+["氯化钾","Potassium chloride","00.008","508","other","B","较低","代盐制品的主要成分，用于降低钠含量。","代盐制品、乳制品、饮料","肾功能不全或服用保钾利尿剂者需限制钾摄入。"],
+["咖啡因","Caffeine","00.007","—","other","C","中等","天然生物碱，我国允许用于可乐型碳酸饮料（≤150 mg/kg）。","可乐型碳酸饮料","过量摄入可引起心悸、失眠、焦虑；儿童、孕妇、心律失常者应严格限制；能量饮料是高摄入来源。"],
+["硫酸锌","Zinc sulfate","00.018","—","other","B","较低","锌的强化形式，也用于加工助剂。","营养强化食品、饮料","锌的安全范围中等，过量有胃肠刺激与铜吸收抑制。"],
+["异构化乳糖液","Lactulose liquid","00.003","—","other","B","较低","乳糖异构化产物，益生元，兼作甜味调节。","乳制品、饮料、保健食品","益生元；大量摄入可致轻度腹泻。"],
+["半乳甘露聚糖","Galactomannan","00.014","—","other","B","较低","天然多糖，可作增稠剂与稳定剂使用。","饮料、乳制品、调味品","天然来源，安全性良好。"],
+["冰结构蛋白","Ice structuring protein","00.020","—","other","A","低","从极地鱼类中提取的蛋白，可抑制冰晶生长，改善冷冻食品品质。","冷冻饮品、冷冻食品","天然蛋白来源，按需适量使用，安全性良好。"],
+["乙酸钠","Sodium acetate","00.013","262i","acid","B","较低","乙酸钠盐，兼作酸度调节剂、防腐剂与缓冲剂。","调味品、糕点、肉制品","人体代谢物；需计入钠摄入。"],
+["丁烷","Butane","00.0xx","—","aid","C","中等","碳氢化合物溶剂，用于油脂萃取与喷雾载体。","油脂萃取、香精喷雾干燥","残留溶剂有内控限值，成品需符合标准。"],
+["石油醚","Petroleum ether","—","—","aid","C","中等","非极性有机溶剂，用于油脂与香料的萃取。","香精萃取、油脂提取","成品溶剂残留有严格限值；属有机溶剂类，规范使用安全。"],
+["乙醚","Diethyl ether","—","—","aid","C","中等","有机溶剂，用于油脂与天然产物萃取。","香精萃取、油脂加工","残留溶剂须严格去除，符合标准方可用于食品加工。"]
+];
+
+/* ---------- 功能类别（GB 2760 附录 E，E.1–E.23） ---------- */
+var CATS=[
+ {k:"acid",n:"酸度调节剂",no:"E.1",d:"用以维持或改变食品酸碱度的物质。"},
+ {k:"anticaking",n:"抗结剂",no:"E.2",d:"防止颗粒或粉状食品聚集结块，保持其松散或自由流动的物质。"},
+ {k:"defoamer",n:"消泡剂",no:"E.3",d:"在食品加工过程中降低表面张力、消除泡沫的物质。"},
+ {k:"antioxidant",n:"抗氧化剂",no:"E.4",d:"能防止或延缓油脂或食品成分氧化分解、变质，提高食品稳定性的物质。"},
+ {k:"bleach",n:"漂白剂",no:"E.5",d:"能够破坏、抑制食品的发色因素，使其褪色或免于褐变的物质。"},
+ {k:"leavening",n:"膨松剂",no:"E.6",d:"加入后能使产品发起形成致密多孔组织，使制品膨松、柔软或酥脆的物质。"},
+ {k:"gumbase",n:"胶基糖果中基础剂物质",no:"E.7",d:"赋予胶基糖果起泡、增塑、耐咀嚼等作用的物质。"},
+ {k:"color",n:"着色剂",no:"E.8",d:"使食品赋予色泽和改善食品色泽的物质。"},
+ {k:"colorfix",n:"护色剂",no:"E.9",d:"能与肉及肉制品中呈色物质作用，使之在加工保藏中不致分解破坏、呈现良好色泽的物质。"},
+ {k:"emulsifier",n:"乳化剂",no:"E.10",d:"能改善乳化体中各种构成相之间的表面张力，形成均匀分散体或乳化体的物质。"},
+ {k:"enzyme",n:"酶制剂",no:"E.11",d:"由动植物直接提取或经微生物发酵、提取制得，用于食品加工并具有特殊催化功能的生物制品。"},
+ {k:"flavor_enh",n:"增味剂",no:"E.12",d:"补充或增强食品原有风味的物质。"},
+ {k:"flour",n:"面粉处理剂",no:"E.13",d:"促进面粉的熟化和提高制品质量的物质。"},
+ {k:"glazing",n:"被膜剂",no:"E.14",d:"涂抹于食品外表，起保质、保鲜、上光、防止水分蒸发等作用的物质。"},
+ {k:"humectant",n:"水分保持剂",no:"E.15",d:"有助于保持食品中水分而加入的物质。"},
+ {k:"fortify",n:"营养强化剂",no:"E.16",d:"为增强营养成分而加入食品中的、属于天然营养素范围的天然或人工合成物质。"},
+ {k:"preservative",n:"防腐剂",no:"E.17",d:"防止食品腐败变质、延长食品储存期的物质。"},
+ {k:"stabilizer",n:"稳定剂和凝固剂",no:"E.18",d:"使食品结构稳定或组织结构不变，增强粘性固形物的物质。"},
+ {k:"sweetener",n:"甜味剂",no:"E.19",d:"赋予食品以甜味的物质。"},
+ {k:"thickener",n:"增稠剂",no:"E.20",d:"可以提高食品粘稠度或形成凝胶，改变食品物理性状、赋予粘润口感的物质。"},
+ {k:"flavor",n:"食品用香料",no:"E.21",d:"能够用于调配食品香精，并使食品增香的物质。"},
+ {k:"aid",n:"食品工业用加工助剂",no:"E.22",d:"有助于食品加工顺利进行的各种物质，与食品本身无关，如助滤、澄清、吸附、脱模、脱色、脱皮、提取溶剂等。"},
+ {k:"other",n:"其他",no:"E.23",d:"上述功能类别中不能涵盖的其他功能。"}
+];
+
+var G={A:{n:"A 级",t:"低",c:"var(--A)",bg:"var(--A-bg)",bd:"var(--A-bd)",d:"安全性充分、无使用争议"},
+       B:{n:"B 级",t:"较低",c:"var(--B)",bg:"var(--B-bg)",bd:"var(--B-bd)",d:"常规使用安全，有明确 ADI"},
+       C:{n:"C 级",t:"中等",c:"var(--C)",bg:"var(--C-bg)",bd:"var(--C-bd)",d:"存在一定争议或过量风险"},
+       D:{n:"D 级",t:"较高",c:"var(--D)",bg:"var(--D-bg)",bd:"var(--D-bd)",d:"高关注品种，建议主动减少摄入"}};
+var GK=["A","B","C","D"];
+
+/* ---------- 构建对象 ---------- */
+var ITEMS=DATA.map(function(r,i){
+  var cat=CATS.filter(function(c){return c.k===r[4]})[0]||{n:"其他",k:"other",no:"E.23"};
+  return {id:i,name:r[0],en:r[1],cns:r[2],ins:r[3],cat:r[4],catName:cat.n,catNo:cat.no,
+          g:r[5],hz:r[6],desc:r[7],use:r[8],risk:r[9]};
+});
+
+var state={cat:"all",grades:{A:1,B:1,C:1,D:1},q:"",sort:"grade",view:"card"};
+var sortKey="grade",sortAsc=false;
+
+function gw(i){return i.g}
+function gradeRank(g){return {D:0,C:1,B:2,A:3}[g]}
+function cnsNum(s){var m=String(s).match(/(\d{2})\.(\d{3})/);return m?(+m[1])*1000+(+m[2]):99999}
+
+/* ---------- 渲染侧栏 ---------- */
+function renderSide(){
+  var counts={};ITEMS.forEach(function(i){counts[i.cat]=(counts[i.cat]||0)+1});
+  var html='<button class="cat'+(state.cat==="all"?" on":"")+'" data-k="all"><span class="dot"></span><span class="nm">全部添加剂</span><span class="ct">'+ITEMS.length+'</span></button>';
+  CATS.forEach(function(c){
+    var n=counts[c.k]||0;
+    html+='<button class="cat'+(state.cat===c.k?" on":"")+'" data-k="'+c.k+'" title="'+c.no+' '+c.n+'：'+c.d+'"><span class="dot"></span><span class="nm">'+c.n+'</span><span class="ct">'+n+'</span></button>';
+  });
+  document.getElementById("cats").innerHTML=html;
+  document.querySelectorAll("#cats .cat").forEach(function(b){
+    b.onclick=function(){state.cat=b.dataset.k;renderSide();render()}
+  });
+
+  var gh="";
+  GK.forEach(function(g){
+    var n=ITEMS.filter(function(i){return i.g===g}).length;
+    gh+='<button class="grade'+(state.grades[g]?"":" off")+'" data-g="'+g+'" title="'+G[g].n+" · 危害等级"+G[g].t+"："+G[g].d+'">'
+      +'<span class="bd" style="background:'+G[g].c+'">'+g+'</span><span class="nm">'+G[g].n+" · "+G[g].t+'</span><span class="ct">'+n+'</span></button>';
+  });
+  document.getElementById("grades").innerHTML=gh;
+  document.querySelectorAll("#grades .grade").forEach(function(b){
+    b.onclick=function(){var g=b.dataset.g;state.grades[g]=state.grades[g]?0:1;renderSide();render()}
+  });
+  document.getElementById("s1").textContent=ITEMS.length;
+  document.getElementById("s2").textContent=CATS.filter(function(c){return ITEMS.some(function(i){return i.cat===c.k})}).length;
+}
+
+/* ---------- 过滤 / 排序 ---------- */
+function filtered(){
+  var q=state.q.trim().toLowerCase();
+  var arr=ITEMS.filter(function(i){
+    if(state.cat!=="all"&&i.cat!==state.cat)return 0;
+    if(!state.grades[i.g])return 0;
+    if(q){
+      var hay=(i.name+" "+i.en+" "+i.cns+" "+i.ins+" "+i.catName+" "+i.desc+" "+i.use+" "+i.risk).toLowerCase();
+      if(hay.indexOf(q)<0)return 0;
+    }
+    return 1;
+  });
+  var s=sortKey;
+  arr.sort(function(a,b){
+    var r=0;
+    if(s==="grade")r=gradeRank(a.g)-gradeRank(b.g);
+    else if(s==="gradeAsc")r=gradeRank(b.g)-gradeRank(a.g);
+    else if(s==="cat")r=(a.catNo+a.cat).localeCompare(b.catNo+b.cat)||(gradeRank(a.g)-gradeRank(b.g));
+    else if(s==="name")r=a.name.localeCompare(b.name,"zh-Hans-CN");
+    else if(s==="cns")r=cnsNum(a.cns)-cnsNum(b.cns);
+    if(sortAsc&&(s==="name"||s==="cns"||s==="grade"||s==="gradeAsc"))r=-r;
+    return r||a.id-b.id;
+  });
+  return arr;
+}
+
+/* ---------- 渲染主体 ---------- */
+function render(){
+  var arr=filtered();
+  document.getElementById("cnt").textContent=arr.length+" 项";
+  document.getElementById("s3").textContent=arr.length;
+  var catObj=CATS.filter(function(c){return c.k===state.cat})[0];
+  document.getElementById("ttl").innerHTML=(catObj?catObj.n+" <span style='font-size:11.5px;color:var(--tx3);font-weight:500'>"+catObj.no+" "+catObj.d+"</span>":"全部添加剂");
+
+  // 已启用筛选 chips
+  var ch=[];
+  if(state.cat!=="all")ch.push('<span class="chip on">'+catObj.n+'</span>');
+  GK.forEach(function(g){if(!state.grades[g])ch.push('<span class="chip">已隐藏 '+g+' 级</span>')});
+  if(state.q)ch.push('<span class="chip on">关键词：'+state.q.replace(/</g,"&lt;")+'</span>');
+  document.getElementById("activechips").innerHTML=ch.join("");
+
+  var cards=document.getElementById("cards"),tb=document.getElementById("tbody");
+  if(!arr.length){
+    cards.innerHTML='<div class="empty" style="grid-column:1/-1"><b>没有匹配的添加剂</b>换个关键词，或放开评分筛选试试</div>';
+    tb.innerHTML='<tr><td colspan="8"><div class="empty"><b>没有匹配的添加剂</b>换个关键词，或放开评分筛选试试</div></td></tr>';
+    return;
+  }
+  var ch2="";
+  arr.forEach(function(i){
+    ch2+='<div class="card" data-g="'+i.g+'" data-id="'+i.id+'">'
+      +'<div class="chead">'
+      +'<div class="gbox" style="background:'+G[i.g].c+'" title="'+G[i.g].n+"："+G[i.g].d+'">'+i.g+'</div>'
+      +'<div class="cn"><div class="nm">'+esc(i.name)+'<span class="fn">'+i.catName+'</span></div>'
+      +'<div class="en">'+esc(i.en||"—")+'</div>'
+      +'<div class="ids"><span>CNS <code>'+i.cns+'</code></span><span>INS <code>'+i.ins+'</code></span></div></div>'
+      +'<span class="hz" data-g="'+i.g+'">危害 '+i.hz+'</span>'
+      +'</div>'
+      +'<div class="cdesc">'+esc(i.desc)+'</div>'
+      +'<div class="cextra">'
+      +'<div class="row"><span class="lb">典型用途</span><span class="vl">'+esc(i.use)+'</span></div>'
+      +'<div class="row"><span class="lb">风险提示</span><span class="vl warn">'+esc(i.risk)+'</span></div>'
+      +'<div class="row"><span class="lb">评分依据</span><span class="vl">'+G[i.g].n+'（'+G[i.g].d+'），危害等级：'+i.hz+'。</span></div>'
+      +'</div></div>';
+  });
+  cards.innerHTML=ch2;
+  cards.querySelectorAll(".card").forEach(function(c){
+    c.onclick=function(){c.classList.toggle("open")}
+  });
+
+  var th="";
+  arr.forEach(function(i){
+    th+='<tr data-g="'+i.g+'"><td class="nm" title="'+esc(i.name)+'">'+esc(i.name)+'</td>'
+      +'<td class="en" title="'+esc(i.en)+'">'+esc(i.en||"—")+'</td>'
+      +'<td>'+i.catName+'</td>'
+      +'<td class="mono">'+i.cns+'</td>'
+      +'<td class="mono">'+i.ins+'</td>'
+      +'<td><span class="gpill" style="background:'+G[i.g].c+'">'+i.g+'</span></td>'
+      +'<td><span class="tagp" style="color:'+G[i.g].c+';background:'+G[i.g].bg+';border:1px solid '+G[i.g].bd+'">'+i.hz+'</span></td>'
+      +'<td class="ds" title="'+esc(i.desc+" | 风险提示：" +i.risk)+'">'+esc(i.desc)+'</td></tr>';
+  });
+  tb.innerHTML=th;
+}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+
+/* ---------- 交互 ---------- */
+var qEl=document.getElementById("q"),clrEl=document.getElementById("clr");
+qEl.oninput=function(){state.q=qEl.value;clrEl.style.display=qEl.value?"block":"none";render()};
+clrEl.onclick=function(){qEl.value="";state.q="";clrEl.style.display="none";qEl.focus();render()};
+document.getElementById("sort").onchange=function(e){
+  var v=e.target.value;
+  if(v==="gradeAsc"){sortKey="gradeAsc";sortAsc=false}
+  else {sortKey=v;sortAsc=false}
+  render();
+};
+document.getElementById("allcat").onclick=function(){state.cat="all";renderSide();render()};
+document.getElementById("allg").onclick=function(){
+  var on=GK.every(function(g){return state.grades[g]});
+  GK.forEach(function(g){state.grades[g]=on?0:1});
+  renderSide();render();
+};
+document.getElementById("vCard").onclick=function(){
+  state.view="card";this.classList.add("on");document.getElementById("vTable").classList.remove("on");
+  document.getElementById("cards").style.display="grid";document.getElementById("tablewrap").classList.remove("on");
+};
+document.getElementById("vTable").onclick=function(){
+  state.view="table";this.classList.add("on");document.getElementById("vCard").classList.remove("on");
+  document.getElementById("cards").style.display="none";document.getElementById("tablewrap").classList.add("on");
+};
+document.querySelectorAll("thead th.srt").forEach(function(th){
+  th.onclick=function(){
+    var s=th.dataset.s;
+    if(s==="hz")s="grade";
+    if(sortKey===s)sortAsc=!sortAsc;else{sortKey=s;sortAsc=false}
+    var map={grade:"grade",gradeAsc:"gradeAsc",cat:"cat",name:"name",cns:"cns",en:"name",ins:"cns"};
+    document.getElementById("sort").value=map[s]||"grade";
+    render();
+  };
+});
+window.addEventListener("scroll",function(){
+  document.getElementById("totop").classList[window.scrollY>400?"add":"remove"]("on");
+});
+document.getElementById("totop").onclick=function(){window.scrollTo({top:0,behavior:"smooth"})};
+
+renderSide();render();
+</script>
+</body>
+</html>

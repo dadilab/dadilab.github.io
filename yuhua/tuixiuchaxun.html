@@ -1,963 +1,621 @@
+
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>女职工/女干部延迟法定退休年龄查询表</title>
+<html lang="zh-CN" data-page-node-id="nbzfFJ3q4Essm0aZagspan">
+<head data-page-node-id="vCcCZ0dFlTzvkotN8OOlDL">
+<meta charset="UTF-8" data-page-node-id="0t8XWTQ6nY8Hkfzu5EbtKD">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="59GmhespDHZ5fgGfhzaTj4">
+<title>延迟法定退休年龄查询表（男职工/男干部/女干部/女工人）</title>
 <style>
   :root {
-    --primary: #1a5276;
-    --primary-light: #2e86c1;
-    --primary-soft: #d6eaf8;
-    --accent: #e74c3c;
-    --accent-soft: #fadbd8;
-    --success: #27ae60;
-    --success-soft: #d5f5e3;
-    --worker: #8e44ad;
-    --worker-soft: #e8daef;
-    --cadre: #1a5276;
-    --cadre-soft: #d6eaf8;
-    --gray-50: #f8f9fa;
-    --gray-100: #e9ecef;
-    --gray-200: #dee2e6;
-    --gray-300: #ced4da;
-    --gray-500: #6c757d;
-    --gray-700: #495057;
-    --gray-900: #212529;
+    --mw: #1a5276;       --mw-soft: #d6eaf8;   /* 男职工 */
+    --mc: #0e6655;       --mc-soft: #d1f2eb;   /* 男干部 */
+    --fc: #8e44ad;       --fc-soft: #e8daef;   /* 女干部 */
+    --fw: #c0392b;       --fw-soft: #fadbd8;   /* 女工人 */
+    --accent: #d35400;
+    --success: #1e8449;  --success-soft: #d5f5e3;
+    --gray-50: #f8f9fa; --gray-100: #eef1f4; --gray-200: #dee2e6;
+    --gray-300: #ced4da; --gray-500: #6c757d; --gray-700: #495057; --gray-900: #212529;
     --radius: 12px;
     --shadow: 0 2px 12px rgba(0,0,0,.08);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    background: #eef2f7;
-    color: var(--gray-900);
-    padding: 24px;
-    line-height: 1.6;
+    background: #eef2f7; color: var(--gray-900); padding: 24px; line-height: 1.6;
   }
-  .container { max-width: 960px; margin: 0 auto; }
+  .container { max-width: 1000px; margin: 0 auto; }
 
   /* Header */
   .header {
-    background: linear-gradient(135deg, var(--primary), var(--primary-light));
-    color: #fff;
-    padding: 28px 28px;
-    border-radius: var(--radius) var(--radius) 0 0;
-    text-align: center;
+    background: linear-gradient(135deg, #1a5276, #2e86c1);
+    color: #fff; padding: 26px 24px; border-radius: var(--radius) var(--radius) 0 0; text-align: center;
   }
-  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
-  .header p { font-size: 14px; opacity: .85; margin-top: 6px; }
-  .header .tags { margin-top: 10px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-  .header .tag {
-    display: inline-block;
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-  }
-  .header .tag.worker { background: var(--worker); }
-  .header .tag.cadre { background: rgba(255,255,255,.2); }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: .5px; }
+  .header p { font-size: 13px; opacity: .85; margin-top: 6px; }
+  .tags { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .tag { padding: 4px 12px; border-radius: 20px; font-size: 12.5px; }
+  .tag.mw { background: var(--mw); }
+  .tag.mc { background: var(--mc); }
+  .tag.fc { background: var(--fc); }
+  .tag.fw { background: var(--fw); }
 
-  /* Card */
   .card {
-    background: #fff;
-    border-radius: 0 0 var(--radius) var(--radius);
-    box-shadow: var(--shadow);
-    padding: 28px;
-    margin-bottom: 20px;
+    background: #fff; border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow); padding: 26px; margin-bottom: 20px;
   }
+  .card.standalone { border-radius: var(--radius); }
 
-  /* Type Selector */
-  .type-selector {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
+  /* Type selector */
+  .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
   .type-option {
-    flex: 1;
-    padding: 16px 20px;
-    border: 2px solid var(--gray-200);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: all .25s;
-    text-align: center;
-    background: #fff;
+    padding: 14px 10px; border: 2px solid var(--gray-200); border-radius: var(--radius);
+    cursor: pointer; transition: all .2s; text-align: center; background: #fff;
   }
   .type-option:hover { border-color: var(--gray-300); }
-  .type-option.worker {
-    --type-color: var(--worker);
-    --type-soft: var(--worker-soft);
-  }
-  .type-option.cadre {
-    --type-color: var(--cadre);
-    --type-soft: var(--cadre-soft);
-  }
-  .type-option.selected {
-    border-color: var(--type-color);
-    background: var(--type-soft);
-  }
-  .type-option .icon { font-size: 28px; display: block; margin-bottom: 6px; }
-  .type-option .name { font-size: 16px; font-weight: 700; color: var(--gray-900); }
-  .type-option .desc { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
-  .type-option.selected .desc { color: var(--type-color); font-weight: 500; }
+  .type-option.mw { --c: var(--mw); --s: var(--mw-soft); }
+  .type-option.mc { --c: var(--mc); --s: var(--mc-soft); }
+  .type-option.fc { --c: var(--fc); --s: var(--fc-soft); }
+  .type-option.fw { --c: var(--fw); --s: var(--fw-soft); }
+  .type-option.selected { border-color: var(--c); background: var(--s); }
+  .type-option .icon { font-size: 24px; display: block; }
+  .type-option .name { font-size: 15px; font-weight: 700; margin-top: 2px; }
+  .type-option .age { font-size: 12.5px; color: var(--gray-500); margin-top: 2px; }
+  .type-option .rule { font-size: 11.5px; color: var(--gray-500); margin-top: 2px; }
+  .type-option.selected .age, .type-option.selected .rule { color: var(--c); font-weight: 600; }
 
   /* Tabs */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--gray-100);
-    border-radius: 8px;
-    padding: 4px;
-    margin-bottom: 24px;
-  }
+  .tabs { display: flex; gap: 4px; background: var(--gray-100); border-radius: 8px; padding: 4px; margin-bottom: 22px; }
   .tab-btn {
-    flex: 1;
-    padding: 10px 16px;
-    border: none;
-    background: transparent;
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--gray-700);
-    cursor: pointer;
-    transition: all .2s;
-    text-align: center;
+    flex: 1; padding: 10px 12px; border: none; background: transparent; border-radius: 6px;
+    font-size: 14.5px; font-weight: 500; color: var(--gray-700); cursor: pointer; transition: all .2s;
   }
-  .tab-btn:hover { color: var(--primary); }
-  .tab-btn.active {
-    background: #fff;
-    color: var(--primary);
-    box-shadow: 0 1px 4px rgba(0,0,0,.1);
-  }
-
-  /* Tab Content */
+  .tab-btn:hover { color: var(--mw); }
+  .tab-btn.active { background: #fff; color: var(--mw); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
   /* Form */
-  .form-group { margin-bottom: 18px; }
-  .form-group label {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--gray-700);
-    margin-bottom: 6px;
-  }
-  .form-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 14px; font-weight: 600; color: var(--gray-700); margin-bottom: 8px; }
+  .form-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .form-row select, .form-row input[type="number"] {
-    padding: 10px 14px;
-    border: 2px solid var(--gray-200);
-    border-radius: 8px;
-    font-size: 15px;
-    outline: none;
-    transition: border-color .2s;
-    background: #fff;
-    color: var(--gray-900);
-    min-width: 80px;
+    padding: 10px 12px; border: 2px solid var(--gray-200); border-radius: 8px;
+    font-size: 15px; outline: none; background: #fff; color: var(--gray-900); min-width: 84px;
   }
-  .form-row select:focus, .form-row input[type="number"]:focus {
-    border-color: var(--primary-light);
-  }
-  .form-row .suffix { font-size: 14px; color: var(--gray-500); white-space: nowrap; }
+  .form-row select:focus, .form-row input[type="number"]:focus { border-color: #2e86c1; }
+  .suffix { font-size: 14px; color: var(--gray-500); white-space: nowrap; }
   .btn-query {
-    padding: 12px 40px;
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background .2s;
-    margin-top: 6px;
+    padding: 11px 36px; background: var(--mw); color: #fff; border: none; border-radius: 8px;
+    font-size: 15.5px; font-weight: 600; cursor: pointer; transition: background .2s;
   }
-  .btn-query:hover { background: var(--primary-light); }
+  .btn-query:hover { background: #2e86c1; }
+  .hint { font-size: 13px; color: var(--gray-500); margin-top: 8px; }
 
   /* Result */
   .result-box {
-    margin-top: 24px;
-    border: 2px solid var(--primary-soft);
-    border-radius: var(--radius);
-    padding: 20px 24px;
-    background: var(--gray-50);
+    margin-top: 20px; border: 2px solid var(--gray-200); border-radius: var(--radius);
+    padding: 18px 22px; background: var(--gray-50);
   }
   .result-box h3 {
-    font-size: 16px;
-    color: var(--primary);
-    margin-bottom: 14px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--primary-soft);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 16px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid var(--gray-200);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   }
-  .result-box h3 .type-badge {
-    font-size: 12px;
-    padding: 2px 10px;
-    border-radius: 10px;
-    font-weight: 500;
-  }
-  .type-badge.worker { background: var(--worker-soft); color: var(--worker); }
-  .type-badge.cadre { background: var(--cadre-soft); color: var(--cadre); }
+  .badge { font-size: 12px; padding: 2px 10px; border-radius: 10px; font-weight: 600; color: #fff; }
+  .badge.mw { background: var(--mw); } .badge.mc { background: var(--mc); }
+  .badge.fc { background: var(--fc); } .badge.fw { background: var(--fw); }
   .result-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px dashed var(--gray-200);
-    font-size: 15px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 8px 0; border-bottom: 1px dashed var(--gray-200); font-size: 15px;
   }
   .result-item:last-child { border-bottom: none; }
-  .result-item .label { color: var(--gray-500); }
-  .result-item .value { font-weight: 600; color: var(--gray-900); }
-  .result-item .value.highlight {
-    color: var(--accent);
-    font-size: 20px;
-    font-weight: 700;
-  }
-  .result-item .value.success { color: var(--success); }
-  .result-note {
-    margin-top: 12px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-  .result-note.info { background: var(--primary-soft); color: var(--primary); }
-  .result-note.warn { background: var(--accent-soft); color: var(--accent); }
+  .result-item .label { color: var(--gray-500); white-space: nowrap; }
+  .result-item .value { font-weight: 600; text-align: right; }
+  .value.big { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .value.primary { font-size: 18px; font-weight: 700; color: var(--mw); }
+  .value.ok { color: var(--success); }
+  .note { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13.5px; }
+  .note.info { background: var(--mw-soft); color: var(--mw); }
+  .note.warn { background: #fdebd0; color: #935116; }
+  .hero { text-align: center; padding: 6px 0 12px; }
+  .hero .cap { font-size: 13px; color: var(--gray-500); }
+  .hero .big-date { font-size: 30px; font-weight: 800; color: var(--accent); letter-spacing: 1px; }
 
-  /* Reference Table */
-  .ref-section { margin-top: 20px; }
-  .ref-section h2 {
-    font-size: 18px;
-    color: var(--primary);
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid var(--primary-soft);
-  }
-  .table-wrap {
-    overflow-x: auto;
-    border-radius: var(--radius);
-    border: 1px solid var(--gray-200);
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    min-width: 760px;
-  }
-  thead th {
-    padding: 10px 12px;
-    text-align: center;
-    font-weight: 600;
-    white-space: nowrap;
-    position: sticky;
-    top: 0;
-    color: #fff;
-  }
-  thead th.worker-thead { background: var(--worker); }
-  thead th.cadre-thead { background: var(--cadre); }
-  tbody td {
-    padding: 8px 12px;
-    text-align: center;
-    border-bottom: 1px solid var(--gray-100);
-  }
-  tbody tr:hover { background: var(--gray-50); }
-  tbody tr:nth-child(even) { background: #fbfcfd; }
-  tbody tr:nth-child(even):hover { background: var(--gray-50); }
-  .delay-badge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 13px;
-  }
-  .delay-badge.small { background: var(--success-soft); color: var(--success); }
-  .delay-badge.medium { background: #fef9e7; color: #b7950b; }
-  .delay-badge.large { background: var(--accent-soft); color: var(--accent); }
+  /* Summary */
+  .summary-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .summary-item { background: var(--gray-50); border-radius: 8px; padding: 12px 14px; text-align: center; border: 1px solid var(--gray-200); }
+  .summary-item .num { font-size: 22px; font-weight: 700; display: block; }
+  .summary-item .desc { font-size: 12.5px; color: var(--gray-500); margin-top: 2px; }
+  .policy-table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 6px; }
+  .policy-table th { padding: 9px 10px; text-align: center; color: #fff; font-weight: 600; }
+  .policy-table th.mw { background: var(--mw); } .policy-table th.mc { background: var(--mc); }
+  .policy-table th.fc { background: var(--fc); } .policy-table th.fw { background: var(--fw); }
+  .policy-table td { padding: 9px 10px; text-align: center; border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+  .policy-table tbody tr:hover { background: var(--gray-50); }
 
-  /* Summary strip */
-  .summary-strip {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-    margin-bottom: 16px;
+  /* Reference table */
+  .ref-head { font-size: 18px; color: var(--mw); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--mw-soft); }
+  .table-toggle { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tt-btn {
+    padding: 8px 16px; border: 2px solid var(--gray-200); border-radius: 8px; background: #fff;
+    cursor: pointer; font-size: 13.5px; font-weight: 500; transition: all .2s;
   }
-  .summary-item {
-    background: var(--gray-50);
-    border-radius: 8px;
-    padding: 14px 16px;
-    text-align: center;
-    border: 1px solid var(--gray-200);
+  .tt-btn.male { color: var(--mw); } .tt-btn.fc { color: var(--fc); } .tt-btn.fw { color: var(--fw); }
+  .tt-btn.active.male { border-color: var(--mw); background: var(--mw-soft); }
+  .tt-btn.active.fc { border-color: var(--fc); background: var(--fc-soft); }
+  .tt-btn.active.fw { border-color: var(--fw); background: var(--fw-soft); }
+  .table-wrap { overflow-x: auto; max-height: 560px; border-radius: var(--radius); border: 1px solid var(--gray-200); }
+  table.ref { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 700px; }
+  table.ref thead th {
+    padding: 10px 12px; text-align: center; font-weight: 600; white-space: nowrap;
+    position: sticky; top: 0; color: #fff; z-index: 2;
   }
-  .summary-item .num {
-    font-size: 26px;
-    font-weight: 700;
-    display: block;
-  }
-  .summary-item .num.worker { color: var(--worker); }
-  .summary-item .num.cadre { color: var(--cadre); }
-  .summary-item .desc {
-    font-size: 13px;
-    color: var(--gray-500);
-    margin-top: 4px;
-  }
+  table.ref thead th.male { background: var(--mw); }
+  table.ref thead th.fc { background: var(--fc); }
+  table.ref thead th.fw { background: var(--fw); }
+  table.ref tbody td { padding: 7px 12px; text-align: center; border-bottom: 1px solid var(--gray-100); white-space: nowrap; }
+  table.ref tbody tr:hover { background: #eaf2f8; }
+  table.ref tbody tr.hit { background: #fff3cd; }
+  table.ref tbody tr.hit:hover { background: #ffe8a1; }
+  .d-badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-weight: 600; font-size: 12.5px; }
+  .d-badge.s1 { background: var(--success-soft); color: var(--success); }
+  .d-badge.s2 { background: #fef9e7; color: #9a7d0a; }
+  .d-badge.s3 { background: var(--fw-soft); color: var(--fw); }
 
-  /* Table toggle */
-  .table-toggle {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  .table-toggle-btn {
-    padding: 8px 20px;
-    border: 2px solid var(--gray-200);
-    border-radius: 8px;
-    background: #fff;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all .2s;
-  }
-  .table-toggle-btn.worker { color: var(--worker); }
-  .table-toggle-btn.cadre { color: var(--cadre); }
-  .table-toggle-btn.active.worker {
-    border-color: var(--worker);
-    background: var(--worker-soft);
-  }
-  .table-toggle-btn.active.cadre {
-    border-color: var(--cadre);
-    background: var(--cadre-soft);
-  }
-  .table-view { display: none; }
-  .table-view.active { display: block; }
+  .footer { text-align: center; font-size: 13px; color: var(--gray-500); padding: 12px; }
 
-  /* Responsive */
-  @media (max-width: 640px) {
+  @media (max-width: 720px) {
     body { padding: 12px; }
     .card { padding: 16px; }
-    .header { padding: 24px 16px; }
-    .header h1 { font-size: 18px; }
-    .type-selector { flex-direction: column; }
+    .type-grid { grid-template-columns: repeat(2, 1fr); }
     .form-row { flex-direction: column; align-items: stretch; }
     .form-row select, .form-row input[type="number"] { width: 100%; }
     .btn-query { width: 100%; }
-    .result-item { flex-direction: column; align-items: flex-start; gap: 4px; }
-    .tabs { gap: 2px; padding: 3px; }
-    .tab-btn { font-size: 13px; padding: 8px 6px; }
+    .result-item { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .result-item .value { text-align: left; }
+    .tab-btn { font-size: 13px; padding: 9px 4px; }
+    .hero .big-date { font-size: 25px; }
   }
 </style>
 </head>
-<body>
+<body data-page-node-id="A0yGrsSwzKAK4ksqCryBkO">
+<div class="container" data-page-node-id="ZZDT41fxnqsSX9CvC6QQAB">
 
-<div class="container">
-
-  <!-- Header -->
-  <div class="header">
-    <h1>📋 女职工/女干部延迟法定退休年龄查询表</h1>
-    <p>依据《关于实施渐进式延迟法定退休年龄的决定》（2024年9月13日）</p>
-    <div class="tags">
-      <span class="tag worker">👩‍🔧 女工人：50→55岁 | 每2月延迟1月</span>
-      <span class="tag cadre">👩‍💼 女干部：55→60岁 | 每4月延迟1月</span>
+  <div class="header" data-page-node-id="JVDUZH4V0fRTM1HOmSSwJs">
+    <h1 data-page-node-id="QwgPBlgAEWctiCEZftGscj">📋 延迟法定退休年龄查询表</h1>
+    <p data-page-node-id="ewo0X32suXYavBlmEsjEui">依据《关于实施渐进式延迟法定退休年龄的决定》（2024年9月13日）· 改革自 2025年1月1日 起施行</p>
+    <div class="tags" data-page-node-id="fTHgRvWMICd9RdyoYB94BT">
+      <span class="tag mw" data-page-node-id="ozG0hk81jXgc8HJLdMKNCX">👷 男职工 60→63</span>
+      <span class="tag mc" data-page-node-id="QbEEuGDt6NQH4mmtDSytQ1">👔 男干部 60→63</span>
+      <span class="tag fc" data-page-node-id="fu7pai76DZOEtq24qofjvr">👩‍💼 女干部 55→58</span>
+      <span class="tag fw" data-page-node-id="kD89zM51IQHqRPkswOdAiD">👩‍🔧 女工人 50→55</span>
     </div>
   </div>
 
-  <!-- Query Card -->
-  <div class="card">
-
-    <!-- Type selector -->
-    <div class="type-selector" id="typeSelector">
-      <div class="type-option worker selected" data-type="worker" onclick="switchType('worker')">
-        <span class="icon">👩‍🔧</span>
-        <div class="name">女工人</div>
-        <div class="desc">原法定退休年龄 50 周岁</div>
-        <div class="desc" style="font-size:12px;">延迟规则：每 2 个月延迟 1 个月</div>
+  <!-- Query -->
+  <div class="card" data-page-node-id="QimGzi5mKzFuHtxB9nukna">
+    <div class="type-grid" id="typeGrid" data-page-node-id="dKCh8lL1bo0F4Ph80gQET3">
+      <div class="type-option mw selected" data-type="mw" onclick="switchType('mw')" data-page-node-id="TwH524gGEAgo0QUjvBLQfQ">
+        <span class="icon" data-page-node-id="BkBoRgVXJWgYT6CBZq5Pmf">👷</span>
+        <div class="name" data-page-node-id="MLYqnUUSPBBMaz9d6ZUDe3">男职工</div>
+        <div class="age" data-page-node-id="umgZwm74sUYOMc2ODsSU7K">60 → 63 周岁</div>
+        <div class="rule" data-page-node-id="xSbg11CoJ29jS1yGw9K6NM">每 4 月延迟 1 月</div>
       </div>
-      <div class="type-option cadre" data-type="cadre" onclick="switchType('cadre')">
-        <span class="icon">👩‍💼</span>
-        <div class="name">女干部</div>
-        <div class="desc">原法定退休年龄 55 周岁</div>
-        <div class="desc" style="font-size:12px;">延迟规则：每 4 个月延迟 1 个月</div>
+      <div class="type-option mc" data-type="mc" onclick="switchType('mc')" data-page-node-id="dB5vrTvUQ4QvbvUB3C7scC">
+        <span class="icon" data-page-node-id="ceo7BV7s9RuN5rFzAriQhi">👔</span>
+        <div class="name" data-page-node-id="XlBAYdZrPwit0Cgoa25lIT">男干部</div>
+        <div class="age" data-page-node-id="DQw4OQ7MVYhTuVcaF3C3ZO">60 → 63 周岁</div>
+        <div class="rule" data-page-node-id="iy0lOjjTIWA1gH2CAqC9HB">每 4 月延迟 1 月</div>
+      </div>
+      <div class="type-option fc" data-type="fc" onclick="switchType('fc')" data-page-node-id="EhttSLM0wXMiEAS7EtqBmi">
+        <span class="icon" data-page-node-id="uic9yQ5XI7LDDFBeoKbrWW">👩‍💼</span>
+        <div class="name" data-page-node-id="43vuSvpIBDVarqEv9WXFso">女干部</div>
+        <div class="age" data-page-node-id="vtvfvN6GE5JQTQGW6ZtSda">55 → 58 周岁</div>
+        <div class="rule" data-page-node-id="FntHaxkv0W7XvUrdzoTAea">每 4 月延迟 1 月</div>
+      </div>
+      <div class="type-option fw" data-type="fw" onclick="switchType('fw')" data-page-node-id="Ak4yukG2EY0lI7kHmBgr4r">
+        <span class="icon" data-page-node-id="ndCbK8vFAqePoyyrlq0mqJ">👩‍🔧</span>
+        <div class="name" data-page-node-id="QPexAVsAtnMF5hOpqxOfnk">女工人</div>
+        <div class="age" data-page-node-id="kdwMTHVD6r75iUPAdBr2FX">50 → 55 周岁</div>
+        <div class="rule" data-page-node-id="AI5KpEexb0VjjwCGRZalu6">每 2 月延迟 1 月</div>
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs" role="tablist">
-      <button class="tab-btn active" data-tab="birth" role="tab">📅 出生年月</button>
-      <button class="tab-btn" data-tab="age" role="tab">🎂 当前年龄</button>
-      <button class="tab-btn" data-tab="retire-age" role="tab">🎯 改革后退休年龄</button>
+    <div class="tabs" role="tablist" data-page-node-id="KUSEsr166Y8j7FgrENACEs">
+      <button class="tab-btn active" data-tab="birth" data-page-node-id="zq4inPJbN2Gsih6VPbpqr8">📅 出生年月</button>
+      <button class="tab-btn" data-tab="age" data-page-node-id="RoTeqjbZC8oFarx51O0oHQ">🎂 当前年龄</button>
+      <button class="tab-btn" data-tab="ra" data-page-node-id="ehcOPmJRWB4svF8T3xRF4U">🎯 改革后退休年龄</button>
     </div>
 
-    <!-- Tab: 出生年月 -->
-    <div class="tab-content active" id="tab-birth" role="tabpanel">
-      <div class="form-group">
-        <label>输入出生年月</label>
-        <div class="form-row">
-          <select id="birthYear"></select>
-          <span class="suffix">年</span>
-          <select id="birthMonth"></select>
-          <span class="suffix">月</span>
-          <button class="btn-query" onclick="queryByBirth()">查 询</button>
+    <div class="tab-content active" id="tab-birth" data-page-node-id="j2eqLrOo5VWpHXWY3Jl4Sg">
+      <div class="form-group" data-page-node-id="NF2uOSToJeEFlkQJdIko8Q">
+        <label data-page-node-id="tWTuYY3T0D5YungO3SKlIw">选择出生年月</label>
+        <div class="form-row" data-page-node-id="4FJhiEygn9djnuIeHpU1cD">
+          <select id="birthYear" data-page-node-id="nMdbg76CNDNSMNWNwFjr9z"></select><span class="suffix" data-page-node-id="zh6Z9xbzT5qTcDOaNprMju">年</span>
+          <select id="birthMonth" data-page-node-id="JZNs9GlrOQfT8HelU9UrU4"></select><span class="suffix" data-page-node-id="GeRS8wRLFkK08Wqyp1lnCn">月</span>
+          <button class="btn-query" onclick="queryByBirth()" data-page-node-id="0tj9TqwKaI8B06EyxbchsU">查 询</button>
         </div>
+        <p class="hint" id="birthHint" data-page-node-id="NcEUMMSZFpNekN7bReKXDv"></p>
       </div>
-      <div id="result-birth" class="result-box" style="display:none;"></div>
+      <div id="result-birth" class="result-box" style="display:none;" data-page-node-id="NKE9EJvfqS36u2EH7NrBSd"></div>
     </div>
 
-    <!-- Tab: 当前年龄 -->
-    <div class="tab-content" id="tab-age" role="tabpanel">
-      <div class="form-group">
-        <label>输入当前年龄（截至 2026年6月）</label>
-        <div class="form-row">
-          <input type="number" id="ageYears" min="0" max="100" value="40">
-          <span class="suffix">岁</span>
-          <input type="number" id="ageMonths" min="0" max="11" value="0">
-          <span class="suffix">个月</span>
-          <button class="btn-query" onclick="queryByAge()">查 询</button>
+    <div class="tab-content" id="tab-age" data-page-node-id="HNAmrBhsCNAID7QHwSJyst">
+      <div class="form-group" data-page-node-id="lGN8J1YCCwO08plLZcvLYo">
+        <label data-page-node-id="XgcCJ7MAHMA3xuzZBfHYKg">输入当前年龄（截至 <span id="nowLabel" data-page-node-id="Q6JojH0rPFk5erVxbbIhSH"></span>）</label>
+        <div class="form-row" data-page-node-id="7hEZfoCNlByK9AAV7K6YyO">
+          <input type="number" id="ageY" min="0" max="100" value="45" data-page-node-id="d7PsZuBaBNtVBfgjW0kPUb"><span class="suffix" data-page-node-id="QIMkBnrDEBEmRpjiEKNPkH">岁</span>
+          <input type="number" id="ageM" min="0" max="11" value="0" data-page-node-id="RZ9yWjRJeEec6Ei5oUNY65"><span class="suffix" data-page-node-id="IcGkEQ7va3XJoNbzpa1G8n">个月</span>
+          <button class="btn-query" onclick="queryByAge()" data-page-node-id="sE9bl98HuzE4g56TpgopCC">查 询</button>
         </div>
+        <p class="hint" data-page-node-id="uBasUBJ2Ar5RiNDyC6ujlk">按当前年月反推出生月份，仅供估算。精确结果请用「出生年月」查询。</p>
       </div>
-      <div id="result-age" class="result-box" style="display:none;"></div>
+      <div id="result-age" class="result-box" style="display:none;" data-page-node-id="eh9ME2e5scPq62WicWeuCb"></div>
     </div>
 
-    <!-- Tab: 改革后退休年龄 -->
-    <div class="tab-content" id="tab-retire-age" role="tabpanel">
-      <div class="form-group">
-        <label id="retireAgeLabel">输入改革后法定退休年龄</label>
-        <div class="form-row">
-          <input type="number" id="retireAgeYears" min="50" max="60" value="53">
-          <span class="suffix">岁</span>
-          <input type="number" id="retireAgeMonths" min="0" max="11" value="0">
-          <span class="suffix">个月</span>
-          <button class="btn-query" onclick="queryByRetireAge()">查 询</button>
+    <div class="tab-content" id="tab-ra" data-page-node-id="DiZBfh4esYjFf3ke5CjWmT">
+      <div class="form-group" data-page-node-id="Do6CH1PKZOEuGfgV8ejOlV">
+        <label data-page-node-id="asabO7NnUgpJpce3bwBG9y">输入改革后法定退休年龄</label>
+        <div class="form-row" data-page-node-id="4pnCCJPjSwuGpGbMcYTq7B">
+          <input type="number" id="raY" min="50" max="63" value="61" data-page-node-id="O14FHOVSU5aitBsxjlM7Ti"><span class="suffix" data-page-node-id="hr50c8IY3FjAKHHrOz8ovz">岁</span>
+          <input type="number" id="raM" min="0" max="11" value="0" data-page-node-id="HNi5QKsbGpMVwHw7BUNWNU"><span class="suffix" data-page-node-id="H3vp4zP3HcBKPDaMHPPc6W">个月</span>
+          <button class="btn-query" onclick="queryByRetireAge()" data-page-node-id="HnJon1I4IpWCGH0R6KEfzR">查 询</button>
         </div>
-        <p id="retireAgeHint" style="font-size:13px;color:var(--gray-500);margin-top:6px;"></p>
+        <p class="hint" id="raHint" data-page-node-id="kyA39QiEyPVjfz2uWR9CUB"></p>
       </div>
-      <div id="result-retire-age" class="result-box" style="display:none;"></div>
+      <div id="result-ra" class="result-box" style="display:none;" data-page-node-id="3BN06suoCE5pMa9xJcjn6c"></div>
     </div>
-
   </div>
 
-  <!-- Summary -->
-  <div class="card" id="summaryCard">
-    <h2 style="font-size:18px;color:var(--primary);margin-bottom:14px;">📊 政策概要</h2>
-    <div id="summaryContent">
-      <div class="summary-strip">
-        <div class="summary-item">
-          <span class="num worker">50 → 55</span>
-          <span class="desc">女工人 渐进延迟</span>
-        </div>
-        <div class="summary-item">
-          <span class="num cadre">55 → 60</span>
-          <span class="desc">女干部 渐进延迟</span>
-        </div>
-        <div class="summary-item">
-          <span class="num">最长 60 月</span>
-          <span class="desc">最大延迟月数</span>
-        </div>
-        <div class="summary-item">
-          <span class="num">2025.01</span>
-          <span class="desc">改革生效时间</span>
-        </div>
-      </div>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;">
-        <thead>
-          <tr>
-            <th style="padding:8px 12px;text-align:center;background:var(--worker);color:#fff;">女工人（原50岁）</th>
-            <th style="padding:8px 12px;text-align:center;background:var(--cadre);color:#fff;">女干部（原55岁）</th>
+  <!-- Policy summary -->
+  <div class="card standalone" data-page-node-id="80EKPs2suUCLeBRUzo9fdc">
+    <h2 class="ref-head" data-page-node-id="u7JKUUzGafDfpRnMyYYYWM">📊 政策概要</h2>
+    <div class="summary-strip" data-page-node-id="ZdvSA5pBSL6x29xFKkzjnm">
+      <div class="summary-item" data-page-node-id="fPUrAvkNZdPQVdOeRid0Nw"><span class="num" style="color:var(--mw)" data-page-node-id="QCHmjVwsmEYhSILy7oP7e7">60 → 63</span><span class="desc" data-page-node-id="Y0xDVq00W8DZrZKjslitxg">男性（职工/干部）</span></div>
+      <div class="summary-item" data-page-node-id="HhyEBKgvLLTjsJpKBYeuHX"><span class="num" style="color:var(--fc)" data-page-node-id="f1lsYFX4HEeU490PiVgR0s">55 → 58</span><span class="desc" data-page-node-id="uu9KhoXffpQLnkIwRKItwX">女干部（管理技术岗）</span></div>
+      <div class="summary-item" data-page-node-id="qS0bIwtflyaY4qnHeMGlM7"><span class="num" style="color:var(--fw)" data-page-node-id="2R2JlgR08o9vrAC6CLXFI3">50 → 55</span><span class="desc" data-page-node-id="6kh7DQYPKFm1ouJuPrfCDq">女工人</span></div>
+      <div class="summary-item" data-page-node-id="ZSduAOrHNjxJM4EiV6XW8x"><span class="num" data-page-node-id="Gn6a60HT55af5ApWZh2GTI">2025.01</span><span class="desc" data-page-node-id="hUmLHdM9LNmOfg2jl5fFB3">改革生效</span></div>
+    </div>
+    <div class="table-wrap" style="max-height:none;" data-page-node-id="h6upUYutlVP6d5LWGmQ4Ku">
+      <table class="policy-table" style="min-width:640px;" data-page-node-id="tuISZBBGdCTldVZ6mqe8lg">
+        <thead data-page-node-id="egNJ9tQCQexy2pb3Vd4kjW">
+          <tr data-page-node-id="vePEWrFZWvJW2WCLLsEArp">
+            <th class="mw" data-page-node-id="UKNgFU0ddCpoGObBCrpu6M">👷 男职工 / 👔 男干部</th>
+            <th class="fc" data-page-node-id="F3EESLEDiWDHMJQzEfSvmA">👩‍💼 女干部</th>
+            <th class="fw" data-page-node-id="NtkIUcjdH1GGzWiryO3coh">👩‍🔧 女工人</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--gray-100);">
-              延迟规则：<strong>每2个月延迟1个月</strong><br>
-              最终年龄：<strong>55周岁</strong><br>
-              适用出生：<strong>1975年1月起</strong>
-            </td>
-            <td style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--gray-100);">
-              延迟规则：<strong>每4个月延迟1个月</strong><br>
-              最终年龄：<strong>60周岁</strong><br>
-              适用出生：<strong>1970年1月起</strong>
-            </td>
+        <tbody data-page-node-id="9J7cNaXv0N4W5M9J7MKAQO">
+          <tr data-page-node-id="KF4OtUYZRqFLHUw1Aee6vB">
+            <td data-page-node-id="l1ChwlVZM83YH6KLCzefFE">原年龄 <strong data-page-node-id="r9d52Y6mSJoOa10dB7xlG6">60 周岁</strong><br data-page-node-id="9fkgNwg9aSyHCNEa6YGcC6">改革后 <strong data-page-node-id="Nlure0X0l9AcNySrCDwjfv">63 周岁</strong><br data-page-node-id="2XIxbGdKgQLVcFqmTjz9jq">每 <strong data-page-node-id="Lze2GEXSF4RwpBzK3eDuhz">4 个月</strong>延迟 1 个月<br data-page-node-id="viaGWstONeFF5W4DG1B85V">最大延迟 <strong data-page-node-id="3McIHR7MakGsPIG2lOSaQA">36 个月</strong><br data-page-node-id="Xi2DobwcGoICzWP5Bk4u4F">起算出生 <strong data-page-node-id="cZLucl6gta9VzHg9rpNGCB">1965年1月</strong><br data-page-node-id="Eb9KeHYYkpUJyeUvUBRd6y">过渡完成 <strong data-page-node-id="XctI0UhxQMSXW8kEnh7b8W">1976年12月</strong></td>
+            <td data-page-node-id="e9D41Cy1CI3JhFlJKyO7qT">原年龄 <strong data-page-node-id="aRArLn2OEOthx3CKexCDyw">55 周岁</strong><br data-page-node-id="PMKMbud81S3xVBLhMpMjiD">改革后 <strong data-page-node-id="0bBN5hTME0S2DumMC1cAjG">58 周岁</strong><br data-page-node-id="NbQ6pnbTm10d7UAyuIXNxq">每 <strong data-page-node-id="L91IabYy4Gi8gfcXRxFCg4">4 个月</strong>延迟 1 个月<br data-page-node-id="eYOpcOC40gzzRpaioGuWJQ">最大延迟 <strong data-page-node-id="KAogM7zmT147ny4GmaGlcT">36 个月</strong><br data-page-node-id="lq0flYGVcSrr0rW8VH03As">起算出生 <strong data-page-node-id="5IQZ6P5vxqAUtAEOe0esT8">1970年1月</strong><br data-page-node-id="zKQD4a2pgi3CLOoFsh34td">过渡完成 <strong data-page-node-id="VttP6NDyzIDelWBLdNIdg8">1981年12月</strong></td>
+            <td data-page-node-id="72fT3L68c4Y7J0uAqgeiQC">原年龄 <strong data-page-node-id="w4AmdF5v6AnOY5YWv2vvRS">50 周岁</strong><br data-page-node-id="ZNqDfBZaSCDZaJJJ2gXHCA">改革后 <strong data-page-node-id="cuU1y69FEkbq4hBl47XGCQ">55 周岁</strong><br data-page-node-id="LsaEjmaJqgSqRS93ENmNqQ">每 <strong data-page-node-id="EKo1XGy5xvgxuqx4SyRSr5">2 个月</strong>延迟 1 个月<br data-page-node-id="dVBEvr89uJa4GMAN3EYBNa">最大延迟 <strong data-page-node-id="GPLmsMT5zj97atAEpenLCf">60 个月</strong><br data-page-node-id="nlKjQBrADavmDJPxFFNmwA">起算出生 <strong data-page-node-id="GNXd9BrwrFL1E3hTixIsQA">1975年1月</strong><br data-page-node-id="17yGry7GG4p5A7134PDjwP">过渡完成 <strong data-page-node-id="eESnqA0XHcA2B0Whdp5DXQ">1984年12月</strong></td>
           </tr>
         </tbody>
       </table>
     </div>
-  </div>
-
-  <!-- Reference Table -->
-  <div class="card ref-section">
-    <h2>📑 延迟退休对照表</h2>
-    <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px;">
-      ⚠️ 改革自2025年1月1日起生效。选择下方标签切换查看对应类型的完整对照表。
+    <p class="hint" style="margin-top:10px;" data-page-node-id="qRI2wkGGW4ONFacEvr7nRo">
+      说明：我国退休政策对男性不区分工人/干部身份，男职工与男干部均按 <strong data-page-node-id="hfGiY5z04oP3Xng9HGNHPw">60 周岁</strong> 起算，适用同一延迟节奏（60→63 周岁）。
     </p>
-    <div class="table-toggle">
-      <button class="table-toggle-btn worker active" onclick="switchTableView('worker')">👩‍🔧 女工人对照表</button>
-      <button class="table-toggle-btn cadre" onclick="switchTableView('cadre')">👩‍💼 女干部对照表</button>
-    </div>
+  </div>
 
-    <!-- Worker table -->
-    <div class="table-view active" id="table-worker">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th class="worker-thead">出生年份</th>
-              <th class="worker-thead">出生月份</th>
-              <th class="worker-thead">原退休时间（50岁）</th>
-              <th class="worker-thead">延迟月数</th>
-              <th class="worker-thead">改革后退休年龄</th>
-              <th class="worker-thead">改革后退休时间</th>
-            </tr>
-          </thead>
-          <tbody id="refWorkerBody"></tbody>
-        </table>
-      </div>
+  <!-- Reference tables -->
+  <div class="card standalone" data-page-node-id="RcxZtCmby0hubeK5L2ugnk">
+    <h2 class="ref-head" data-page-node-id="hXsca6xAaAc1WQfdkRo1xc">📑 延迟退休对照表</h2>
+    <div class="table-toggle" data-page-node-id="TbtmcohVPZxHEPX667rEwT">
+      <button class="tt-btn male active" data-group="male" onclick="switchTable('male')" data-page-node-id="fSKbHQCzjK5vZ3BiAAT0q9">👷👔 男职工 / 男干部</button>
+      <button class="tt-btn fc" data-group="fc" onclick="switchTable('fc')" data-page-node-id="UBhHTatMOfkknRYyfoY9HT">👩‍💼 女干部</button>
+      <button class="tt-btn fw" data-group="fw" onclick="switchTable('fw')" data-page-node-id="HLmaVEFyjy4rGh2As95FwC">👩‍🔧 女工人</button>
     </div>
-
-    <!-- Cadre table -->
-    <div class="table-view" id="table-cadre">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th class="cadre-thead">出生年份</th>
-              <th class="cadre-thead">出生月份</th>
-              <th class="cadre-thead">原退休时间（55岁）</th>
-              <th class="cadre-thead">延迟月数</th>
-              <th class="cadre-thead">改革后退休年龄</th>
-              <th class="cadre-thead">改革后退休时间</th>
-            </tr>
-          </thead>
-          <tbody id="refCadreBody"></tbody>
-        </table>
-      </div>
+    <div class="table-wrap" data-page-node-id="VG3MuQjX8jZcAKoAMZBjmk">
+      <table class="ref" data-page-node-id="1KRuFcDUVjAwlHfWTrGb9d">
+        <thead data-page-node-id="Dve1VN52VhDejjwQlITpMQ"><tr id="refHead" data-page-node-id="giyNViuOHapnznuNDeAGEV"></tr></thead>
+        <tbody id="refBody" data-page-node-id="raDAqMgYzUvYZkgNw7EphZ"></tbody>
+      </table>
     </div>
   </div>
 
-  <!-- Footer -->
-  <div style="text-align:center;font-size:13px;color:var(--gray-500);margin-top:16px;padding:12px;">
-    本查询结果仅供参考，实际退休时间以当地人社部门核算为准。
-  </div>
-
+  <div class="footer" data-page-node-id="CzZTcJZERnvGjmgE67YdeK">本查询结果仅供参考，实际退休时间以参保地人社部门核算为准。</div>
 </div>
 
 <script>
-// ========== Constants ==========
-const MAX_DELAY_MONTHS = 60;
-const POLICY_START = { year: 2025, month: 0 }; // Jan 2025, 0-indexed
-const NOW = { year: 2026, month: 5 }; // June 2026 (0-indexed)
+// ===== 政策参数 =====
+var POLICY_START = 2025 * 12 + 0;           // 2025年1月（0-indexed 月）
+var NOW = new Date();
+var NOW_TOTAL = NOW.getFullYear() * 12 + NOW.getMonth();
 
-const TYPE_CONFIG = {
-  worker: { label: '女工人', origAge: 50, delayInterval: 2, finalAge: 55,
-    icon: '👩‍🔧', color: '#8e44ad', colorSoft: '#e8daef' },
-  cadre: { label: '女干部', origAge: 55, delayInterval: 4, finalAge: 60,
-    icon: '👩‍💼', color: '#1a5276', colorSoft: '#d6eaf8' }
+var RULES = {
+  mw: { grp:'male', label:'男职工',   icon:'👷',   origAge:60, finalAge:63, interval:4, maxDelay:36, startBirth:'(1965年1月起)' },
+  mc: { grp:'male', label:'男干部',   icon:'👔',   origAge:60, finalAge:63, interval:4, maxDelay:36, startBirth:'(1965年1月起)' },
+  fc: { grp:'fc',   label:'女干部',   icon:'👩‍💼', origAge:55, finalAge:58, interval:4, maxDelay:36, startBirth:'(1970年1月起)' },
+  fw: { grp:'fw',   label:'女工人',   icon:'👩‍🔧', origAge:50, finalAge:55, interval:2, maxDelay:60, startBirth:'(1975年1月起)' }
 };
+var GROUP_LABEL = { male:'男职工 / 男干部', fc:'女干部', fw:'女工人' };
+var GROUP_CLS   = { male:'male', fc:'fc', fw:'fw' };
+var TABLE_RANGE = { male:[1962, 1980], fc:[1967, 1985], fw:[1972, 1990] };
 
-let currentType = 'worker';
+var currentType = 'mw';
 
-// ========== Populate selects ==========
-(function initSelects() {
-  const birthYearSel = document.getElementById('birthYear');
-  for (let y = 1950; y <= 2010; y++) {
-    const opt = document.createElement('option');
-    opt.value = y;
-    opt.textContent = y + '年';
-    if (y === 1980) opt.selected = true;
-    birthYearSel.appendChild(opt);
-  }
-  const birthMonthSel = document.getElementById('birthMonth');
-  for (let m = 1; m <= 12; m++) {
-    const opt = document.createElement('option');
-    opt.value = m;
-    opt.textContent = m + '月';
-    if (m === 1) opt.selected = true;
-    birthMonthSel.appendChild(opt);
-  }
-})();
-
-// ========== Type switching ==========
-function switchType(type) {
-  currentType = type;
-  document.querySelectorAll('.type-option').forEach(el => el.classList.remove('selected'));
-  document.querySelector(`.type-option.${type}`).classList.add('selected');
-
-  const cfg = TYPE_CONFIG[type];
-
-  // Update "改革后退休年龄" tab hint
-  document.getElementById('retireAgeHint').textContent =
-    `提示：${cfg.icon} ${cfg.label}原法定退休年龄为 ${cfg.origAge} 周岁，改革后合理范围为 ${cfg.origAge}~${cfg.finalAge} 周岁`;
-
-  // Update input range for retire age
-  document.getElementById('retireAgeYears').min = cfg.origAge;
-  document.getElementById('retireAgeYears').max = cfg.finalAge;
-  document.getElementById('retireAgeYears').value = cfg.origAge + 2;
-  document.getElementById('retireAgeMonths').value = 0;
-
-  // Clear previous results
-  document.querySelectorAll('.result-box').forEach(el => el.style.display = 'none');
-
-  // Update summary highlight
-  document.querySelectorAll('#summaryContent .summary-item .num').forEach(el => {
-    el.style.opacity = '0.5';
-  });
-  if (type === 'worker') {
-    document.querySelectorAll('#summaryContent .summary-item:first-child .num').forEach(el => el.style.opacity = '1');
-  } else {
-    document.querySelectorAll('#summaryContent .summary-item:nth-child(2) .num').forEach(el => el.style.opacity = '1');
-  }
-
-  // Update table view
-  document.querySelectorAll('.table-view').forEach(el => el.classList.remove('active'));
-  document.getElementById('table-' + type).classList.add('active');
-  document.querySelectorAll('.table-toggle-btn').forEach(el => el.classList.remove('active'));
-  document.querySelector(`.table-toggle-btn.${type}`).classList.add('active');
+// ===== 工具 =====
+function ym(total) { return { y: Math.floor(total / 12), m: (total % 12) + 1 }; }
+function fmtAge(mTotal) {
+  var y = Math.floor(mTotal / 12), m = mTotal % 12;
+  return y + ' 周岁' + (m > 0 ? ' ' + m + ' 个月' : '');
+}
+function fmtGap(months) {
+  if (months <= 0) return '已到达';
+  var y = Math.floor(months / 12), m = months % 12;
+  return (y > 0 ? y + ' 年 ' : '') + (m > 0 ? m + ' 个月' : (y > 0 ? '' : '不足 1 个月'));
 }
 
-// ========== Core Calculation ==========
+// ===== 核心计算 =====
 function calcDelay(birthYear, birthMonth, type) {
-  const cfg = TYPE_CONFIG[type];
-  const origAge = cfg.origAge;
-  const interval = cfg.delayInterval;
+  var r = RULES[type];
+  var origTotal = (birthYear + r.origAge) * 12 + (birthMonth - 1);
 
-  const origRetYear = birthYear + origAge;
-  const origRetMonth = birthMonth - 1; // 0-indexed
-
-  const origRetTotalMonths = origRetYear * 12 + origRetMonth;
-  const policyStartTotal = POLICY_START.year * 12 + POLICY_START.month;
-
-  if (origRetTotalMonths < policyStartTotal) {
+  if (origTotal < POLICY_START) {
     return {
-      delayMonths: 0,
-      newAgeYears: origAge,
-      newAgeMonths: 0,
-      origRetYear,
-      origRetMonth: birthMonth,
-      newRetYear: origRetYear,
-      newRetMonth: birthMonth,
-      note: '该人员已在改革前达到原法定退休年龄，按原政策办理退休，不受延迟退休政策影响。'
+      delay: 0, origTotal: origTotal, newTotal: origTotal,
+      note: '该人员原法定退休时间在 2025年1月1日 之前，按原政策办理退休，不受延迟退休政策影响。'
     };
   }
-
-  const monthOffset = origRetTotalMonths - policyStartTotal;
-  let delay = Math.min(MAX_DELAY_MONTHS, Math.floor(monthOffset / interval) + 1);
-
-  let newRetTotalMonths = origRetTotalMonths + delay;
-  let newRetYear = Math.floor(newRetTotalMonths / 12);
-  let newRetMonth = newRetTotalMonths % 12;
-
-  const newAgeYears = origAge + Math.floor(delay / 12);
-  const newAgeMonths = delay % 12;
-
-  return {
-    delayMonths: delay,
-    newAgeYears,
-    newAgeMonths,
-    origRetYear,
-    origRetMonth: birthMonth,
-    newRetYear,
-    newRetMonth: newRetMonth + 1,
-    note: ''
-  };
+  var offset = origTotal - POLICY_START;
+  var delay = Math.min(r.maxDelay, Math.floor(offset / r.interval) + 1);
+  return { delay: delay, origTotal: origTotal, newTotal: origTotal + delay, note: '' };
 }
 
-// ========== Render Result ==========
-function renderResult(result, containerId, birthYear, birthMonth, type) {
-  const cfg = TYPE_CONFIG[type];
-  const box = document.getElementById(containerId);
-  box.style.display = 'block';
+// ===== 结果渲染 =====
+function buildResultHTML(type, birthYear, birthMonth, res, extraTop) {
+  var r = RULES[type];
+  var o = ym(res.origTotal), n = ym(res.newTotal);
+  var h = '<h3>📌 查询结果 <span class="badge ' + type + '">' + r.icon + ' ' + r.label + '</span></h3>';
 
-  let html = `<h3>📌 查询结果 <span class="type-badge ${type}">${cfg.icon} ${cfg.label}</span></h3>`;
+  if (res.delay > 0) {
+    h += '<div class="hero"><div class="cap">改革后法定退休时间</div>' +
+         '<div class="big-date">' + n.y + ' 年 ' + n.m + ' 月</div></div>';
+  }
+  if (extraTop) h += extraTop;
 
-  html += `<div class="result-item"><span class="label">出生年月</span><span class="value">${birthYear} 年 ${birthMonth} 月</span></div>`;
-  html += `<div class="result-item"><span class="label">原法定退休年龄</span><span class="value">${cfg.origAge} 周岁</span></div>`;
-  html += `<div class="result-item"><span class="label">原法定退休时间</span><span class="value">${result.origRetYear} 年 ${result.origRetMonth} 月</span></div>`;
+  h += row('出生年月', birthYear + ' 年 ' + birthMonth + ' 月');
+  h += row('原法定退休年龄', r.origAge + ' 周岁');
+  h += row('原法定退休时间', o.y + ' 年 ' + o.m + ' 月');
 
-  html += `<div class="result-item"><span class="label">延迟月数</span>`;
-  if (result.delayMonths === 0) {
-    html += `<span class="value success">✅ 无延迟</span>`;
+  if (res.delay === 0) {
+    h += row('延迟月数', '<span class="value ok">✅ 无延迟</span>');
   } else {
-    html += `<span class="value highlight">${result.delayMonths} 个月</span>`;
-  }
-  html += `</div>`;
-
-  if (result.delayMonths > 0) {
-    html += `<div class="result-item"><span class="label">改革后法定退休年龄</span><span class="value">${result.newAgeYears} 周岁`;
-    if (result.newAgeMonths > 0) html += ` ${result.newAgeMonths} 个月`;
-    html += `</span></div>`;
-    html += `<div class="result-item"><span class="label">改革后退休时间</span><span class="value" style="font-size:18px;font-weight:700;color:var(--primary);">${result.newRetYear} 年 ${result.newRetMonth} 月</span></div>`;
+    h += row('延迟月数', '<span class="value big">' + res.delay + ' 个月</span>');
+    h += row('改革后法定退休年龄', '<span class="value">' + fmtAge(r.origAge * 12 + res.delay) + '</span>');
+    h += row('改革后退休时间', '<span class="value primary">' + n.y + ' 年 ' + n.m + ' 月</span>');
+    h += row('距退休还有', '<span class="value">' + fmtGap(res.newTotal - NOW_TOTAL) + '</span>');
   }
 
-  if (result.note) html += `<div class="result-note info">${result.note}</div>`;
-  if (result.delayMonths > 0 && result.delayMonths >= MAX_DELAY_MONTHS) {
-    html += `<div class="result-note warn">⚠️ 已达最大延迟月数（${MAX_DELAY_MONTHS}个月），改革后退休年龄为 ${cfg.finalAge} 周岁。</div>`;
+  if (res.note) h += '<div class="note info">' + res.note + '</div>';
+  if (res.delay >= r.maxDelay) {
+    h += '<div class="note warn">⚠️ 已达最大延迟（' + r.maxDelay + ' 个月），改革后法定退休年龄为 ' + r.finalAge + ' 周岁。</div>';
   }
-
+  return h;
+}
+function row(label, valueHTML) {
+  return '<div class="result-item"><span class="label">' + label + '</span><span class="value">' + valueHTML + '</span></div>';
+}
+function show(boxId, html) {
+  var box = document.getElementById(boxId);
   box.innerHTML = html;
+  box.style.display = 'block';
 }
 
-// ========== Query Functions ==========
+// ===== 查询 =====
 function queryByBirth() {
-  const year = parseInt(document.getElementById('birthYear').value);
-  const month = parseInt(document.getElementById('birthMonth').value);
-  if (!year || !month) { alert('请选择出生年月'); return; }
-  const result = calcDelay(year, month, currentType);
-  renderResult(result, 'result-birth', year, month, currentType);
+  var y = parseInt(document.getElementById('birthYear').value, 10);
+  var m = parseInt(document.getElementById('birthMonth').value, 10);
+  var res = calcDelay(y, m, currentType);
+  show('result-birth', buildResultHTML(currentType, y, m, res));
+  highlightRow(y, m);
 }
 
 function queryByAge() {
-  const years = parseInt(document.getElementById('ageYears').value);
-  const months = parseInt(document.getElementById('ageMonths').value);
-  if (isNaN(years) || years < 0) { alert('请输入有效年龄'); return; }
-  if (isNaN(months) || months < 0 || months > 11) { alert('请输入有效月数（0-11）'); return; }
+  var y = parseInt(document.getElementById('ageY').value, 10);
+  var m = parseInt(document.getElementById('ageM').value, 10) || 0;
+  if (isNaN(y) || y < 0) { alert('请输入有效年龄'); return; }
+  if (isNaN(m) || m < 0 || m > 11) { alert('请输入有效月数（0-11）'); return; }
 
-  let estBirthMonth = NOW.month - months;
-  let estBirthYear = NOW.year - years;
-  if (estBirthMonth < 0) {
-    estBirthMonth += 12;
-    estBirthYear -= 1;
-  }
-  estBirthMonth += 1;
-
-  const result = calcDelay(estBirthYear, estBirthMonth, currentType);
-  const cfg = TYPE_CONFIG[currentType];
-
-  const box = document.getElementById('result-age');
-  box.style.display = 'block';
-  let html = `<h3>📌 查询结果 <span class="type-badge ${currentType}">${cfg.icon} ${cfg.label}</span></h3>`;
-  html += `<div class="result-note info" style="margin-bottom:12px;">
-    ℹ️ 您输入的年龄为 <strong>${years} 岁 ${months} 个月</strong>（截至2026年6月），
-    推定出生年月约为 <strong>${estBirthYear} 年 ${estBirthMonth} 月</strong>。
-    如需精确结果，请切换到「出生年月」选项卡输入准确出生日期。
-  </div>`;
-
-  html += `<div class="result-item"><span class="label">推定出生年月</span><span class="value">${estBirthYear} 年 ${estBirthMonth} 月</span></div>`;
-  html += `<div class="result-item"><span class="label">原法定退休年龄</span><span class="value">${cfg.origAge} 周岁</span></div>`;
-  html += `<div class="result-item"><span class="label">原法定退休时间</span><span class="value">${result.origRetYear} 年 ${result.origRetMonth} 月</span></div>`;
-
-  if (result.delayMonths === 0) {
-    html += `<div class="result-item"><span class="label">延迟月数</span><span class="value success">✅ 无延迟</span></div>`;
-  } else {
-    html += `<div class="result-item"><span class="label">延迟月数</span><span class="value highlight">${result.delayMonths} 个月</span></div>`;
-    html += `<div class="result-item"><span class="label">改革后法定退休年龄</span><span class="value">${result.newAgeYears} 周岁`;
-    if (result.newAgeMonths > 0) html += ` ${result.newAgeMonths} 个月`;
-    html += `</span></div>`;
-    html += `<div class="result-item"><span class="label">改革后退休时间</span><span class="value" style="font-size:18px;font-weight:700;color:var(--primary);">${result.newRetYear} 年 ${result.newRetMonth} 月</span></div>`;
-  }
-
-  if (result.note) html += `<div class="result-note info">${result.note}</div>`;
-  if (result.delayMonths >= MAX_DELAY_MONTHS) html += `<div class="result-note warn">⚠️ 已达最大延迟月数（${MAX_DELAY_MONTHS}个月）。</div>`;
-
-  box.innerHTML = html;
+  var birthTotal = NOW_TOTAL - (y * 12 + m);
+  var b = ym(birthTotal);
+  var res = calcDelay(b.y, b.m, currentType);
+  var top = '<div class="note info" style="margin-bottom:12px;">ℹ️ 按 ' + y + ' 岁 ' + m + ' 个月反推，出生年月约为 <strong>' +
+            b.y + ' 年 ' + b.m + ' 月</strong>。</div>';
+  show('result-age', buildResultHTML(currentType, b.y, b.m, res, top));
+  highlightRow(b.y, b.m);
 }
 
 function queryByRetireAge() {
-  const cfg = TYPE_CONFIG[currentType];
-  const years = parseInt(document.getElementById('retireAgeYears').value);
-  const months = parseInt(document.getElementById('retireAgeMonths').value);
-  if (isNaN(years) || years < cfg.origAge || years > cfg.finalAge) {
-    alert(`请输入有效退休年龄（${cfg.origAge}-${cfg.finalAge}周岁）`); return;
-  }
-  if (isNaN(months) || months < 0 || months > 11) { alert('请输入有效月数（0-11）'); return; }
+  var r = RULES[currentType];
+  var y = parseInt(document.getElementById('raY').value, 10);
+  var m = parseInt(document.getElementById('raM').value, 10) || 0;
+  if (isNaN(y) || isNaN(m)) { alert('请输入有效年龄'); return; }
 
-  const newAgeTotalMonths = years * 12 + months;
-  const origAgeTotalMonths = cfg.origAge * 12;
-  const delay = newAgeTotalMonths - origAgeTotalMonths;
+  var delay = (y * 12 + m) - r.origAge * 12;
+  if (delay < 0) { alert('改革后退休年龄不能小于原法定退休年龄（' + r.origAge + ' 周岁）'); return; }
+  if (delay > r.maxDelay) { alert('改革后退休年龄不能超过 ' + r.finalAge + ' 周岁'); return; }
+  if (delay === 0) { alert('延迟 0 个月即按原政策退休，请用「出生年月」查询改革前退休人员。'); return; }
 
-  if (delay < 0) { alert(`改革后退休年龄不能小于原法定退休年龄（${cfg.origAge}周岁）`); return; }
-  if (delay > MAX_DELAY_MONTHS) { alert(`改革后退休年龄不能超过${cfg.finalAge}周岁`); return; }
-  if (delay === 0) {
-    alert('延迟0个月即仍为原政策退休，该情况适用于改革前已退休人员。'); return;
-  }
+  // 反查：offset ∈ [(delay-1)*interval, delay*interval-1]；达到上限时无上界
+  var minOffset = (delay - 1) * r.interval;
+  var maxOffset = delay * r.interval - 1;
+  var capped = (delay >= r.maxDelay);
+  if (capped) maxOffset = minOffset + r.interval - 1; // 展示用：给出达到上限的首批区间
 
-  // Reverse: delay = floor(monthOffset / interval) + 1
-  // monthOffset in [(delay-1)*interval, delay*interval - 1]
-  const interval = cfg.delayInterval;
-  const minMonthOffset = (delay - 1) * interval;
-  const maxMonthOffset = delay * interval - 1;
+  var minOrig = POLICY_START + minOffset;
+  var maxOrig = POLICY_START + maxOffset;
+  var a = ym(minOrig), z = ym(maxOrig);
+  var bMin = ym(minOrig - r.origAge * 12), bMax = ym(maxOrig - r.origAge * 12);
+  var nMin = ym(minOrig + delay), nMax = ym(maxOrig + delay);
 
-  const policyStartTotal = POLICY_START.year * 12 + POLICY_START.month;
-  const minOrigTotal = policyStartTotal + minMonthOffset;
-  const maxOrigTotal = policyStartTotal + maxMonthOffset;
+  var h = '<h3>📌 查询结果 <span class="badge ' + currentType + '">' + r.icon + ' ' + r.label + '</span></h3>';
+  h += row('改革后法定退休年龄', '<span class="value big">' + y + ' 周岁' + (m > 0 ? ' ' + m + ' 个月' : '') + '</span>');
+  h += row('对应延迟月数', '<span class="value big">' + delay + ' 个月</span>');
 
-  const minOrigYear = Math.floor(minOrigTotal / 12);
-  const minOrigMonth = (minOrigTotal % 12) + 1;
-  const maxOrigYear = Math.floor(maxOrigTotal / 12);
-  const maxOrigMonth = (maxOrigTotal % 12) + 1;
-
-  const minBirthYear = minOrigYear - cfg.origAge;
-  const minBirthMonth = minOrigMonth;
-  const maxBirthYear = maxOrigYear - cfg.origAge;
-  const maxBirthMonth = maxOrigMonth;
-
-  const minNewTotal = minOrigTotal + delay;
-  const maxNewTotal = maxOrigTotal + delay;
-  const minNewYear = Math.floor(minNewTotal / 12);
-  const minNewMonth = (minNewTotal % 12) + 1;
-  const maxNewYear = Math.floor(maxNewTotal / 12);
-  const maxNewMonth = (maxNewTotal % 12) + 1;
-
-  const box = document.getElementById('result-retire-age');
-  box.style.display = 'block';
-  let html = `<h3>📌 查询结果 <span class="type-badge ${currentType}">${cfg.icon} ${cfg.label}</span></h3>`;
-  html += `<div class="result-item"><span class="label">改革后法定退休年龄</span><span class="value highlight">${years} 周岁`;
-  if (months > 0) html += ` ${months} 个月`;
-  html += `</span></div>`;
-  html += `<div class="result-item"><span class="label">对应延迟月数</span><span class="value highlight">${delay} 个月</span></div>`;
-
-  if (minOrigYear === maxOrigYear && minOrigMonth === maxOrigMonth) {
-    html += `<div class="result-item"><span class="label">对应出生年月</span><span class="value">${minBirthYear} 年 ${minBirthMonth} 月</span></div>`;
-    html += `<div class="result-item"><span class="label">原法定退休时间</span><span class="value">${minOrigYear} 年 ${minOrigMonth} 月</span></div>`;
-    html += `<div class="result-item"><span class="label">改革后退休时间</span><span class="value" style="font-size:18px;font-weight:700;color:var(--primary);">${minNewYear} 年 ${minNewMonth} 月</span></div>`;
+  if (minOrig === maxOrig) {
+    h += row('对应出生年月', bMin.y + ' 年 ' + bMin.m + ' 月');
+    h += row('原法定退休时间', a.y + ' 年 ' + a.m + ' 月');
+    h += row('改革后退休时间', '<span class="value primary">' + nMin.y + ' 年 ' + nMin.m + ' 月</span>');
   } else {
-    html += `<div class="result-item"><span class="label">对应出生年月范围</span><span class="value">${minBirthYear} 年 ${minBirthMonth} 月 ～ ${maxBirthYear} 年 ${maxBirthMonth} 月</span></div>`;
-    html += `<div class="result-item"><span class="label">原法定退休时间范围</span><span class="value">${minOrigYear} 年 ${minOrigMonth} 月 ～ ${maxOrigYear} 年 ${maxOrigMonth} 月</span></div>`;
-    html += `<div class="result-item"><span class="label">改革后退休时间范围</span><span class="value" style="font-weight:700;color:var(--primary);">${minNewYear} 年 ${minNewMonth} 月 ～ ${maxNewYear} 年 ${maxNewMonth} 月</span></div>`;
-    html += `<div class="result-note info">ℹ️ 同一延迟月数对应多个月份，此处显示范围。请用「出生年月」选项卡输入确切出生日期获取精确结果。</div>`;
-  }
-
-  box.innerHTML = html;
-}
-
-// ========== Tab Switching ==========
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    this.classList.add('active');
-    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
-  });
-});
-
-// ========== Table View Switching ==========
-function switchTableView(type) {
-  document.querySelectorAll('.table-view').forEach(el => el.classList.remove('active'));
-  document.getElementById('table-' + type).classList.add('active');
-  document.querySelectorAll('.table-toggle-btn').forEach(el => el.classList.remove('active'));
-  document.querySelector('.table-toggle-btn.' + type).classList.add('active');
-}
-
-// ========== Build Reference Tables ==========
-(function buildTables() {
-  // Worker table: birth years ~1975 to ~2005 (50 + 5 year transition = 55 target)
-  const workerBody = document.getElementById('refWorkerBody');
-  const workerFrag = document.createDocumentFragment();
-  for (let year = 1965; year <= 2005; year++) {
-    for (let month = 1; month <= 12; month++) {
-      const r = calcDelay(year, month, 'worker');
-      const tr = document.createElement('tr');
-      const yearTd = document.createElement('td');
-      yearTd.textContent = month === 1 ? year + '年' : '';
-      if (month === 1) yearTd.style.fontWeight = '600';
-      tr.appendChild(yearTd);
-
-      const monthTd = document.createElement('td');
-      monthTd.textContent = month + '月';
-      tr.appendChild(monthTd);
-
-      const origTd = document.createElement('td');
-      origTd.textContent = (year + 50) + '年' + month + '月';
-      tr.appendChild(origTd);
-
-      const delayTd = document.createElement('td');
-      if (r.delayMonths === 0) {
-        delayTd.textContent = '—';
-      } else {
-        const badge = document.createElement('span');
-        badge.className = 'delay-badge';
-        badge.textContent = r.delayMonths + '个月';
-        if (r.delayMonths <= 20) badge.classList.add('small');
-        else if (r.delayMonths <= 40) badge.classList.add('medium');
-        else badge.classList.add('large');
-        delayTd.appendChild(badge);
-      }
-      tr.appendChild(delayTd);
-
-      const ageTd = document.createElement('td');
-      if (r.delayMonths === 0) {
-        ageTd.textContent = '50周岁（原政策）';
-      } else {
-        ageTd.textContent = r.newAgeYears + '周岁' + (r.newAgeMonths > 0 ? r.newAgeMonths + '个月' : '');
-      }
-      tr.appendChild(ageTd);
-
-      const newTd = document.createElement('td');
-      if (r.delayMonths === 0) {
-        newTd.textContent = '—';
-        newTd.style.color = 'var(--gray-500)';
-      } else {
-        newTd.textContent = r.newRetYear + '年' + r.newRetMonth + '月';
-        newTd.style.fontWeight = '600';
-      }
-      tr.appendChild(newTd);
-
-      workerFrag.appendChild(tr);
+    var bornTail = capped ? ' 及以后' : ' ～ ' + bMax.y + ' 年 ' + bMax.m + ' 月';
+    var retTail  = capped ? ' 及以后' : ' ～ ' + nMax.y + ' 年 ' + nMax.m + ' 月';
+    h += row('对应出生年月', bMin.y + ' 年 ' + bMin.m + ' 月' + bornTail);
+    h += row('原法定退休时间', a.y + ' 年 ' + a.m + ' 月' + (capped ? ' 及以后' : ' ～ ' + z.y + ' 年 ' + z.m + ' 月'));
+    h += row('改革后退休时间', '<span class="value primary">' + nMin.y + ' 年 ' + nMin.m + ' 月' + retTail + '</span>');
+    if (capped) {
+      h += '<div class="note warn">⚠️ 已达最大延迟 ' + r.maxDelay + ' 个月（' + r.finalAge + ' 周岁），此后出生的同类人员统一按该年龄退休。</div>';
+    } else {
+      h += '<div class="note info">ℹ️ 同一延迟月数对应 ' + r.interval + ' 个出生月份，此处显示范围。精确结果请切换到「出生年月」。</div>';
     }
   }
-  workerBody.appendChild(workerFrag);
+  show('result-ra', h);
+}
 
-  // Cadre table: birth years ~1970 to ~2000 (55 + 5 year transition = 60 target)
-  const cadreBody = document.getElementById('refCadreBody');
-  const cadreFrag = document.createDocumentFragment();
-  for (let year = 1965; year <= 2000; year++) {
-    for (let month = 1; month <= 12; month++) {
-      const r = calcDelay(year, month, 'cadre');
-      const tr = document.createElement('tr');
-      const yearTd = document.createElement('td');
-      yearTd.textContent = month === 1 ? year + '年' : '';
-      if (month === 1) yearTd.style.fontWeight = '600';
-      tr.appendChild(yearTd);
+// ===== 类型切换 =====
+function switchType(type) {
+  currentType = type;
+  var r = RULES[type];
+  var opts = document.querySelectorAll('.type-option');
+  for (var i = 0; i < opts.length; i++) {
+    opts[i].classList.toggle('selected', opts[i].getAttribute('data-type') === type);
+  }
+  document.getElementById('birthHint').textContent =
+    r.icon + ' ' + r.label + '：原 ' + r.origAge + ' 周岁 → 改革后 ' + r.finalAge + ' 周岁，延迟起算出生 ' + r.startBirth + '。';
+  document.getElementById('raHint').textContent =
+    '可查询范围：' + r.origAge + ' ~ ' + r.finalAge + ' 周岁（最大延迟 ' + r.maxDelay + ' 个月）。';
 
-      const monthTd = document.createElement('td');
-      monthTd.textContent = month + '月';
-      tr.appendChild(monthTd);
+  var raY = document.getElementById('raY');
+  raY.min = r.origAge; raY.max = r.finalAge;
+  raY.value = Math.min(r.origAge + 1, r.finalAge);
 
-      const origTd = document.createElement('td');
-      origTd.textContent = (year + 55) + '年' + month + '月';
-      tr.appendChild(origTd);
+  var boxes = document.querySelectorAll('.result-box');
+  for (var j = 0; j < boxes.length; j++) boxes[j].style.display = 'none';
 
-      const delayTd = document.createElement('td');
-      if (r.delayMonths === 0) {
-        delayTd.textContent = '—';
+  switchTable(r.grp);
+}
+
+// ===== 对照表 =====
+var currentGroup = 'male';
+function switchTable(grp) {
+  currentGroup = grp;
+  var btns = document.querySelectorAll('.tt-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-group') === grp);
+  }
+  renderTable(grp);
+}
+
+function renderTable(grp) {
+  var r = grp === 'male' ? RULES.mw : RULES[grp];
+  var cls = GROUP_CLS[grp];
+  var range = TABLE_RANGE[grp];
+
+  var head = document.getElementById('refHead');
+  head.innerHTML =
+    '<th class="' + cls + '">出生年份</th>' +
+    '<th class="' + cls + '">出生月份</th>' +
+    '<th class="' + cls + '">原退休时间（' + r.origAge + '岁）</th>' +
+    '<th class="' + cls + '">延迟月数</th>' +
+    '<th class="' + cls + '">改革后退休年龄</th>' +
+    '<th class="' + cls + '">改革后退休时间</th>';
+
+  var frag = document.createDocumentFragment();
+  for (var y = range[0]; y <= range[1]; y++) {
+    for (var m = 1; m <= 12; m++) {
+      var res = calcDelay(y, m, grp === 'male' ? 'mw' : grp);
+      var o = ym(res.origTotal), n = ym(res.newTotal);
+      var tr = document.createElement('tr');
+      tr.setAttribute('data-y', y); tr.setAttribute('data-m', m);
+
+      tr.appendChild(td(m === 1 ? y + '年' : '', m === 1 ? 'font-weight:600;' : ''));
+      tr.appendChild(td(m + '月'));
+      tr.appendChild(td(o.y + '年' + o.m + '月'));
+
+      var dTd = document.createElement('td');
+      if (res.delay === 0) {
+        dTd.textContent = '—'; dTd.style.color = 'var(--gray-500)';
       } else {
-        const badge = document.createElement('span');
-        badge.className = 'delay-badge';
-        badge.textContent = r.delayMonths + '个月';
-        if (r.delayMonths <= 20) badge.classList.add('small');
-        else if (r.delayMonths <= 40) badge.classList.add('medium');
-        else badge.classList.add('large');
-        delayTd.appendChild(badge);
+        var b = document.createElement('span');
+        b.className = 'd-badge ' + (res.delay <= r.maxDelay / 3 ? 's1' : (res.delay <= r.maxDelay * 2 / 3 ? 's2' : 's3'));
+        b.textContent = res.delay + '个月';
+        dTd.appendChild(b);
       }
-      tr.appendChild(delayTd);
+      tr.appendChild(dTd);
 
-      const ageTd = document.createElement('td');
-      if (r.delayMonths === 0) {
-        ageTd.textContent = '55周岁（原政策）';
-      } else {
-        ageTd.textContent = r.newAgeYears + '周岁' + (r.newAgeMonths > 0 ? r.newAgeMonths + '个月' : '');
-      }
-      tr.appendChild(ageTd);
+      tr.appendChild(td(res.delay === 0
+        ? r.origAge + '周岁（原政策）'
+        : fmtAge(r.origAge * 12 + res.delay), res.delay === 0 ? 'color:var(--gray-500);' : ''));
 
-      const newTd = document.createElement('td');
-      if (r.delayMonths === 0) {
-        newTd.textContent = '—';
-        newTd.style.color = 'var(--gray-500)';
-      } else {
-        newTd.textContent = r.newRetYear + '年' + r.newRetMonth + '月';
-        newTd.style.fontWeight = '600';
-      }
-      tr.appendChild(newTd);
+      var nTd = document.createElement('td');
+      if (res.delay === 0) { nTd.textContent = '—'; nTd.style.color = 'var(--gray-500)'; }
+      else { nTd.textContent = n.y + '年' + n.m + '月'; nTd.style.fontWeight = '600'; }
+      tr.appendChild(nTd);
 
-      cadreFrag.appendChild(tr);
+      frag.appendChild(tr);
     }
   }
-  cadreBody.appendChild(cadreFrag);
+  var body = document.getElementById('refBody');
+  body.innerHTML = '';
+  body.appendChild(frag);
+}
+function td(text, style) {
+  var e = document.createElement('td');
+  e.textContent = text;
+  if (style) e.setAttribute('style', style);
+  return e;
+}
 
-  // Init: default worker view
-  // The 'worker' is already active by default
+function highlightRow(y, m) {
+  var rows = document.querySelectorAll('#refBody tr');
+  var hit = null;
+  for (var i = 0; i < rows.length; i++) {
+    rows[i].classList.remove('hit');
+    if (+rows[i].getAttribute('data-y') === y && +rows[i].getAttribute('data-m') === m) hit = rows[i];
+  }
+  if (hit) {
+    hit.classList.add('hit');
+    hit.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+}
+
+// ===== 初始化 =====
+(function init() {
+  var ys = document.getElementById('birthYear');
+  for (var y = 1945; y <= 2010; y++) {
+    var o = document.createElement('option');
+    o.value = y; o.textContent = y + '年';
+    if (y === 1970) o.selected = true;
+    ys.appendChild(o);
+  }
+  var ms = document.getElementById('birthMonth');
+  for (var m = 1; m <= 12; m++) {
+    var om = document.createElement('option');
+    om.value = m; om.textContent = m + '月';
+    if (m === 1) om.selected = true;
+    ms.appendChild(om);
+  }
+  document.getElementById('nowLabel').textContent = NOW.getFullYear() + ' 年 ' + (NOW.getMonth() + 1) + ' 月';
+
+  var tabs = document.querySelectorAll('.tab-btn');
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].addEventListener('click', function () {
+      var all = document.querySelectorAll('.tab-btn');
+      for (var k = 0; k < all.length; k++) all[k].classList.remove('active');
+      var cs = document.querySelectorAll('.tab-content');
+      for (var k2 = 0; k2 < cs.length; k2++) cs[k2].classList.remove('active');
+      this.classList.add('active');
+      document.getElementById('tab-' + this.getAttribute('data-tab')).classList.add('active');
+    });
+  }
+
+  var yrs = document.getElementById('birthYear');
+  var mos = document.getElementById('birthMonth');
+  yrs.addEventListener('change', queryByBirth);
+  mos.addEventListener('change', queryByBirth);
+
+  switchType('mw');
 })();
 </script>
 </body>
