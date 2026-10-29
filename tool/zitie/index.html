@@ -5,8 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>汉字字帖</title>
-    <link rel="icon" href="https://zitie.xueyuqu.com/resources/quiz/default/images/favicon.ico" type="image/x-icon">
-    <script src="./files/hm.js"></script>
+   <!-- <script src="./files/hm.js"></script>-->
     <meta name="keywords" content="字帖,汉字字帖,字帖生成器,免费生成字帖,汉字笔画字帖生成器,田字格字帖,描红字帖">
     <meta name="description" content="字帖免费生成字帖，提供各种汉字笔画练习字帖、字体、描红、田字格、米字格等帮助小学生养成正确的写字方法。">
     <link href="./files/writing.css" rel="stylesheet">
@@ -125,18 +124,45 @@
             margin: 5px 0 5px -2px;
             vertical-align: top;
             /* 新增 */
-            background: url("https://zitie.xueyuqu.com/resources/quiz/default/images/grid12.svg");
+            background: url("./files/grid12.svg");
             color: rgba(0 0 0);
         }
 
-        /* 新增可编辑样式 */
-        .paper-box li[contenteditable] {
-            /* outline: 2px solid #4494d5; */
-        }
-
+        /* 打印时不能用背景图（浏览器默认不打印背景），改用边框+伪元素画格线 */
         @media print {
             .paper-box li[contenteditable] {
                 outline: none;
+            }
+
+            .paper-box li {
+                position: relative;
+                box-sizing: border-box;
+                line-height: 76px;
+                background: none;
+                border: 2px solid #111;
+            }
+
+            .paper-box li::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 50%;
+                border-top: 1px dashed #666;
+            }
+
+            .paper-box li::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 50%;
+                border-left: 1px dashed #666;
+            }
+
+            /* 编辑控制栏是 fixed 定位，打印时会出现在每一页上 */
+            #controls {
+                display: none !important;
             }
         }
 
@@ -154,10 +180,23 @@
             right: 180px;
             top: 180px;
             background: #f5f5f5;
-            padding: 18px;
+            padding: 0 18px 18px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             z-index: 10000;
+        }
+
+        #controlsHandle {
+            margin: 0 -18px 10px;
+            padding: 6px 12px;
+            border-bottom: 1px solid #ddd;
+            border-radius: 8px 8px 0 0;
+            background: #e8e8e8;
+            color: #666;
+            font-size: 12px;
+            cursor: move;
+            user-select: none;
+            touch-action: none;
         }
 
         #multiLineInput {
@@ -386,6 +425,7 @@
 
     <!-- 新增字数控制栏 -->
     <div id="controls">
+        <div id="controlsHandle">按住此处拖动</div>
         <textarea id="multiLineInput" placeholder="输入汉字（支持多行，自动填充）"></textarea>
 
         <div style="margin: 10px 0; display: flex; gap: 8px; align-items: center">
@@ -541,6 +581,40 @@
                 if (e.which === 13) batchFill();
             });
         });
+
+        // 控制栏拖动：原生 Pointer Events，不依赖插件
+        (function () {
+            const panel = document.getElementById('controls');
+            const handle = document.getElementById('controlsHandle');
+            let dragging = false;
+            let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+            handle.addEventListener('pointerdown', function (e) {
+                const rect = panel.getBoundingClientRect();
+                // 首次拖动时把 right 定位换成 left 定位
+                panel.style.left = rect.left + 'px';
+                panel.style.top = rect.top + 'px';
+                panel.style.right = 'auto';
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = rect.left;
+                startTop = rect.top;
+                dragging = true;
+                e.preventDefault();
+            });
+
+            document.addEventListener('pointermove', function (e) {
+                if (!dragging) return;
+                const maxX = Math.max(window.innerWidth - panel.offsetWidth, 0);
+                const maxY = Math.max(window.innerHeight - panel.offsetHeight, 0);
+                panel.style.left = Math.min(Math.max(startLeft + e.clientX - startX, 0), maxX) + 'px';
+                panel.style.top = Math.min(Math.max(startTop + e.clientY - startY, 0), maxY) + 'px';
+            });
+
+            document.addEventListener('pointerup', function () {
+                dragging = false;
+            });
+        })();
 
 
 
