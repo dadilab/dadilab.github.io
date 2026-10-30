@@ -50,20 +50,12 @@
             background-color: #45a049;
         }
 
-        #result {
+        .result {
             margin-top: 20px;
             padding: 15px;
             background-color: #f8f9fa;
             border-radius: 4px;
             font-size: 1.1em;
-        }
-
-        .mode-switch {
-            background-color: #007bff;
-        }
-
-        .mode-switch:hover {
-            background-color: #0056b3;
         }
 
         .checkbox-group {
@@ -74,8 +66,6 @@
 <body>
     <div class="container">
         <h2>全能日期计算器</h2>
-        
-        <button onclick="toggleMode()" class="mode-switch">切换计算模式</button>
 
         <!-- 间隔天数计算 -->
         <div id="daysCalculator" class="calculator">
@@ -95,10 +85,11 @@
                 </label>
             </div>
             <button onclick="calculateDays()">计算间隔天数</button>
+            <div id="daysResult" class="result"></div>
         </div>
 
         <!-- 截止日期计算 -->
-        <div id="dateCalculator" class="calculator" style="display: none;">
+        <div id="dateCalculator" class="calculator">
             <h3>截止日期计算</h3>
             <div class="input-group">
                 <label for="calcStartDate">起始日期：</label>
@@ -121,22 +112,11 @@
                 </label>
             </div>
             <button onclick="calculateDate()">计算截止日期</button>
+            <div id="dateResult" class="result"></div>
         </div>
-
-        <div id="result"></div>
     </div>
 
     <script>
-        let isDaysCalculator = true;
-
-        function toggleMode() {
-            isDaysCalculator = !isDaysCalculator;
-            document.getElementById('daysCalculator').style.display = isDaysCalculator ? 'block' : 'none';
-            document.getElementById('dateCalculator').style.display = isDaysCalculator ? 'none' : 'block';
-            document.querySelector('h2').textContent = isDaysCalculator ? '间隔天数计算器' : '截止日期计算器';
-            document.getElementById('result').innerHTML = '';
-        }
-
         // 间隔天数计算逻辑
         function calculateDays() {
             const startDate = document.getElementById('startDate').value;
@@ -156,7 +136,7 @@
             
             if (includeEnd) days += 1;
             
-            showResult(`间隔天数：<strong>${days}</strong> 天`);
+            showResult('daysResult', `间隔天数：<strong>${days}</strong> 天`);
         }
 
         // 截止日期计算逻辑（增强版）
@@ -195,11 +175,11 @@
                     break;
             }
 
-            showResult(`截止日期：<strong>${formatDate(resultDate)}</strong>`);
+            showResult('dateResult', `截止日期：<strong>${formatDate(resultDate)}</strong>`);
         }
 
-        function showResult(content) {
-            document.getElementById('result').innerHTML = content;
+        function showResult(resultId, content) {
+            document.getElementById(resultId).innerHTML = content;
         }
 
         function formatDate(date) {

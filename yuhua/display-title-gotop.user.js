@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         显示或复制页面标题 + 快速滚动顶部或底部
+// @name         显示或复制网页标题 + 快速滚动顶部或底部
 // @namespace    http://tampermonkey.net/
 // @version      1.1.0
 // @description  右上角显示页面 title 并可复制；右下角提供回顶/到底按钮
